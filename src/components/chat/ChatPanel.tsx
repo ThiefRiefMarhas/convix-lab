@@ -154,7 +154,7 @@ export default function ChatPanel({
         )}
 
         {/* Thinking Phase */}
-        {thinkingSteps.length > 0 && (
+        {thinkingSteps.length > 0 && analysisPhase === 'analyzing' && (
           <ThinkingPhase
             steps={thinkingSteps}
             isComplete={thinkingSteps.every(s => s.status === 'done')}

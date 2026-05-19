@@ -54,28 +54,31 @@ export function useChat(initialConversationId?: string | null) {
 
   const abortRef = useRef<AbortController | null>(null);
   const streamingRef = useRef(false);
+  const lastLoadedIdRef = useRef<string | null>(initialConversationId || null);
 
   // Load existing conversation
   useEffect(() => {
     if (conversationId && !streamingRef.current) {
       loadConversation(conversationId);
     }
-  }, [conversationId]);
+  }, [conversationId, loadConversation]);
 
   const loadConversation = useCallback(async (id: string) => {
+    if (lastLoadedIdRef.current === id && sources.length > 0) return; // Prevent overwrite of live/active sources
     const data = await getConversation(id);
     if (data) {
       setMessages(data.messages);
       setSources(data.sources);
       setConversationTitle(data.conversation.title);
       setCurrentModel(data.conversation.model);
+      lastLoadedIdRef.current = id;
       
       // If it has many sources, it's likely completed analysis
       if (data.sources.length > 10) {
         setAnalysisPhase('complete');
       }
     }
-  }, []);
+  }, [sources.length]);
 
   const sendMessage = useCallback(async (
     content: string,
@@ -132,6 +135,7 @@ export function useChat(initialConversationId?: string | null) {
           case 'conversation_created':
             currentConvoId = event.data.conversationId;
             setConversationId(currentConvoId);
+            lastLoadedIdRef.current = currentConvoId;
             break;
 
           case 'token':
@@ -164,17 +168,22 @@ export function useChat(initialConversationId?: string | null) {
             break;
             
           case 'source_found':
-            setSources(prev => [...prev, {
-              id: `src-${Date.now()}-${Math.random()}`,
-              url: event.data.url,
-              title: event.data.title,
-              domain: event.data.domain,
-              snippet: event.data.snippet,
-              relevance_score: 0.8,
-              source_type: event.data.phase === 3 ? 'community' : 'tavily',
-              search_query: `Phase ${event.data.phase}`,
-              created_at: new Date().toISOString(),
-            }]);
+            setSources(prev => {
+              if (prev.some(s => s.url === event.data.url)) {
+                return prev; // Deduplicate
+              }
+              return [...prev, {
+                id: `src-${Date.now()}-${Math.random()}`,
+                url: event.data.url,
+                title: event.data.title,
+                domain: event.data.domain,
+                snippet: event.data.snippet,
+                relevance_score: 0.8,
+                source_type: event.data.phase === 3 ? 'community' : 'tavily',
+                search_query: `Phase ${event.data.phase}`,
+                created_at: new Date().toISOString(),
+              }];
+            });
             break;
             
           case 'phase_complete':

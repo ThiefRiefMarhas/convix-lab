@@ -56,13 +56,6 @@ export function useChat(initialConversationId?: string | null) {
   const streamingRef = useRef(false);
   const lastLoadedIdRef = useRef<string | null>(initialConversationId || null);
 
-  // Load existing conversation
-  useEffect(() => {
-    if (conversationId && !streamingRef.current) {
-      loadConversation(conversationId);
-    }
-  }, [conversationId, loadConversation]);
-
   const loadConversation = useCallback(async (id: string) => {
     if (lastLoadedIdRef.current === id && sources.length > 0) return; // Prevent overwrite of live/active sources
     const data = await getConversation(id);
@@ -79,6 +72,13 @@ export function useChat(initialConversationId?: string | null) {
       }
     }
   }, [sources.length]);
+
+  // Load existing conversation
+  useEffect(() => {
+    if (conversationId && !streamingRef.current) {
+      loadConversation(conversationId);
+    }
+  }, [conversationId, loadConversation]);
 
   const sendMessage = useCallback(async (
     content: string,

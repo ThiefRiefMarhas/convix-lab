@@ -510,7 +510,7 @@ export default function Dashboard() {
                         className={`w-full min-h-[160px] max-h-[400px] overflow-y-auto custom-scrollbar bg-transparent px-6 ${(attachedFiles.length > 0 || isUploading) ? 'pt-16' : 'pt-6'} pb-20 text-[17px] text-neutral-900 dark:text-neutral-100 focus:outline-none resize-none rounded-3xl placeholder:text-neutral-400 dark:placeholder:text-neutral-500 disabled:opacity-30`}
                       />
                     </div>
-                    <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between bg-white dark:bg-[var(--dash-chat-bg)] pt-2 rounded-b-2xl">
+                    <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between bg-white dark:bg-[var(--dash-chat-bg)] pt-2 rounded-b-2xl z-30">
                       <div className="flex items-center gap-1 pl-2">
                         <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".pdf,.png,.jpg,.jpeg,.webp" className="hidden" multiple />
                         <button disabled={isUploading} onClick={() => fileInputRef.current?.click()} className="p-2 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors disabled:opacity-50" title="Attach file">

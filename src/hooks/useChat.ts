@@ -57,7 +57,7 @@ export function useChat(initialConversationId?: string | null) {
 
   // Load existing conversation
   useEffect(() => {
-    if (conversationId) {
+    if (conversationId && !streamingRef.current) {
       loadConversation(conversationId);
     }
   }, [conversationId]);
@@ -152,6 +152,9 @@ export function useChat(initialConversationId?: string | null) {
 
           case 'phase_start':
             setAnalysisPhase('analyzing');
+            if (event.data.phase === 1) {
+              setSources([]);
+            }
             setCurrentPhase(event.data.phase);
             setPhaseProgress(prev => ({ ...prev, phase: event.data.phase, phaseName: event.data.phaseName, status: 'starting' }));
             break;

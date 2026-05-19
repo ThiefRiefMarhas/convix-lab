@@ -1,5 +1,6 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
+import ws from 'ws';
 
 dotenv.config();
 
@@ -29,7 +30,8 @@ export function getSupabaseAdmin(): SupabaseClient {
 
   try {
     activeAdminClient = createClient(url, finalKey, {
-      auth: { autoRefreshToken: false, persistSession: false }
+      auth: { autoRefreshToken: false, persistSession: false },
+      realtime: { transport: ws }
     });
     console.log('[Supabase Startup] supabaseAdmin successfully created dynamically.');
     return activeAdminClient;

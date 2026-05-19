@@ -179,7 +179,7 @@ export default function ChatPanel({
 
         {/* Phase Indicator — BELOW the messages/results */}
         <AnimatePresence>
-          {analysisPhase !== 'idle' && analysisPhase !== 'brainstorm' && (
+          {analysisPhase === 'analyzing' && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}

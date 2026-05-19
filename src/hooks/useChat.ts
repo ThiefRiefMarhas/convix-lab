@@ -261,6 +261,7 @@ export function useChat(initialConversationId?: string | null) {
       }
     } catch (err: any) {
       setError(err.message || 'Failed to send message');
+      setAnalysisPhase('idle');
     } finally {
       setIsStreaming(false);
       setStreamingContent('');
@@ -283,6 +284,7 @@ export function useChat(initialConversationId?: string | null) {
   const stopStreaming = useCallback(() => {
     streamingRef.current = false;
     setIsStreaming(false);
+    setAnalysisPhase(prev => prev === 'analyzing' ? 'idle' : prev);
   }, []);
 
   const resetChat = useCallback(() => {

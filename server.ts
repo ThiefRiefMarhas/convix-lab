@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import fs from "fs";
 import dotenv from "dotenv";
 
 // Route imports
@@ -31,9 +32,23 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
+    app.use(express.static(distPath, { index: false })); // Disable default index serve to let our custom catch-all handle it
+    
     app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
+      const indexPath = path.join(distPath, 'index.html');
+      fs.readFile(indexPath, 'utf8', (err, html) => {
+        if (err) {
+          console.error('[Index Serve Error]:', err);
+          return res.status(500).send('Error loading index.html');
+        }
+        
+        const injected = html
+          .replace('__VITE_SUPABASE_URL__', process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '')
+          .replace('__VITE_SUPABASE_ANON_KEY__', process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '');
+          
+        res.setHeader('Content-Type', 'text/html');
+        res.send(injected);
+      });
     });
   }
 

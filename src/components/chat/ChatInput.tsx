@@ -9,7 +9,7 @@ const MODELS = [
 ];
 
 interface ChatInputProps {
-  onSend: (content: string, opts?: { webSearchEnabled?: boolean; attachmentIds?: string[] }) => void;
+  onSend: (content: string, opts?: { webSearchEnabled?: boolean; attachmentIds?: string[]; attachments?: Array<{ id: string; name: string }> }) => void;
   onStop: () => void;
   isStreaming: boolean;
   currentModel: string;
@@ -25,9 +25,11 @@ export default function ChatInput({ onSend, onStop, isStreaming, currentModel, o
   const [isUploading, setIsUploading] = useState(false);
   const [isListening, setIsListening] = useState(false);
 
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-  const recognitionRef = useRef<any>(null);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -37,58 +39,79 @@ export default function ChatInput({ onSend, onStop, isStreaming, currentModel, o
     }
   }, [input]);
 
-  // Initialize speech recognition
-  useEffect(() => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      const recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = 'id-ID'; // Default to Indonesian, auto-detects
-
-      recognition.onresult = (event: any) => {
-        let transcript = '';
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          transcript += event.results[i][0].transcript;
-        }
-        setInput(prev => {
-          // Replace from last recognition point
-          const base = prev.replace(/\[listening...\]$/, '').trim();
-          return base ? `${base} ${transcript}` : transcript;
-        });
-      };
-
-      recognition.onerror = () => {
-        setIsListening(false);
-      };
-
-      recognition.onend = () => {
-        setIsListening(false);
-      };
-
-      recognitionRef.current = recognition;
-    }
-  }, []);
-
-  const toggleVoice = () => {
-    if (!recognitionRef.current) return;
+  const toggleVoice = async () => {
     if (isListening) {
-      recognitionRef.current.stop();
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+      }
       setIsListening(false);
     } else {
-      recognitionRef.current.start();
-      setIsListening(true);
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+        mediaRecorderRef.current = mediaRecorder;
+        audioChunksRef.current = [];
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunksRef.current.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = async () => {
+          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+          // Stop all audio tracks to release microphone
+          stream.getTracks().forEach(track => track.stop());
+
+          const reader = new FileReader();
+          reader.readAsDataURL(audioBlob);
+          reader.onloadend = async () => {
+            const base64Data = (reader.result as string).split(',')[1];
+            if (!base64Data) return;
+
+            try {
+              const res = await fetch('/api/transcribe', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ audioData: base64Data, format: 'webm' }),
+              });
+
+              if (res.ok) {
+                const data = await res.json();
+                if (data.text) {
+                  setInput(prev => prev ? `${prev} ${data.text}` : data.text);
+                }
+              } else {
+                console.error('Transcription failed:', await res.text());
+              }
+            } catch (err) {
+              console.error('Error contacting transcribe API:', err);
+            }
+          };
+        };
+
+        mediaRecorder.start();
+        setIsListening(true);
+      } catch (err) {
+        console.error('Error starting media recorder:', err);
+        alert('Gagal mengakses mikrofon. Pastikan Anda telah memberikan izin mikrofon.');
+      }
     }
   };
 
   const handleSend = () => {
     if ((!input.trim() && attachedFiles.length === 0) || isStreaming) return;
-    if (isListening && recognitionRef.current) {
-      recognitionRef.current.stop();
+    if (isListening) {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+      }
       setIsListening(false);
     }
     onSend(input, {
       webSearchEnabled: webSearch,
+      attachments: attachedFiles,
       attachmentIds: attachedFiles.map(f => f.id),
     });
     setInput('');
@@ -125,9 +148,7 @@ export default function ChatInput({ onSend, onStop, isStreaming, currentModel, o
     setAttachedFiles(prev => prev.filter(f => f.id !== id));
   };
 
-  const hasVoice = !!(
-    (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-  );
+  const hasVoice = typeof navigator !== 'undefined' && !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
 
   return (
     <div className="p-3 bg-[var(--dash-chat-bg)] shrink-0">

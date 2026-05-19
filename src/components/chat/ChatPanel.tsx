@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Wand2, X, AlertTriangle, Activity, Hexagon, Square } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import MessageBubble from './MessageBubble';
@@ -38,12 +38,37 @@ interface ChatPanelProps {
   onUploadFile: (file: File) => Promise<{ id: string } | null>;
 }
 
+const RESEARCH_MESSAGES = [
+  "Convix sedang merumuskan kerangka analisis...",
+  "Mencari data pasar global di internet...",
+  "Menganalisis kompetitor dan produk sejenis...",
+  "Mengevaluasi model bisnis dan peluang monetisasi...",
+  "Mengidentifikasi 6 pertanyaan kunci validasi...",
+  "Memproses sentimen pengguna di Reddit dan Hacker News...",
+  "Menyusun hipotesis nilai dan target pasar...",
+  "Merumuskan rekomendasi strategi go-to-market...",
+  "Menghitung perkiraan ukuran pasar (TAM/SAM/SOM)...",
+  "Membuat draf laporan analisis startup komprehensif..."
+];
+
 export default function ChatPanel({
   messages, sources, isStreaming, streamingContent, activeTools, currentModel, error,
   analysisPhase, phaseProgress, thinkingSteps,
   onSendMessage, onStartAnalysis, onStopStreaming, onSetModel, onClose, onUploadFile,
 }: ChatPanelProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [researchMsgIdx, setResearchMsgIdx] = useState(0);
+
+  useEffect(() => {
+    if (isStreaming && !streamingContent) {
+      const interval = setInterval(() => {
+        setResearchMsgIdx(prev => (prev + 1) % RESEARCH_MESSAGES.length);
+      }, 7000); // Cycles every 7 seconds
+      return () => clearInterval(interval);
+    } else {
+      setResearchMsgIdx(0);
+    }
+  }, [isStreaming, streamingContent]);
 
   // Auto-scroll only if already near bottom
   useEffect(() => {
@@ -166,12 +191,14 @@ export default function ChatPanel({
           <div className="py-4 bg-[var(--dash-chat-assist-bg)] px-5">
             <div className="max-w-3xl mx-auto ml-7">
               <div className="flex items-center gap-2">
-                <div className="flex gap-1">
+                <div className="flex gap-1 shrink-0">
                   <div className="w-1.5 h-1.5 rounded-full bg-[#ef4d23] animate-bounce" style={{ animationDelay: '0ms' }} />
                   <div className="w-1.5 h-1.5 rounded-full bg-[#ef4d23] animate-bounce" style={{ animationDelay: '150ms' }} />
                   <div className="w-1.5 h-1.5 rounded-full bg-[#ef4d23] animate-bounce" style={{ animationDelay: '300ms' }} />
                 </div>
-                <span className="text-xs text-neutral-400 dark:text-neutral-500 font-medium">Convix is thinking...</span>
+                <span className="text-xs text-neutral-500 dark:text-neutral-400 font-semibold animate-pulse">
+                  {RESEARCH_MESSAGES[researchMsgIdx]}
+                </span>
               </div>
             </div>
           </div>

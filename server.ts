@@ -7,6 +7,7 @@ import dotenv from "dotenv";
 import chatRouter from "./server/routes/chat.js";
 import conversationsRouter from "./server/routes/conversations.js";
 import uploadRouter from "./server/routes/upload.js";
+import transcribeRouter from "./server/routes/transcribe.js";
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ async function startServer() {
   app.use('/api/chat', chatRouter);
   app.use('/api/conversations', conversationsRouter);
   app.use('/api/upload', uploadRouter);
+  app.use('/api/transcribe', transcribeRouter);
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {

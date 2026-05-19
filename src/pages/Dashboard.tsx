@@ -145,6 +145,7 @@ export default function Dashboard() {
     chat.sendMessage(prompt, { 
       webSearchEnabled: isAgentMode, 
       analysisMode: isAgentMode, // Hitting enter triggers deep analysis if Agent Mode is toggled ON!
+      attachments: attachedFiles,
       attachmentIds: attachedFiles.map(f => f.id) 
     });
     setPrompt('');

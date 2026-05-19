@@ -85,6 +85,7 @@ export function useChat(initialConversationId?: string | null) {
     options?: {
       webSearchEnabled?: boolean;
       attachmentIds?: string[];
+      attachments?: Array<{ id: string; name: string }>;
       analysisMode?: boolean;
     }
   ) => {
@@ -108,7 +109,7 @@ export function useChat(initialConversationId?: string | null) {
         id: `temp-${Date.now()}`,
         role: 'user',
         content,
-        metadata: options?.attachmentIds ? { attachments: options.attachmentIds } : {},
+        metadata: options?.attachments ? { attachments: options.attachments } : (options?.attachmentIds ? { attachments: options.attachmentIds } : {}),
         created_at: new Date().toISOString(),
       };
       setMessages(prev => [...prev, userMsg]);

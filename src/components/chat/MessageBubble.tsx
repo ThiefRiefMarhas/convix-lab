@@ -36,12 +36,19 @@ const MessageBubble = React.memo(function MessageBubble({ message, isStreaming =
         </div>
 
         {/* Attachments */}
-        {isUser && message.metadata?.attachments && (
-          <div className="flex items-center gap-2 mb-2 ml-7">
-            <div className="flex items-center gap-1.5 bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1.5 rounded-lg text-[11px] font-medium text-neutral-600 dark:text-neutral-400">
-              <FileText size={12} className="text-neutral-400" />
-              <span>{message.metadata.attachments.length} file(s) attached</span>
-            </div>
+        {isUser && message.metadata?.attachments && Array.isArray(message.metadata.attachments) && message.metadata.attachments.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-3 ml-7">
+            {message.metadata.attachments.map((file: any, idx: number) => {
+              const fileName = typeof file === 'object' && file ? file.name : `Document #${idx + 1}`;
+              return (
+                <div key={idx} className="flex items-center gap-2 bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200/60 dark:border-neutral-700/60 px-3 py-2 rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-300 shadow-sm max-w-[240px] transition-all hover:border-[#ef4d23]/30">
+                  <div className="p-1.5 rounded-lg bg-orange-50 dark:bg-orange-950/30 text-[#ef4d23]">
+                    <FileText size={14} />
+                  </div>
+                  <span className="truncate flex-1 pr-1" title={fileName}>{fileName}</span>
+                </div>
+              );
+            })}
           </div>
         )}
 

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ArrowUp, Paperclip, Globe, Sparkles, ChevronDown, Square, FileText, X, Mic, MicOff } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
+import { apiFetch } from '../../services/api';
 
 const MODELS = [
   { id: 'Convix Pro', name: 'Convix Pro', desc: 'Best for complex validation' },
@@ -24,6 +25,8 @@ export default function ChatInput({ onSend, onStop, isStreaming, currentModel, o
   const [attachedFiles, setAttachedFiles] = useState<Array<{ id: string; name: string }>>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [transcriptionError, setTranscriptionError] = useState<string | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -44,11 +47,33 @@ export default function ChatInput({ onSend, onStop, isStreaming, currentModel, o
       if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
         mediaRecorderRef.current.stop();
       }
-      setIsListening(false);
+      setIsTranscribing(true);
+      setTranscriptionError(null);
     } else {
       try {
+        console.log('Requesting microphone access...');
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+        
+        let mediaRecorder: MediaRecorder;
+        let mimeTypeUsed = 'audio/webm';
+        
+        // Try webm, then mp4, then fallback to browser default (extremely robust for Safari & Chrome)
+        try {
+          mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+          mimeTypeUsed = 'audio/webm';
+          console.log('Using audio/webm recorder');
+        } catch (e) {
+          try {
+            mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/mp4' });
+            mimeTypeUsed = 'audio/mp4';
+            console.log('Using audio/mp4 recorder');
+          } catch (e2) {
+            mediaRecorder = new MediaRecorder(stream);
+            mimeTypeUsed = mediaRecorder.mimeType || 'audio/webm';
+            console.log('Using browser default recorder:', mimeTypeUsed);
+          }
+        }
+
         mediaRecorderRef.current = mediaRecorder;
         audioChunksRef.current = [];
 
@@ -59,7 +84,7 @@ export default function ChatInput({ onSend, onStop, isStreaming, currentModel, o
         };
 
         mediaRecorder.onstop = async () => {
-          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+          const audioBlob = new Blob(audioChunksRef.current, { type: mimeTypeUsed });
           // Stop all audio tracks to release microphone
           stream.getTracks().forEach(track => track.stop());
 
@@ -67,36 +92,59 @@ export default function ChatInput({ onSend, onStop, isStreaming, currentModel, o
           reader.readAsDataURL(audioBlob);
           reader.onloadend = async () => {
             const base64Data = (reader.result as string).split(',')[1];
-            if (!base64Data) return;
+            if (!base64Data) {
+              setIsTranscribing(false);
+              setIsListening(false);
+              return;
+            }
+
+            // Determine appropriate audio format extension
+            const format = mimeTypeUsed.includes('mp4') ? 'mp4' : (mimeTypeUsed.includes('ogg') ? 'ogg' : 'webm');
+
+            // 10-second timeout implementation
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000);
 
             try {
-              const res = await fetch('/api/transcribe', {
+              const res = await apiFetch('/api/transcribe', {
                 method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ audioData: base64Data, format: 'webm' }),
+                body: JSON.stringify({ audioData: base64Data, format }),
+                signal: controller.signal
               });
+              clearTimeout(timeoutId);
 
               if (res.ok) {
                 const data = await res.json();
                 if (data.text) {
                   setInput(prev => prev ? `${prev} ${data.text}` : data.text);
                 }
+                setIsListening(false);
               } else {
-                console.error('Transcription failed:', await res.text());
+                const errText = await res.text();
+                console.error('Transcription failed:', errText);
+                setTranscriptionError('Gagal mentranskripsi audio. Silakan coba lagi.');
               }
-            } catch (err) {
+            } catch (err: any) {
+              clearTimeout(timeoutId);
               console.error('Error contacting transcribe API:', err);
+              if (err.name === 'AbortError') {
+                setTranscriptionError('Waktu proses habis (maksimal 10 detik). Pastikan koneksi internet stabil.');
+              } else {
+                setTranscriptionError('Koneksi terputus atau gagal memproses suara.');
+              }
+            } finally {
+              setIsTranscribing(false);
             }
           };
         };
 
         mediaRecorder.start();
+        setTranscriptionError(null);
+        setIsTranscribing(false);
         setIsListening(true);
       } catch (err) {
         console.error('Error starting media recorder:', err);
-        alert('Gagal mengakses mikrofon. Pastikan Anda telah memberikan izin mikrofon.');
+        alert('Gagal mengakses mikrofon. Pastikan Anda telah memberikan izin mikrofon di browser.');
       }
     }
   };
@@ -193,23 +241,48 @@ export default function ChatInput({ onSend, onStop, isStreaming, currentModel, o
 
           {/* Voice input active wave overlay */}
           {isListening && (
-            <div className="absolute inset-0 bg-white/95 dark:bg-neutral-950/95 flex items-center justify-between px-3 py-1 rounded-xl z-20 border border-red-500/20 shadow-inner">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1.5 h-6">
-                  <span className="w-1 bg-[#ef4d23] rounded-full animate-pulse h-3" />
-                  <span className="w-1 bg-[#ef4d23] rounded-full animate-bounce h-5" style={{ animationDelay: '0.1s', animationDuration: '0.6s' }} />
-                  <span className="w-1 bg-[#ef4d23] rounded-full animate-bounce h-2" style={{ animationDelay: '0.2s', animationDuration: '0.5s' }} />
-                  <span className="w-1 bg-[#ef4d23] rounded-full animate-bounce h-6" style={{ animationDelay: '0.3s', animationDuration: '0.7s' }} />
-                  <span className="w-1 bg-[#ef4d23] rounded-full animate-bounce h-4" style={{ animationDelay: '0.4s', animationDuration: '0.6s' }} />
+            <div className="absolute inset-0 bg-white/95 dark:bg-neutral-900/95 flex items-center justify-between px-3 py-1 rounded-xl z-20 border border-neutral-200 dark:border-neutral-800 shadow-inner">
+              {transcriptionError ? (
+                <div className="flex items-center justify-between w-full gap-2 pointer-events-auto">
+                  <span className="text-red-500 font-medium text-xs truncate max-w-[70%]">{transcriptionError}</span>
+                  <button
+                    onClick={() => {
+                      setTranscriptionError(null);
+                      setIsListening(false);
+                    }}
+                    className="px-2 py-1 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 text-[10px] font-semibold rounded transition-all active:scale-95"
+                  >
+                    Tutup
+                  </button>
                 </div>
-                <span className="text-[12px] font-bold text-[#ef4d23] tracking-wide animate-pulse">Mendengarkan suara Anda...</span>
-              </div>
-              <button
-                onClick={toggleVoice}
-                className="px-2.5 py-1 bg-[#ef4d23] hover:bg-[#d9441f] text-white rounded-lg text-[10px] font-bold uppercase transition-all shadow-sm"
-              >
-                Selesai
-              </button>
+              ) : isTranscribing ? (
+                <div className="flex items-center gap-2">
+                  <svg className="animate-spin h-4 w-4 text-[#ef4d23]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span className="text-[12px] font-bold text-neutral-800 dark:text-neutral-200 tracking-wide animate-pulse">Mentranskripsi...</span>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center gap-3 pointer-events-none">
+                    <div className="flex items-center gap-1.5 h-6">
+                      <span className="w-1 bg-[#ef4d23] rounded-full animate-pulse h-3" />
+                      <span className="w-1 bg-[#ef4d23] rounded-full animate-bounce h-5" style={{ animationDelay: '0.1s', animationDuration: '0.6s' }} />
+                      <span className="w-1 bg-[#ef4d23] rounded-full animate-bounce h-2" style={{ animationDelay: '0.2s', animationDuration: '0.5s' }} />
+                      <span className="w-1 bg-[#ef4d23] rounded-full animate-bounce h-6" style={{ animationDelay: '0.3s', animationDuration: '0.7s' }} />
+                      <span className="w-1 bg-[#ef4d23] rounded-full animate-bounce h-4" style={{ animationDelay: '0.4s', animationDuration: '0.6s' }} />
+                    </div>
+                    <span className="text-[12px] font-bold text-[#ef4d23] tracking-wide animate-pulse">Mendengarkan suara Anda...</span>
+                  </div>
+                  <button
+                    onClick={toggleVoice}
+                    className="px-2.5 py-1 bg-[#ef4d23] hover:bg-[#d9441f] text-white rounded-lg text-[10px] font-bold uppercase transition-all shadow-sm"
+                  >
+                    Selesai
+                  </button>
+                </>
+              )}
             </div>
           )}
         </div>

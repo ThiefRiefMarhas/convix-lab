@@ -2,13 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { LogOut, Plus, Menu, X, Wand2, Lightbulb, ArrowRight, Settings, Sparkles, MessageSquare, Trash2, PanelRightClose, PanelRightOpen, PanelLeftClose, PanelLeftOpen, Layers, Sun, Moon, Paperclip, Mic, ChevronDown, FileText } from 'lucide-react';
+import { LogOut, Plus, Menu, X, Wand2, Lightbulb, ArrowRight, Settings, Sparkles, MessageSquare, Trash2, PanelRightClose, PanelRightOpen, PanelLeftClose, PanelLeftOpen, Layers, Sun, Moon, Paperclip, Mic, MicOff, ChevronDown, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 import ChatPanel from '../components/chat/ChatPanel';
 import ResearchCanvas from '../components/chat/ResearchCanvas';
 import { useChat } from '../hooks/useChat';
 import { useConversations } from '../hooks/useConversations';
+import { apiFetch } from '../services/api';
 
 const Logo = () => (
   <svg width="32" height="32" viewBox="0 0 32 32" className="w-6 h-6 sm:w-7 sm:h-7 shrink-0" fill="none">
@@ -80,9 +81,14 @@ export default function Dashboard() {
   const [isUploading, setIsUploading] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(true);
   const [chatWidth, setChatWidth] = useState(55);
+  const [isListening, setIsListening] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [transcriptionError, setTranscriptionError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const splitContainerRef = useRef<HTMLDivElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
 
   const chat = useChat(urlConvoId);
   const convos = useConversations();
@@ -171,6 +177,107 @@ export default function Dashboard() {
 
   const removeFile = (id: string) => {
     setAttachedFiles(prev => prev.filter(f => f.id !== id));
+  };
+
+  const toggleVoice = async () => {
+    if (isListening) {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+      }
+      setIsTranscribing(true);
+      setTranscriptionError(null);
+    } else {
+      try {
+        console.log('[Dashboard STT] Requesting microphone access...');
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        let mediaRecorder: MediaRecorder;
+        let mimeTypeUsed = 'audio/webm';
+        
+        try {
+          mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+          mimeTypeUsed = 'audio/webm';
+        } catch (e) {
+          try {
+            mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/mp4' });
+            mimeTypeUsed = 'audio/mp4';
+          } catch (e2) {
+            mediaRecorder = new MediaRecorder(stream);
+            mimeTypeUsed = mediaRecorder.mimeType || 'audio/webm';
+          }
+        }
+
+        mediaRecorderRef.current = mediaRecorder;
+        audioChunksRef.current = [];
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunksRef.current.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = async () => {
+          const audioBlob = new Blob(audioChunksRef.current, { type: mimeTypeUsed });
+          stream.getTracks().forEach(track => track.stop());
+
+          const reader = new FileReader();
+          reader.readAsDataURL(audioBlob);
+          reader.onloadend = async () => {
+            const base64Data = (reader.result as string).split(',')[1];
+            if (!base64Data) {
+              setIsTranscribing(false);
+              setIsListening(false);
+              return;
+            }
+
+            const format = mimeTypeUsed.includes('mp4') ? 'mp4' : (mimeTypeUsed.includes('ogg') ? 'ogg' : 'webm');
+
+            // 10-second timeout implementation
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+            try {
+              const res = await apiFetch('/api/transcribe', {
+                method: 'POST',
+                body: JSON.stringify({ audioData: base64Data, format }),
+                signal: controller.signal
+              });
+              clearTimeout(timeoutId);
+
+              if (res.ok) {
+                const data = await res.json();
+                if (data.text) {
+                  setPrompt(prev => prev ? `${prev} ${data.text}` : data.text);
+                }
+                setIsListening(false);
+              } else {
+                const errText = await res.text();
+                console.error('[Dashboard STT] Transcription failed:', errText);
+                setTranscriptionError('Gagal mentranskripsi audio. Silakan coba lagi.');
+              }
+            } catch (err: any) {
+              clearTimeout(timeoutId);
+              console.error('[Dashboard STT] Error contacting transcribe API:', err);
+              if (err.name === 'AbortError') {
+                setTranscriptionError('Waktu proses habis (maksimal 10 detik). Pastikan koneksi internet stabil.');
+              } else {
+                setTranscriptionError('Koneksi terputus atau gagal memproses suara.');
+              }
+            } finally {
+              setIsTranscribing(false);
+            }
+          };
+        };
+
+        mediaRecorder.start();
+        setTranscriptionError(null);
+        setIsTranscribing(false);
+        setIsListening(true);
+      } catch (err) {
+        console.error('[Dashboard STT] Error starting media recorder:', err);
+        alert('Gagal mengakses mikrofon. Pastikan Anda telah memberikan izin mikrofon di browser.');
+      }
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -347,23 +454,78 @@ export default function Dashboard() {
                         )}
                       </div>
                     )}
-                    <textarea
-                      value={prompt}
-                      onChange={(e) => setPrompt(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      maxLength={10000}
-                      data-lenis-prevent="true"
-                      placeholder={isAgentMode ? "Let's brainstorm! What industry or problem are you exploring?" : "Describe your idea... e.g. A marketplace for artisanal, upcycled furniture..."}
-                      className={`w-full min-h-[160px] max-h-[400px] overflow-y-auto custom-scrollbar bg-transparent px-6 ${(attachedFiles.length > 0 || isUploading) ? 'pt-16' : 'pt-6'} pb-20 text-[17px] text-neutral-900 dark:text-neutral-100 focus:outline-none resize-none rounded-3xl placeholder:text-neutral-400 dark:placeholder:text-neutral-500`}
-                    />
+                    {/* Wrapped Textarea with its own clean inline relative layout */}
+                    <div className="relative w-full">
+                      {isListening && (
+                        <div className="absolute inset-0 bg-transparent flex flex-col items-center justify-center gap-3 z-10 pt-8 pb-20 px-6">
+                          {transcriptionError ? (
+                            <div className="flex flex-col items-center gap-3 text-center pointer-events-auto">
+                              <span className="text-red-500 font-semibold text-sm">{transcriptionError}</span>
+                              <button
+                                onClick={() => {
+                                  setTranscriptionError(null);
+                                  setIsListening(false);
+                                }}
+                                className="px-4 py-2 bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 text-xs font-semibold rounded-lg transition-all active:scale-95"
+                              >
+                                Tutup
+                              </button>
+                            </div>
+                          ) : isTranscribing ? (
+                            <div className="flex flex-col items-center gap-3 text-center">
+                              <svg className="animate-spin h-7 w-7 text-[#ef4d23]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                              <span className="text-[14px] font-bold text-neutral-800 dark:text-neutral-200 animate-pulse tracking-wide block">Mentranskripsi suara Anda...</span>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="flex items-end justify-center gap-1.5 h-10 pointer-events-none">
+                                <span className="w-1 bg-[#ef4d23] rounded-full animate-bounce h-4" style={{ animationDelay: '0.1s', animationDuration: '0.5s' }} />
+                                <span className="w-1.5 bg-[#ef4d23] rounded-full animate-bounce h-8" style={{ animationDelay: '0.2s', animationDuration: '0.6s' }} />
+                                <span className="w-1 bg-[#ef4d23] rounded-full animate-bounce h-3" style={{ animationDelay: '0.3s', animationDuration: '0.4s' }} />
+                                <span className="w-1.5 bg-[#ef4d23] rounded-full animate-bounce h-10" style={{ animationDelay: '0.4s', animationDuration: '0.7s' }} />
+                                <span className="w-1 bg-[#ef4d23] rounded-full animate-bounce h-6" style={{ animationDelay: '0.5s', animationDuration: '0.5s' }} />
+                                <span className="w-1.5 bg-[#ef4d23] rounded-full animate-bounce h-8" style={{ animationDelay: '0.6s', animationDuration: '0.6s' }} />
+                                <span className="w-1 bg-[#ef4d23] rounded-full animate-bounce h-4" style={{ animationDelay: '0.7s', animationDuration: '0.5s' }} />
+                              </div>
+                              <div className="text-center pointer-events-none">
+                                <span className="text-[14px] font-bold text-neutral-800 dark:text-neutral-200 animate-pulse tracking-wide block">Mendengarkan suara Anda...</span>
+                                <span className="text-[11px] text-neutral-400 mt-0.5 block">Klik tombol mic merah di bawah untuk menyelesaikan</span>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      )}
+                      
+                      <textarea
+                        value={isListening ? '' : prompt}
+                        onChange={(e) => setPrompt(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        disabled={isListening}
+                        maxLength={10000}
+                        data-lenis-prevent="true"
+                        placeholder={isListening ? '' : (isAgentMode ? "Let's brainstorm! What industry or problem are you exploring?" : "Describe your idea... e.g. A marketplace for artisanal, upcycled furniture...")}
+                        className={`w-full min-h-[160px] max-h-[400px] overflow-y-auto custom-scrollbar bg-transparent px-6 ${(attachedFiles.length > 0 || isUploading) ? 'pt-16' : 'pt-6'} pb-20 text-[17px] text-neutral-900 dark:text-neutral-100 focus:outline-none resize-none rounded-3xl placeholder:text-neutral-400 dark:placeholder:text-neutral-500 disabled:opacity-30`}
+                      />
+                    </div>
                     <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between bg-white dark:bg-[var(--dash-chat-bg)] pt-2 rounded-b-2xl">
                       <div className="flex items-center gap-1 pl-2">
                         <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".pdf,.png,.jpg,.jpeg,.webp" className="hidden" multiple />
                         <button disabled={isUploading} onClick={() => fileInputRef.current?.click()} className="p-2 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors disabled:opacity-50" title="Attach file">
                           <Paperclip size={18} />
                         </button>
-                        <button className="p-2 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors" title="Voice input (coming soon)">
-                          <Mic size={18} />
+                        <button
+                          onClick={toggleVoice}
+                          className={`p-2 rounded-lg transition-all ${
+                            isListening
+                              ? 'bg-red-50 dark:bg-red-950/30 text-red-500 border border-red-200 dark:border-red-800 animate-pulse'
+                              : 'text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                          }`}
+                          title={isListening ? 'Stop listening' : 'Voice input'}
+                        >
+                          {isListening ? <MicOff size={18} /> : <Mic size={18} />}
                         </button>
                         
                         {/* Model Selector */}

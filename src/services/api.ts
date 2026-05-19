@@ -11,7 +11,7 @@ async function getAuthToken(): Promise<string | null> {
 /**
  * Make an authenticated API request.
  */
-async function apiFetch(url: string, options: RequestInit = {}): Promise<Response> {
+export async function apiFetch(url: string, options: RequestInit = {}): Promise<Response> {
   const token = await getAuthToken();
 
   const headers: Record<string, string> = {

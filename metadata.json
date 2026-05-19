@@ -1,0 +1,6 @@
+{
+  "name": "Convix Idea Lab",
+  "description": "An AI-powered market gap analyzer and idea validator for the agencies of tomorrow. Features SWOT analysis, risk assessment, and multimodal inputs.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

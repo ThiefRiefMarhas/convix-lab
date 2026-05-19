@@ -325,7 +325,7 @@ export default function Dashboard() {
                 <div className="w-full relative">
                   <div className={`relative bg-[var(--dash-sidebar)] border rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] focus-within:shadow-[0_8px_40px_rgb(0,0,0,0.08)] transition-all duration-300 group ${isAgentMode ? 'border-[#ef4d23]/40 focus-within:border-[#ef4d23]' : 'border-neutral-200 dark:border-neutral-700 focus-within:border-neutral-300 dark:focus-within:border-neutral-600'}`}>
                     {/* Attached files */}
-                    {attachedFiles.length > 0 && (
+                    {(attachedFiles.length > 0 || isUploading) && (
                       <div className="absolute top-4 left-6 right-6 flex flex-wrap gap-2 z-10">
                         {attachedFiles.map(f => (
                           <div key={f.id} className="flex items-center gap-1.5 bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1.5 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300">
@@ -336,6 +336,15 @@ export default function Dashboard() {
                             </button>
                           </div>
                         ))}
+                        {isUploading && (
+                          <div className="flex items-center gap-1.5 bg-orange-50 dark:bg-orange-950/20 border border-orange-100/40 dark:border-orange-900/30 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-orange-600 dark:text-orange-400">
+                            <svg className="animate-spin h-3 w-3 text-orange-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span className="animate-pulse">Mengunggah PDF...</span>
+                          </div>
+                        )}
                       </div>
                     )}
                     <textarea
@@ -345,7 +354,7 @@ export default function Dashboard() {
                       maxLength={10000}
                       data-lenis-prevent="true"
                       placeholder={isAgentMode ? "Let's brainstorm! What industry or problem are you exploring?" : "Describe your idea... e.g. A marketplace for artisanal, upcycled furniture..."}
-                      className={`w-full min-h-[160px] max-h-[400px] overflow-y-auto custom-scrollbar bg-transparent px-6 ${attachedFiles.length > 0 ? 'pt-16' : 'pt-6'} pb-20 text-[17px] text-neutral-900 dark:text-neutral-100 focus:outline-none resize-none rounded-3xl placeholder:text-neutral-400 dark:placeholder:text-neutral-500`}
+                      className={`w-full min-h-[160px] max-h-[400px] overflow-y-auto custom-scrollbar bg-transparent px-6 ${(attachedFiles.length > 0 || isUploading) ? 'pt-16' : 'pt-6'} pb-20 text-[17px] text-neutral-900 dark:text-neutral-100 focus:outline-none resize-none rounded-3xl placeholder:text-neutral-400 dark:placeholder:text-neutral-500`}
                     />
                     <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between bg-white dark:bg-[var(--dash-chat-bg)] pt-2 rounded-b-2xl">
                       <div className="flex items-center gap-1 pl-2">

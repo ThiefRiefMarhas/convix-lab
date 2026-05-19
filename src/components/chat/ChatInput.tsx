@@ -154,7 +154,7 @@ export default function ChatInput({ onSend, onStop, isStreaming, currentModel, o
     <div className="p-3 bg-[var(--dash-chat-bg)] shrink-0">
       <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl p-2.5 shadow-sm">
       {/* Attached files */}
-      {attachedFiles.length > 0 && (
+      {(attachedFiles.length > 0 || isUploading) && (
         <div className="flex flex-wrap gap-2 mb-2 px-1">
           {attachedFiles.map(f => (
             <div key={f.id} className="flex items-center gap-1.5 bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1.5 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300">
@@ -165,6 +165,15 @@ export default function ChatInput({ onSend, onStop, isStreaming, currentModel, o
               </button>
             </div>
           ))}
+          {isUploading && (
+            <div className="flex items-center gap-1.5 bg-orange-50 dark:bg-orange-950/20 border border-orange-100/40 dark:border-orange-900/30 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-orange-600 dark:text-orange-400">
+              <svg className="animate-spin h-3 w-3 text-orange-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span className="animate-pulse">Mengunggah PDF...</span>
+            </div>
+          )}
         </div>
       )}
 

@@ -8,15 +8,25 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || '';
 
 // Admin client — bypasses RLS, used for server-side writes
-export const supabaseAdmin: SupabaseClient = createClient(
-  supabaseUrl,
-  supabaseServiceKey || supabaseAnonKey,
-  { auth: { autoRefreshToken: false, persistSession: false } }
-);
+export let supabaseAdmin: SupabaseClient;
+try {
+  supabaseAdmin = createClient(
+    supabaseUrl || 'https://placeholder-dont-crash.supabase.co',
+    supabaseServiceKey || supabaseAnonKey || 'placeholder-anon-key',
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
+} catch (err) {
+  console.error('[Supabase Init Error]: Missing or invalid keys. Server will boot but DB operations will fail.', err);
+  supabaseAdmin = null as any;
+}
 
 // Verify user JWT from Authorization header
 export async function verifyUserToken(authHeader: string | undefined): Promise<{ userId: string; email: string } | null> {
   if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
+  if (!supabaseAdmin) {
+    console.warn('[Supabase Warning]: verifyUserToken skipped, database client is not initialized.');
+    return null;
+  }
 
   const token = authHeader.replace('Bearer ', '');
 
@@ -29,6 +39,7 @@ export async function verifyUserToken(authHeader: string | undefined): Promise<{
 
 // Helper: Get user profile
 export async function getUserProfile(userId: string) {
+  if (!supabaseAdmin) return null;
   const { data, error } = await supabaseAdmin
     .from('profiles')
     .select('*')
@@ -41,6 +52,7 @@ export async function getUserProfile(userId: string) {
 
 // Helper: Get or reset user usage (resets daily counters)
 export async function getUserUsage(userId: string) {
+  if (!supabaseAdmin) return null;
   const { data, error } = await supabaseAdmin
     .from('user_usage')
     .select('*')
@@ -74,6 +86,7 @@ export async function getUserUsage(userId: string) {
 
 // Helper: Increment usage counter
 export async function incrementUsage(userId: string, field: 'messages_today' | 'searches_today' | 'files_total' | 'conversations_total') {
+  if (!supabaseAdmin) return;
   const usage = await getUserUsage(userId);
   if (!usage) return;
 

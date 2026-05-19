@@ -7,34 +7,73 @@ const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL ||
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || '';
 
+console.log('[Supabase Startup] process.env.SUPABASE_URL:', supabaseUrl || 'MISSING');
+console.log('[Supabase Startup] process.env.SUPABASE_SERVICE_ROLE_KEY length:', supabaseServiceKey ? supabaseServiceKey.length : 0);
+console.log('[Supabase Startup] process.env.VITE_SUPABASE_ANON_KEY length:', supabaseAnonKey ? supabaseAnonKey.length : 0);
+
 // Admin client — bypasses RLS, used for server-side writes
 export let supabaseAdmin: SupabaseClient;
 try {
+  const finalKey = supabaseServiceKey || supabaseAnonKey;
+  if (!supabaseUrl) {
+    console.error('[Supabase Startup] ERROR: supabaseUrl is empty!');
+  }
+  if (!finalKey) {
+    console.error('[Supabase Startup] ERROR: Both service role key and anon key are empty!');
+  }
+
   supabaseAdmin = createClient(
     supabaseUrl || 'https://placeholder-dont-crash.supabase.co',
-    supabaseServiceKey || supabaseAnonKey || 'placeholder-anon-key',
+    finalKey || 'placeholder-anon-key',
     { auth: { autoRefreshToken: false, persistSession: false } }
   );
-} catch (err) {
-  console.error('[Supabase Init Error]: Missing or invalid keys. Server will boot but DB operations will fail.', err);
+  
+  if (supabaseAdmin) {
+    console.log('[Supabase Startup] supabaseAdmin successfully created.');
+  } else {
+    console.error('[Supabase Startup] supabaseAdmin is NULL after createClient!');
+  }
+} catch (err: any) {
+  console.error('[Supabase Init Error]: Missing or invalid keys. Server will boot but DB operations will fail.', err.message || err);
   supabaseAdmin = null as any;
 }
 
 // Verify user JWT from Authorization header
 export async function verifyUserToken(authHeader: string | undefined): Promise<{ userId: string; email: string } | null> {
-  if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
+  console.log('[Auth Debug] Received Auth Header:', authHeader ? `${authHeader.substring(0, 20)}...` : 'undefined');
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    console.warn('[Auth Debug] Missing or invalid Bearer header structure.');
+    return null;
+  }
+  
   if (!supabaseAdmin) {
-    console.warn('[Supabase Warning]: verifyUserToken skipped, database client is not initialized.');
+    console.error('[Auth Debug] supabaseAdmin client is not initialized!');
     return null;
   }
 
   const token = authHeader.replace('Bearer ', '');
+  console.log('[Auth Debug] Parsed Token (JWT) length:', token.length);
 
-  const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+  try {
+    const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
 
-  if (error || !user) return null;
+    if (error) {
+      console.error('[Auth Debug] supabaseAdmin.auth.getUser failed with error:', error.message, error.status);
+      return null;
+    }
 
-  return { userId: user.id, email: user.email || '' };
+    if (!user) {
+      console.error('[Auth Debug] supabaseAdmin.auth.getUser returned no user.');
+      return null;
+    }
+
+    console.log('[Auth Debug] Successfully authenticated user:', user.email);
+    return { userId: user.id, email: user.email || '' };
+  } catch (err: any) {
+    console.error('[Auth Debug] Unexpected exception in verifyUserToken:', err.message || err);
+    return null;
+  }
 }
 
 // Helper: Get user profile

@@ -88,15 +88,34 @@ export default function ResearchCanvas({ sources, isStreaming, ideaTitle }: Rese
       ns.push({ id: phaseId, x: phaseX, y: py, type: 'phase', label: `${phase.name} (${count})`, color: phase.color, phaseId: phase.id });
       es.push({ from: 'idea', fromPin: 'right', to: phaseId, toPin: 'left', color: phase.color });
 
-      // Column 3: Source nodes (right side)
+      // Column 3: Source nodes (right side) - Staggered 3-column grid layout to prevent overlap and spread the connections beautifully
       const srcList = (groupedSources[phase.id] || []).slice(0, 20);
-      const srcX = 750;
-      const srcSpacing = 74;
-      const srcStartY = py - ((srcList.length - 1) * srcSpacing) / 2;
+      const cols = 3;
+      const colWidth = 280; // card width is 240, so 40px horizontal gap
+      const rowHeight = 78; // card height is 60, so 18px vertical gap
+      
+      const totalRows = Math.ceil(srcList.length / cols);
+      const gridHeight = (totalRows - 1) * rowHeight;
+      const gridStartY = py - gridHeight / 2;
 
       srcList.forEach((src, si) => {
+        const colIndex = si % cols;
+        const rowIndex = Math.floor(si / cols);
+        
+        const srcX = 750 + colIndex * colWidth;
+        const srcY = gridStartY + rowIndex * rowHeight;
+        
         const srcId = `src-${phase.id}-${si}`;
-        ns.push({ id: srcId, x: srcX, y: srcStartY + si * srcSpacing, type: 'source', label: src.domain || src.title || 'Source', color: phase.color, phaseId: phase.id, source: src });
+        ns.push({ 
+          id: srcId, 
+          x: srcX, 
+          y: srcY, 
+          type: 'source', 
+          label: src.domain || src.title || 'Source', 
+          color: phase.color, 
+          phaseId: phase.id, 
+          source: src 
+        });
         es.push({ from: phaseId, fromPin: 'right', to: srcId, toPin: 'left', color: phase.color });
       });
     });

@@ -54,11 +54,39 @@ export default function Dashboard() {
   const [isModelOpen, setIsModelOpen] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<{ id: string; name: string }[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(true);
+  const [chatWidth, setChatWidth] = useState(55);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const splitContainerRef = useRef<HTMLDivElement>(null);
 
   const chat = useChat(urlConvoId);
   const convos = useConversations();
+
+  const handleSplitterPointerDown = (e: React.PointerEvent) => {
+    e.preventDefault();
+    const container = splitContainerRef.current;
+    if (!container) return;
+
+    const startX = e.clientX;
+    const initialWidth = chatWidth;
+    const containerWidth = container.getBoundingClientRect().width;
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      const deltaX = moveEvent.clientX - startX;
+      const deltaPercent = (deltaX / containerWidth) * 100;
+      const newWidth = Math.max(25, Math.min(75, initialWidth + deltaPercent));
+      setChatWidth(newWidth);
+    };
+
+    const handlePointerUp = () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+  };
 
   // Sync URL when conversation changes
   useEffect(() => {
@@ -124,6 +152,9 @@ export default function Dashboard() {
     chat.resetChat();
     setViewState('input');
     setPrompt('');
+    setIsChatOpen(true);
+    setIsCanvasOpen(true);
+    setChatWidth(55);
   };
 
   const handleSelectConvo = (id: string) => {
@@ -399,8 +430,35 @@ export default function Dashboard() {
 
             {/* ─── Chat View (Split Screen) ─── */}
             {viewState === 'chat' && (
-              <motion.div key="chat" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}
-                className="flex flex-col lg:flex-row h-full gap-3 overflow-hidden p-1 pb-3 min-h-0 min-w-0">
+              <motion.div 
+                ref={splitContainerRef}
+                key="chat" 
+                initial={{ opacity: 0, scale: 0.98 }} 
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex flex-col lg:flex-row h-full gap-3 overflow-hidden p-1 pb-3 min-h-0 min-w-0 relative"
+              >
+                {/* Side tabs to slide back panels when hidden */}
+                {!isChatOpen && (
+                  <button
+                    onClick={() => setIsChatOpen(true)}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 z-30 w-10 h-24 bg-[var(--dash-sidebar)] border border-neutral-200/60 dark:border-neutral-700/40 rounded-r-2xl hover:bg-neutral-50 dark:hover:bg-neutral-800 text-[#ef4d23] hover:text-[#ff7a55] flex flex-col items-center justify-center gap-2 shadow-lg transition-all"
+                    title="Open Chat"
+                  >
+                    <Plus size={18} className="animate-pulse" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider [writing-mode:vertical-lr]">Chat</span>
+                  </button>
+                )}
+
+                {!isCanvasOpen && isChatOpen && (
+                  <button
+                    onClick={() => setIsCanvasOpen(true)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 z-30 w-10 h-24 bg-[var(--dash-sidebar)] border border-neutral-200/60 dark:border-neutral-700/40 rounded-l-2xl hover:bg-neutral-50 dark:hover:bg-neutral-800 text-[#ef4d23] hover:text-[#ff7a55] flex flex-col items-center justify-center gap-2 shadow-lg transition-all"
+                    title="Show Canvas"
+                  >
+                    <PanelRightOpen size={18} className="animate-pulse" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider [writing-mode:vertical-lr] rotate-180">Sources</span>
+                  </button>
+                )}
 
                 {/* Mobile tab switcher */}
                 <div className="flex lg:hidden gap-1 bg-[var(--dash-sidebar)] rounded-xl p-1 border border-neutral-200/60 dark:border-neutral-700/40 shrink-0">
@@ -419,49 +477,72 @@ export default function Dashboard() {
                 </div>
 
                 {/* Left: Chat Panel */}
-                <motion.div
-                  initial={false}
-                  animate={{ flex: isCanvasOpen ? 0.55 : 1 }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                  className={`min-w-0 min-h-0 h-full ${mobileTab === 'chat' ? 'flex' : 'hidden lg:flex'} flex-col overflow-hidden`}
-                >
-                  <ChatPanel
-                    messages={chat.messages}
-                    sources={chat.sources}
-                    isStreaming={chat.isStreaming}
-                    streamingContent={chat.streamingContent}
-                    activeTools={chat.activeTools}
-                    currentModel={chat.currentModel}
-                    error={chat.error}
-                    analysisPhase={chat.analysisPhase}
-                    phaseProgress={chat.phaseProgress}
-                    thinkingSteps={chat.thinkingSteps}
-                    onSendMessage={chat.sendMessage}
-                    onStartAnalysis={chat.startAnalysis}
-                    onStopStreaming={chat.stopStreaming}
-                    onSetModel={chat.setModel}
-                    onClose={handleNewChat}
-                    onUploadFile={chat.uploadFile}
-                  />
-                </motion.div>
+                <AnimatePresence>
+                  {isChatOpen && (
+                    <motion.div
+                      key="chat-panel"
+                      initial={{ width: 0, opacity: 0 }}
+                      animate={{ width: isCanvasOpen ? `${chatWidth}%` : '100%', opacity: 1 }}
+                      exit={{ width: 0, opacity: 0 }}
+                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                      style={{ width: isCanvasOpen ? `${chatWidth}%` : '100%' }}
+                      className={`min-w-0 min-h-0 h-full ${mobileTab === 'chat' ? 'flex' : 'hidden lg:flex'} flex-col overflow-hidden`}
+                    >
+                      <ChatPanel
+                        messages={chat.messages}
+                        sources={chat.sources}
+                        isStreaming={chat.isStreaming}
+                        streamingContent={chat.streamingContent}
+                        activeTools={chat.activeTools}
+                        currentModel={chat.currentModel}
+                        error={chat.error}
+                        analysisPhase={chat.analysisPhase}
+                        phaseProgress={chat.phaseProgress}
+                        thinkingSteps={chat.thinkingSteps}
+                        onSendMessage={chat.sendMessage}
+                        onStartAnalysis={chat.startAnalysis}
+                        onStopStreaming={chat.stopStreaming}
+                        onSetModel={chat.setModel}
+                        onClose={() => setIsChatOpen(false)}
+                        onUploadFile={chat.uploadFile}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
-                {/* Canvas toggle button (desktop) */}
-                <button onClick={() => setIsCanvasOpen(!isCanvasOpen)}
-                  className="hidden lg:flex items-center justify-center w-6 h-12 self-center bg-[var(--dash-sidebar)] border border-neutral-200/60 dark:border-neutral-700/40 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors shadow-sm shrink-0"
-                  title={isCanvasOpen ? 'Hide canvas' : 'Show canvas'}>
-                  {isCanvasOpen ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
-                </button>
+                {/* Vertical Resizable Splitter (Desktop) */}
+                {isChatOpen && isCanvasOpen && (
+                  <div
+                    onPointerDown={handleSplitterPointerDown}
+                    className="hidden lg:flex w-2.5 hover:w-3.5 h-full self-stretch items-center justify-center cursor-col-resize group/splitter transition-all relative z-30 shrink-0"
+                  >
+                    {/* Splitter center line */}
+                    <div className="w-[2px] h-16 bg-neutral-200 dark:bg-neutral-800 group-hover/splitter:bg-[#ef4d23] group-hover/splitter:h-full transition-all rounded-full" />
+                    
+                    {/* Embedded Toggle Button */}
+                    <button
+                      onPointerDown={(e) => e.stopPropagation()} // Prevent drag start when clicking the button
+                      onClick={() => setIsCanvasOpen(false)}
+                      className="absolute top-1/2 -translate-y-1/2 opacity-0 group-hover/splitter:opacity-100 focus:opacity-100 flex items-center justify-center w-6 h-10 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg text-neutral-500 hover:text-[#ef4d23] transition-all shadow-md cursor-pointer z-40"
+                      title="Hide Canvas"
+                    >
+                      <PanelRightClose size={12} />
+                    </button>
+                  </div>
+                )}
 
                 {/* Right: Research Canvas */}
                 <AnimatePresence>
                   {isCanvasOpen && (
                     <motion.div
                       key="canvas"
-                      initial={{ flex: 0, opacity: 0 }}
-                      animate={{ flex: 0.45, opacity: 1 }}
-                      exit={{ flex: 0, opacity: 0 }}
+                      initial={{ width: 0, opacity: 0 }}
+                      animate={{ width: isChatOpen ? `${100 - chatWidth}%` : '100%', opacity: 1 }}
+                      exit={{ width: 0, opacity: 0 }}
                       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                      className={`min-w-0 min-h-0 h-full ${mobileTab === 'canvas' ? 'flex' : 'hidden lg:flex'} flex-col overflow-hidden relative`}>
+                      style={{ width: isChatOpen ? `${100 - chatWidth}%` : '100%' }}
+                      className={`min-w-0 min-h-0 h-full ${mobileTab === 'canvas' ? 'flex' : 'hidden lg:flex'} flex-col overflow-hidden relative`}
+                    >
                       <ResearchCanvas sources={chat.sources} isStreaming={chat.isStreaming} />
                     </motion.div>
                   )}

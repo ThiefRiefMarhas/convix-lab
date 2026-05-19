@@ -28,5 +28,5 @@ ENV PORT=8080
 
 EXPOSE 8080
 
-# Start server using the compiled commonjs bundle
-CMD ["npm", "start"]
+# Start server using the compiled commonjs bundle directly
+CMD ["node", "dist/server.cjs"]

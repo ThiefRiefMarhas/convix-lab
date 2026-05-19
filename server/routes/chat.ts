@@ -32,6 +32,9 @@ router.post('/', requireAuth, rateLimiter, async (req: AuthenticatedRequest, res
 
   const sendEvent = (event: string, data: any) => {
     res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+    if (typeof (res as any).flush === 'function') {
+      (res as any).flush();
+    }
   };
 
   try {
@@ -100,7 +103,21 @@ router.post('/', requireAuth, rateLimiter, async (req: AuthenticatedRequest, res
         .join('\n\n');
 
       // Extract original idea from the first user message
-      const firstUserMsg = (history || []).find(m => m.role === 'user')?.content || message || 'My startup idea';
+      let firstUserMsg = (history || []).find(m => m.role === 'user')?.content || message || 'My startup idea';
+
+      // Load PDF/File contents if attached
+      if (attachmentIds.length > 0) {
+        const { data: files } = await supabaseAdmin
+          .from('file_uploads')
+          .select('file_name, extracted_text')
+          .in('id', attachmentIds);
+        if (files && files.length > 0) {
+          const fileContextsText = files.map((f: any) =>
+            `[Attached File: ${f.file_name}]\n${(f.extracted_text || '(No text)').substring(0, 5000)}`
+          ).join('\n\n');
+          firstUserMsg = `${firstUserMsg}\n\n--- ADDITIONAL PDF/DOCUMENT CONTEXT ---\n${fileContextsText}`;
+        }
+      }
 
       // Run the 4-phase pipeline
       const phaseResults = await runAnalysisPipeline({

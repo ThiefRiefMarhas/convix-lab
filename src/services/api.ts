@@ -139,6 +139,7 @@ export async function* streamChat(params: {
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = '';
+  let currentEvent = '';
 
   try {
     while (true) {
@@ -149,7 +150,6 @@ export async function* streamChat(params: {
       const lines = buffer.split('\n');
       buffer = lines.pop() || '';
 
-      let currentEvent = '';
       for (const line of lines) {
         const trimmed = line.trim();
         if (trimmed.startsWith('event: ')) {

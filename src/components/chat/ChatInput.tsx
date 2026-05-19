@@ -158,8 +158,30 @@ export default function ChatInput({ onSend, onStop, isStreaming, currentModel, o
             maxLength={10000}
             placeholder={isStreaming ? 'AI is responding...' : 'Reply to analysis...'}
             rows={1}
-            className="w-full bg-transparent border-0 px-3 py-2 pr-12 text-sm text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-0 transition-all resize-none disabled:opacity-50 placeholder:text-neutral-400 dark:placeholder:text-neutral-500"
+            className="w-full bg-transparent border-0 px-3 py-2 pr-12 text-sm text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-0 resize-none disabled:opacity-50 placeholder:text-neutral-400 dark:placeholder:text-neutral-500"
           />
+
+          {/* Voice input active wave overlay */}
+          {isListening && (
+            <div className="absolute inset-0 bg-white/95 dark:bg-neutral-950/95 flex items-center justify-between px-3 py-1 rounded-xl z-20 border border-red-500/20 shadow-inner">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5 h-6">
+                  <span className="w-1 bg-[#ef4d23] rounded-full animate-pulse h-3" />
+                  <span className="w-1 bg-[#ef4d23] rounded-full animate-bounce h-5" style={{ animationDelay: '0.1s', animationDuration: '0.6s' }} />
+                  <span className="w-1 bg-[#ef4d23] rounded-full animate-bounce h-2" style={{ animationDelay: '0.2s', animationDuration: '0.5s' }} />
+                  <span className="w-1 bg-[#ef4d23] rounded-full animate-bounce h-6" style={{ animationDelay: '0.3s', animationDuration: '0.7s' }} />
+                  <span className="w-1 bg-[#ef4d23] rounded-full animate-bounce h-4" style={{ animationDelay: '0.4s', animationDuration: '0.6s' }} />
+                </div>
+                <span className="text-[12px] font-bold text-[#ef4d23] tracking-wide animate-pulse">Mendengarkan suara Anda...</span>
+              </div>
+              <button
+                onClick={toggleVoice}
+                className="px-2.5 py-1 bg-[#ef4d23] hover:bg-[#d9441f] text-white rounded-lg text-[10px] font-bold uppercase transition-all shadow-sm"
+              >
+                Selesai
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Send / Stop button */}

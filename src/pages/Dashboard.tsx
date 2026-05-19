@@ -142,7 +142,11 @@ export default function Dashboard() {
     // Auto-collapse sidebar
     setIsSidebarOpen(false);
     setViewState('chat');
-    chat.sendMessage(prompt, { webSearchEnabled: isAgentMode, attachmentIds: attachedFiles.map(f => f.id) });
+    chat.sendMessage(prompt, { 
+      webSearchEnabled: isAgentMode, 
+      analysisMode: isAgentMode, // Hitting enter triggers deep analysis if Agent Mode is toggled ON!
+      attachmentIds: attachedFiles.map(f => f.id) 
+    });
     setPrompt('');
     setAttachedFiles([]);
   };
@@ -436,9 +440,8 @@ export default function Dashboard() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
                       {templates.map((tmpl, i) => (
                         <button key={i} onClick={() => {
-                          setIsSidebarOpen(false);
-                          setViewState('chat');
-                          chat.sendMessage(tmpl.prompt, { webSearchEnabled: true, analysisMode: true });
+                          setPrompt(tmpl.prompt);
+                          setIsAgentMode(true);
                         }}
                           className="relative text-left border border-neutral-200/50 hover:border-[#ef4d23]/50 hover:shadow-lg transition-all duration-300 rounded-2xl group flex flex-col overflow-hidden aspect-[4/3]">
                           <img src={tmpl.img} alt={tmpl.title} className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700" />

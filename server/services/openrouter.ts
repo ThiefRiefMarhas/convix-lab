@@ -263,11 +263,11 @@ export async function* createStreamingCompletion(
 /**
  * Non-streaming completion for quick tasks (e.g. title generation)
  */
-export async function createCompletion(messages: ChatMessage[], modelName: string = 'Convix Fast'): Promise<string> {
+export async function createCompletion(messages: ChatMessage[], modelName: string = 'Convix Fast', maxTokens?: number): Promise<string> {
   const modelConfig = MODEL_MAP[modelName] || MODEL_MAP['Convix Fast'];
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout for quick tasks
+  const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout for quick tasks
 
   let response: Response;
   try {
@@ -283,7 +283,7 @@ export async function createCompletion(messages: ChatMessage[], modelName: strin
         models: modelConfig.models,
         messages,
         temperature: 0.3,
-        max_tokens: 100,
+        max_tokens: maxTokens || 100,
       }),
       signal: controller.signal,
     });

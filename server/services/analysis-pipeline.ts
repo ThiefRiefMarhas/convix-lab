@@ -44,6 +44,20 @@ const withTimeout = <T>(promise: Promise<T>, ms: number, fallback: T): Promise<T
   ]);
 };
 
+/**
+ * Dynamically detects if the given text is in Indonesian language.
+ */
+export function detectIndonesian(text: string): boolean {
+  if (!text) return false;
+  const indonesianWords = [
+    'saya', 'aku', 'ada', 'yang', 'ingin', 'buat', 'adalah', 'itu', 'kopi', 'susu',
+    'di', 'untuk', 'dan', 'dengan', 'startup', 'bagaimana', 'apa', 'bisa', 'kamu',
+    'kita', 'ya', 'ga', 'tidak', 'dari', 'ke', 'ini', 'itu', 'mereka'
+  ];
+  const words = text.toLowerCase().split(/[^a-zA-Z]+/);
+  return words.some(w => indonesianWords.includes(w));
+}
+
 export interface AnalysisProgress {
   phase: number;
   phaseName: string;
@@ -70,6 +84,7 @@ export async function runAnalysisPipeline(params: {
 
   // ─── THINKING PHASE ───
   // AI asks itself strategic questions before diving into research
+  const isIndonesian = detectIndonesian(ideaSummary);
   try {
     const thinkingPrompt = `You are a strategic analyst about to research a startup idea based on this conversation:
     
@@ -79,11 +94,12 @@ export async function runAnalysisPipeline(params: {
     
     Before starting research, list 6 critical questions you need to answer for market validation. Format as a JSON array of strings.
     Example: ["What is the current market size?","Who are the top 3 competitors?"]
-    Return ONLY the JSON array, nothing else.`;
+    Return ONLY the JSON array, nothing else.${isIndonesian ? '\n\nCRITICAL: You MUST write the JSON questions in Indonesian language.' : ''}`;
 
     const thinkingResponse = await createCompletion(
       [{ role: 'user', content: thinkingPrompt }],
-      'Convix Fast'
+      'Convix Fast',
+      300
     );
 
     try {
@@ -96,7 +112,14 @@ export async function runAnalysisPipeline(params: {
       }
     } catch {
       // Fallback thinking questions
-      const fallback = [
+      const fallback = isIndonesian ? [
+        `Apa solusi yang sudah ada untuk "${ideaSummary}"?`,
+        `Siapa target pelanggan dan masalah apa yang diselesaikan?`,
+        `Berapa perkiraan ukuran pasar (TAM/SAM/SOM)?`,
+        `Apakah ada hambatan regulasi atau hukum untuk masuk?`,
+        `Teknologi atau infrastruktur apa yang dibutuhkan?`,
+        `Apakah waktunya tepat — apakah pasar ini sedang tumbuh atau jenuh?`,
+      ] : [
         `What are the existing solutions for "${ideaSummary}"?`,
         `Who is the target customer and what pain point does this solve?`,
         `What is the estimated market size (TAM/SAM/SOM)?`,
@@ -138,63 +161,65 @@ export async function runAnalysisPipeline(params: {
       const batchResults = await Promise.all(
         batch.map(async (query) => {
           try {
-            // 15 seconds max per search
-            const searchResult = await withTimeout(
-              searchWeb(query, 'market_research'),
-              15000,
-              { query, results: [] }
+            // 25 seconds max for the entire search AND content processing step
+            return await withTimeout(
+              (async () => {
+                const searchResult = await searchWeb(query, 'market_research');
+                if (!searchResult.results.length) return [];
+                await incrementUsage(userId, 'searches_today');
+
+                const processed = await processSearchResults(
+                  searchResult.results.map(r => ({
+                    url: r.url,
+                    title: r.title,
+                    content: r.content,
+                    domain: extractDomain(r.url),
+                  }))
+                );
+
+                // Save to database
+                for (const pr of processed) {
+                  await supabaseAdmin.from('research_sources').insert({
+                    conversation_id: conversationId,
+                    user_id: userId,
+                    url: pr.url,
+                    title: pr.title,
+                    domain: pr.domain,
+                    snippet: pr.rawContent.substring(0, 300),
+                    summary: pr.summary,
+                    token_count: pr.summaryTokens,
+                    full_content: pr.rawContent.substring(0, 5000),
+                    source_type: phase === 3 ? 'community' : 'tavily',
+                    search_query: `[Phase ${phase}] ${query}`,
+                  });
+                }
+
+                // Send individual source events for canvas
+                for (const pr of processed) {
+                  sendEvent('source_found', {
+                    phase,
+                    url: pr.url,
+                    title: pr.title,
+                    domain: pr.domain,
+                    snippet: pr.summary.substring(0, 150),
+                    fromCache: pr.fromCache,
+                  });
+                }
+
+                return processed.map(pr => ({
+                  url: pr.url,
+                  title: pr.title,
+                  domain: pr.domain,
+                  snippet: pr.rawContent.substring(0, 200),
+                  summary: pr.summary,
+                  fromCache: pr.fromCache,
+                }));
+              })(),
+              25000,
+              []
             );
-            if (!searchResult.results.length) return [];
-            await incrementUsage(userId, 'searches_today');
-
-            const processed = await processSearchResults(
-              searchResult.results.map(r => ({
-                url: r.url,
-                title: r.title,
-                content: r.content,
-                domain: extractDomain(r.url),
-              }))
-            );
-
-            // Save to database
-            for (const pr of processed) {
-              await supabaseAdmin.from('research_sources').insert({
-                conversation_id: conversationId,
-                user_id: userId,
-                url: pr.url,
-                title: pr.title,
-                domain: pr.domain,
-                snippet: pr.rawContent.substring(0, 300),
-                summary: pr.summary,
-                token_count: pr.summaryTokens,
-                full_content: pr.rawContent.substring(0, 5000),
-                source_type: phase === 3 ? 'community' : 'tavily',
-                search_query: `[Phase ${phase}] ${query}`,
-              });
-            }
-
-            // Send individual source events for canvas
-            for (const pr of processed) {
-              sendEvent('source_found', {
-                phase,
-                url: pr.url,
-                title: pr.title,
-                domain: pr.domain,
-                snippet: pr.summary.substring(0, 150),
-                fromCache: pr.fromCache,
-              });
-            }
-
-            return processed.map(pr => ({
-              url: pr.url,
-              title: pr.title,
-              domain: pr.domain,
-              snippet: pr.rawContent.substring(0, 200),
-              summary: pr.summary,
-              fromCache: pr.fromCache,
-            }));
           } catch (err) {
-            console.error(`[Pipeline] Search failed for "${query}":`, err);
+            console.error(`[Pipeline] Search or processing failed for "${query}":`, err);
             return [];
           }
         })
@@ -257,10 +282,14 @@ export async function runAnalysisPipeline(params: {
         4000
       );
 
-      phaseSummary = await createCompletion([
-        { role: 'system', content: `You are a market research analyst. Summarize the following ${phaseName} data into key findings. Be concise (max 200 words). Use bullet points.` },
-        { role: 'user', content: `Research data for "${ideaSummary}" — ${phaseName}:\n\n${summaryContext}` },
-      ], 'Convix Fast');
+      phaseSummary = await withTimeout(
+        createCompletion([
+          { role: 'system', content: `You are a market research analyst. Summarize the following ${phaseName} data into key findings. Be concise (max 200 words). Use bullet points.` },
+          { role: 'user', content: `Research data for "${ideaSummary}" — ${phaseName}:\n\n${summaryContext}` },
+        ], 'Convix Fast', 500),
+        25000,
+        `Found ${allSources.length} sources for ${phaseName}.`
+      );
     } catch {
       phaseSummary = `Found ${allSources.length} sources for ${phaseName}.`;
     }
@@ -303,8 +332,12 @@ export async function generateFinalReport(
 
   const totalSources = phaseResults.reduce((s, r) => s + r.sources.length, 0);
 
+  const isIndonesian = detectIndonesian(ideaSummary);
   const messages: ChatMessage[] = [
-    { role: 'system', content: ANALYSIS_PROMPT },
+    { 
+      role: 'system', 
+      content: ANALYSIS_PROMPT + (isIndonesian ? '\n\nCRITICAL: You MUST write the entire final report and all headings in INDONESIAN language. Never output in English.' : '') 
+    },
     {
       role: 'user',
       content: `I need a comprehensive market validation analysis for this idea: "${ideaSummary}"

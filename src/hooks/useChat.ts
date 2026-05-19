@@ -151,6 +151,7 @@ export function useChat(initialConversationId?: string | null) {
             break;
 
           case 'phase_start':
+            setAnalysisPhase('analyzing');
             setCurrentPhase(event.data.phase);
             setPhaseProgress(prev => ({ ...prev, phase: event.data.phase, phaseName: event.data.phaseName, status: 'starting' }));
             break;

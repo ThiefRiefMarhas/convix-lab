@@ -162,7 +162,7 @@ export default function ChatPanel({
         )}
 
         {/* Thinking indicator */}
-        {isStreaming && !streamingContent && activeTools.length === 0 && thinkingSteps.length === 0 && (
+        {isStreaming && !streamingContent && activeTools.length === 0 && thinkingSteps.length === 0 && analysisPhase !== 'analyzing' && (
           <div className="py-4 bg-[var(--dash-chat-assist-bg)] px-5">
             <div className="max-w-3xl mx-auto ml-7">
               <div className="flex items-center gap-2">

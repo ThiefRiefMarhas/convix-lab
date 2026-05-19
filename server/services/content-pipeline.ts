@@ -125,7 +125,8 @@ export async function summarizeContent(content: string, contentType: string = 'w
   try {
     const summary = await createCompletion(
       [{ role: 'user', content: prompt }],
-      'Convix Fast' // Use fastest/cheapest model for summarization
+      'Convix Fast', // Use fastest/cheapest model for summarization
+      400
     );
     return summary;
   } catch (error) {

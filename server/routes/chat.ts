@@ -8,7 +8,7 @@ import { scrapeUrl } from '../services/scraper.js';
 import { BRAINSTORM_PROMPT, SYSTEM_PROMPT, getTitlePrompt } from '../prompts/system.js';
 import { processContent, processSearchResults, estimateTokens } from '../services/content-pipeline.js';
 import { buildContextMessages, formatToolResultsForContext, getRemainingBudget } from '../services/context-builder.js';
-import { runAnalysisPipeline, generateFinalReport } from '../services/analysis-pipeline.js';
+import { runAnalysisPipeline, generateFinalReport, detectIndonesian } from '../services/analysis-pipeline.js';
 
 const router = Router();
 
@@ -82,23 +82,29 @@ router.post('/', requireAuth, rateLimiter, async (req: AuthenticatedRequest, res
       await incrementUsage(userId, 'messages_today');
     }
 
-    // --- ANALYSIS MODE ---
-    if (analysisMode) {
-      // Load history to give pipeline full context
-      const { data: history } = await supabaseAdmin
-        .from('messages')
-        .select('role, content')
-        .eq('conversation_id', convoId)
-        .order('created_at', { ascending: true });
+    // Load history to give pipeline or context full context
+    const { data: history } = await supabaseAdmin
+      .from('messages')
+      .select('role, content')
+      .eq('conversation_id', convoId)
+      .order('created_at', { ascending: true });
 
+    const userPromptCount = (history || []).filter(m => m.role === 'user').length;
+    const shouldForceAnalysis = userPromptCount >= 3;
+
+    // --- ANALYSIS MODE ---
+    if (analysisMode || shouldForceAnalysis) {
       const conversationHistory = (history || [])
         .filter(m => m.role === 'user' || m.role === 'assistant')
         .map(m => `${m.role.toUpperCase()}: ${m.content}`)
         .join('\n\n');
 
+      // Extract original idea from the first user message
+      const firstUserMsg = (history || []).find(m => m.role === 'user')?.content || message || 'My startup idea';
+
       // Run the 4-phase pipeline
       const phaseResults = await runAnalysisPipeline({
-        ideaSummary: message || 'My startup idea',
+        ideaSummary: firstUserMsg,
         conversationHistory,
         conversationId: convoId,
         userId,
@@ -107,7 +113,7 @@ router.post('/', requireAuth, rateLimiter, async (req: AuthenticatedRequest, res
 
       // Generate the final investment memo report
       const fullReport = await generateFinalReport(
-        message || 'My startup idea',
+        firstUserMsg,
         phaseResults,
         sendEvent
       );
@@ -150,8 +156,13 @@ router.post('/', requireAuth, rateLimiter, async (req: AuthenticatedRequest, res
       }
     }
 
+    const isIndonesianConvo = (history || []).some(m => m.role === 'user' && detectIndonesian(m.content)) || detectIndonesian(message || '');
+    const systemPromptLanguage = isIndonesianConvo
+      ? BRAINSTORM_PROMPT + "\n\nCRITICAL: You MUST speak, reply, and converse exclusively in INDONESIAN language. Never reply in English."
+      : BRAINSTORM_PROMPT + "\n\nCRITICAL: You MUST speak, reply, and converse exclusively in ENGLISH language.";
+
     const contextMessages = buildContextMessages({
-      systemPrompt: BRAINSTORM_PROMPT,
+      systemPrompt: systemPromptLanguage,
       conversationHistory: (historyMessages || []).filter(m => m.role === 'user' || m.role === 'assistant'),
       fileContexts,
     });

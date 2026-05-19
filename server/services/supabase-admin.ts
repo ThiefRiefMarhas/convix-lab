@@ -3,43 +3,53 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Initialize keys
-const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || '';
+// Initialize keys on demand
+let activeAdminClient: SupabaseClient | null = null;
 
-console.log('[Supabase Startup] process.env.SUPABASE_URL:', supabaseUrl || 'MISSING');
-console.log('[Supabase Startup] process.env.SUPABASE_SERVICE_ROLE_KEY length:', supabaseServiceKey ? supabaseServiceKey.length : 0);
-console.log('[Supabase Startup] process.env.VITE_SUPABASE_ANON_KEY length:', supabaseAnonKey ? supabaseAnonKey.length : 0);
+export function getSupabaseAdmin(): SupabaseClient {
+  if (activeAdminClient) return activeAdminClient;
 
-const finalKey = supabaseServiceKey || supabaseAnonKey;
+  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+  const anonKey = process.env.VITE_SUPABASE_ANON_KEY || '';
+  const finalKey = serviceKey || anonKey;
 
-// Admin client — bypasses RLS, used for server-side writes
-// Use const with immediate IIFE initialization to avoid ESBuild CommonJS live-binding export bugs
-export const supabaseAdmin: SupabaseClient = (() => {
-  try {
-    if (!supabaseUrl) {
-      console.error('[Supabase Startup] ERROR: supabaseUrl is empty!');
-      return null as any;
-    }
-    if (!finalKey) {
-      console.error('[Supabase Startup] ERROR: Both service role key and anon key are empty!');
-      return null as any;
-    }
+  console.log('[Auth Debug] Lazily initializing Supabase Admin Client...');
+  console.log('[Auth Debug] Lazy URL:', url || 'MISSING');
+  console.log('[Auth Debug] Lazy Key length:', finalKey ? finalKey.length : 0);
 
-    const client = createClient(
-      supabaseUrl,
-      finalKey,
-      { auth: { autoRefreshToken: false, persistSession: false } }
-    );
-    
-    console.log('[Supabase Startup] supabaseAdmin successfully created.');
-    return client;
-  } catch (err: any) {
-    console.error('[Supabase Init Error]: Missing or invalid keys. DB operations will fail.', err.message || err);
-    return null as any;
+  if (!url) {
+    console.error('[Supabase Startup] ERROR: supabaseUrl is empty!');
+    throw new Error('SUPABASE_URL is missing.');
   }
-})();
+  if (!finalKey) {
+    console.error('[Supabase Startup] ERROR: Both service role key and anon key are empty!');
+    throw new Error('Supabase key is missing.');
+  }
+
+  try {
+    activeAdminClient = createClient(url, finalKey, {
+      auth: { autoRefreshToken: false, persistSession: false }
+    });
+    console.log('[Supabase Startup] supabaseAdmin successfully created dynamically.');
+    return activeAdminClient;
+  } catch (err: any) {
+    console.error('[Supabase Init Error]: Failed to create client dynamically.', err.message || err);
+    throw err;
+  }
+}
+
+// Export a dynamic Proxy to make lazy initialization transparent to all importing modules
+export const supabaseAdmin: SupabaseClient = new Proxy({} as SupabaseClient, {
+  get(target, prop, receiver) {
+    const client = getSupabaseAdmin();
+    const value = Reflect.get(client, prop);
+    if (typeof value === 'function') {
+      return value.bind(client);
+    }
+    return value;
+  }
+});
 
 // Verify user JWT from Authorization header
 export async function verifyUserToken(authHeader: string | undefined): Promise<{ userId: string; email: string } | null> {
@@ -48,15 +58,10 @@ export async function verifyUserToken(authHeader: string | undefined): Promise<{
   console.log('[Auth Debug] Current process.env.VITE_SUPABASE_URL:', process.env.VITE_SUPABASE_URL || 'UNDEFINED');
   console.log('[Auth Debug] Current process.env.SUPABASE_SERVICE_ROLE_KEY length:', process.env.SUPABASE_SERVICE_ROLE_KEY ? process.env.SUPABASE_SERVICE_ROLE_KEY.length : 0);
   console.log('[Auth Debug] Current process.env.VITE_SUPABASE_ANON_KEY length:', process.env.VITE_SUPABASE_ANON_KEY ? process.env.VITE_SUPABASE_ANON_KEY.length : 0);
-  console.log('[Auth Debug] Is supabaseAdmin initialized?', !!supabaseAdmin);
+  console.log('[Auth Debug] Is activeAdminClient initialized?', !!activeAdminClient);
   
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     console.warn('[Auth Debug] Missing or invalid Bearer header structure.');
-    return null;
-  }
-  
-  if (!supabaseAdmin) {
-    console.error('[Auth Debug] supabaseAdmin client is not initialized!');
     return null;
   }
 

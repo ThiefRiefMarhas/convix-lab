@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+// Initialize keys
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || '';
@@ -11,32 +12,34 @@ console.log('[Supabase Startup] process.env.SUPABASE_URL:', supabaseUrl || 'MISS
 console.log('[Supabase Startup] process.env.SUPABASE_SERVICE_ROLE_KEY length:', supabaseServiceKey ? supabaseServiceKey.length : 0);
 console.log('[Supabase Startup] process.env.VITE_SUPABASE_ANON_KEY length:', supabaseAnonKey ? supabaseAnonKey.length : 0);
 
-// Admin client — bypasses RLS, used for server-side writes
-export let supabaseAdmin: SupabaseClient;
-try {
-  const finalKey = supabaseServiceKey || supabaseAnonKey;
-  if (!supabaseUrl) {
-    console.error('[Supabase Startup] ERROR: supabaseUrl is empty!');
-  }
-  if (!finalKey) {
-    console.error('[Supabase Startup] ERROR: Both service role key and anon key are empty!');
-  }
+const finalKey = supabaseServiceKey || supabaseAnonKey;
 
-  supabaseAdmin = createClient(
-    supabaseUrl || 'https://placeholder-dont-crash.supabase.co',
-    finalKey || 'placeholder-anon-key',
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
-  
-  if (supabaseAdmin) {
+// Admin client — bypasses RLS, used for server-side writes
+// Use const with immediate IIFE initialization to avoid ESBuild CommonJS live-binding export bugs
+export const supabaseAdmin: SupabaseClient = (() => {
+  try {
+    if (!supabaseUrl) {
+      console.error('[Supabase Startup] ERROR: supabaseUrl is empty!');
+      return null as any;
+    }
+    if (!finalKey) {
+      console.error('[Supabase Startup] ERROR: Both service role key and anon key are empty!');
+      return null as any;
+    }
+
+    const client = createClient(
+      supabaseUrl,
+      finalKey,
+      { auth: { autoRefreshToken: false, persistSession: false } }
+    );
+    
     console.log('[Supabase Startup] supabaseAdmin successfully created.');
-  } else {
-    console.error('[Supabase Startup] supabaseAdmin is NULL after createClient!');
+    return client;
+  } catch (err: any) {
+    console.error('[Supabase Init Error]: Missing or invalid keys. DB operations will fail.', err.message || err);
+    return null as any;
   }
-} catch (err: any) {
-  console.error('[Supabase Init Error]: Missing or invalid keys. Server will boot but DB operations will fail.', err.message || err);
-  supabaseAdmin = null as any;
-}
+})();
 
 // Verify user JWT from Authorization header
 export async function verifyUserToken(authHeader: string | undefined): Promise<{ userId: string; email: string } | null> {

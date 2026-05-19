@@ -35,9 +35,17 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    if (isOpen) document.body.classList.add('scroll-locked');
-    else document.body.classList.remove('scroll-locked');
-    return () => document.body.classList.remove('scroll-locked');
+    if (isOpen) {
+      document.body.classList.add('scroll-locked');
+      (window as any).lenis?.stop();
+    } else {
+      document.body.classList.remove('scroll-locked');
+      (window as any).lenis?.start();
+    }
+    return () => {
+      document.body.classList.remove('scroll-locked');
+      (window as any).lenis?.start();
+    };
   }, [isOpen]);
 
   useEffect(() => { setIsOpen(false); }, [location.pathname]);
@@ -144,7 +152,8 @@ export default function Navbar() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
               transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute top-full left-0 right-0 mt-3 rounded-2xl p-5 flex flex-col gap-3 z-50 md:hidden"
+              className="absolute top-full left-0 right-0 mt-3 rounded-2xl p-5 flex flex-col gap-3 z-50 md:hidden max-h-[calc(100vh-120px)] overflow-y-auto custom-scrollbar"
+              data-lenis-prevent
               style={{
                 background: theme === 'dark' ? 'rgba(24,26,37,0.96)' : 'rgba(255,255,255,0.96)',
                 backdropFilter: 'blur(24px)',

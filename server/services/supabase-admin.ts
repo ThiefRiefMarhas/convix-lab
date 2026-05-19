@@ -9,9 +9,9 @@ let activeAdminClient: SupabaseClient | null = null;
 export function getSupabaseAdmin(): SupabaseClient {
   if (activeAdminClient) return activeAdminClient;
 
-  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-  const anonKey = process.env.VITE_SUPABASE_ANON_KEY || '';
+  const url = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '').trim();
+  const serviceKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
+  const anonKey = (process.env.VITE_SUPABASE_ANON_KEY || '').trim();
   const finalKey = serviceKey || anonKey;
 
   console.log('[Auth Debug] Lazily initializing Supabase Admin Client...');

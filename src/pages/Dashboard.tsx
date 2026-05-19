@@ -31,10 +31,34 @@ const MODELS = [
 ];
 
 const templates = [
-  { title: "B2B Marketplace", desc: "A platform for renting out heavy construction equipment between local contractors.", img: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&q=80&w=400&h=300", icon: <Sparkles size={16} className="text-white" /> },
-  { title: "AI Consumer App", desc: "An AI-powered mobile app that translates baby cries to determine what they need.", img: "https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&q=80&w=400&h=300", icon: <Lightbulb size={16} className="text-white" /> },
-  { title: "Hyper-Local Social", desc: "A location-based social network exclusively for dog owners to organize playdates.", img: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=400&h=300", icon: <MessageSquare size={16} className="text-white" /> },
-  { title: "Niche E-Commerce", desc: "A premium subscription box that delivers rare, exotic indoor plants every month.", img: "https://images.unsplash.com/photo-1459156212016-c812468e2115?auto=format&fit=crop&q=80&w=400&h=300", icon: <Wand2 size={16} className="text-white" /> },
+  { 
+    title: "B2B Marketplace", 
+    desc: "Sewa alat berat konstruksi (excavator, crane) antar kontraktor lokal di Indonesia.", 
+    prompt: "Saya ingin membangun B2B Marketplace penyewaan alat berat konstruksi (seperti excavator, crane, forklift) antar kontraktor lokal di Indonesia. Pengguna utama adalah kontraktor kecil yang butuh alat murah dan cepat, serta pemilik alat berat yang ingin memonetisasi mesin nganggur mereka.",
+    img: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&q=80&w=400&h=300", 
+    icon: <Sparkles size={16} className="text-white" /> 
+  },
+  { 
+    title: "AI Consumer App", 
+    desc: "Aplikasi mobile AI penerjemah tangisan bayi real-time & panduan tindakan orang tua baru.", 
+    prompt: "Saya ingin mengembangkan aplikasi mobile berbasis AI consumer yang bisa menerjemahkan tangisan bayi secara real-time. Aplikasi mendeteksi apakah bayi menangis karena lapar, mengantuk, popok basah, atau kolik, serta memberikan rekomendasi tindakan medis terpercaya bagi orang tua baru.",
+    img: "https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&q=80&w=400&h=300", 
+    icon: <Lightbulb size={16} className="text-white" /> 
+  },
+  { 
+    title: "Hyper-Local Social", 
+    desc: "Jaringan sosial lokal khusus pemilik anjing untuk playdate, rekomendasi vet & park.", 
+    prompt: "Saya ingin membuat jaringan sosial hyper-local khusus pemilik anjing untuk mengatur jadwal bermain (playdate) bersama anjing sekitar, berbagi informasi dokter hewan (vet) terdekat, serta merekomendasikan dog park. Target pasar awal adalah pemilik hewan peliharaan di kota-kota besar Indonesia.",
+    img: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=400&h=300", 
+    icon: <MessageSquare size={16} className="text-white" /> 
+  },
+  { 
+    title: "Niche E-Commerce", 
+    desc: "Layanan berlangganan bulanan (subscription box) tanaman hias indoor langka & eksotis.", 
+    prompt: "Saya ingin meluncurkan bisnis e-commerce berlangganan bulanan (niche subscription box) tanaman hias indoor langka dan eksotis. Setiap bulan pelanggan menerima paket berisi satu tanaman langka impor, pot keramik estetis, media tanam premium, dan panduan perawatan cerdas berbasis sensor AI.",
+    img: "https://images.unsplash.com/photo-1459156212016-c812468e2115?auto=format&fit=crop&q=80&w=400&h=300", 
+    icon: <Wand2 size={16} className="text-white" /> 
+  },
 ];
 
 export default function Dashboard() {
@@ -411,7 +435,11 @@ export default function Dashboard() {
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
                       {templates.map((tmpl, i) => (
-                        <button key={i} onClick={() => setPrompt(tmpl.desc)}
+                        <button key={i} onClick={() => {
+                          setIsSidebarOpen(false);
+                          setViewState('chat');
+                          chat.sendMessage(tmpl.prompt, { webSearchEnabled: true, analysisMode: true });
+                        }}
                           className="relative text-left border border-neutral-200/50 hover:border-[#ef4d23]/50 hover:shadow-lg transition-all duration-300 rounded-2xl group flex flex-col overflow-hidden aspect-[4/3]">
                           <img src={tmpl.img} alt={tmpl.title} className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700" />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />

@@ -82,6 +82,29 @@ export async function runAnalysisPipeline(params: {
   const { ideaSummary, conversationHistory, conversationId, userId, sendEvent } = params;
   const allResults: PhaseResult[] = [];
 
+  // Dynamically extract a clean 3-5 word search concept from the long detailed prompt
+  let searchConcept = ideaSummary;
+  if (ideaSummary.length > 50 || ideaSummary.split(/\s+/).length > 8) {
+    try {
+      const extractPrompt = `You are a Senior Strategic Analyst. Your task is to extract a highly effective 3 to 6 word English search term representing the core business concept from the user's startup idea description.
+Idea Description: "${ideaSummary}"
+Return ONLY the English concept term, nothing else. No punctuation, no explanation, no quotes.
+Example Input: "Saya ingin membuat marketplace penyewaan alat berat konstruksi seperti excavator"
+Example Output: "B2B construction equipment rental marketplace"`;
+
+      const extracted = await createCompletion(
+        [{ role: 'user', content: extractPrompt }],
+        'Convix Fast',
+        100
+      );
+      if (extracted && extracted.trim()) {
+        searchConcept = extracted.replace(/['"]+/g, '').trim();
+      }
+    } catch {
+      searchConcept = ideaSummary.split(/\s+/).slice(0, 6).join(' ');
+    }
+  }
+
   // ─── THINKING PHASE ───
   // AI asks itself strategic questions before diving into research
   const isIndonesian = detectIndonesian(ideaSummary);
@@ -141,7 +164,7 @@ export async function runAnalysisPipeline(params: {
     const phaseName = PHASE_NAMES[phase];
     sendEvent('phase_start', { phase, phaseName, totalPhases: 4 });
 
-    const queries = getPhaseSearchQueries(ideaSummary, phase);
+    const queries = getPhaseSearchQueries(searchConcept, phase);
     const allSources: PhaseResult['sources'] = [];
     const batchSize = 3;
 

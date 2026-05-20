@@ -56,7 +56,13 @@ function isNetworkError(err: unknown): boolean {
     msg.includes('network error') ||
     msg.includes('load failed') ||
     msg.includes('the internet connection appears to be offline') ||
-    msg.includes('aborted')
+    msg.includes('aborted') ||
+    msg.includes('timed out') ||
+    msg.includes('timeout') ||
+    msg.includes('connection lost') ||
+    msg.includes('connection refused') ||
+    msg.includes('network') ||
+    msg.includes('offline')
   );
 }
 

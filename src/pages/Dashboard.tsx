@@ -83,6 +83,25 @@ export default function Dashboard() {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isCanvasOpen, setIsCanvasOpen] = useState(true);
   const [mobileTab, setMobileTab] = useState<'chat' | 'canvas'>('chat');
+
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Monitor mobile screen size dynamically
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Auto-close sidebar on mobile/tablet screen sizes on mount
+  useEffect(() => {
+    if (window.innerWidth < 1024) {
+      setIsSidebarOpen(false);
+    }
+  }, []);
+
+  const showFullBleed = viewState === 'chat' && (!isCanvasOpen || !isChatOpen || isMobile);
   const [isModelOpen, setIsModelOpen] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<{ id: string; name: string }[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -350,11 +369,12 @@ export default function Dashboard() {
     setIsCanvasOpen(true);
     setChatWidth(55);
     setActiveView('chat');
+    if (window.innerWidth < 1024) setIsSidebarOpen(false);
   };
 
   const handleSelectConvo = (id: string) => {
     setSearchParams({ c: id }, { replace: true });
-    if (window.innerWidth < 768) setIsSidebarOpen(false);
+    if (window.innerWidth < 1024) setIsSidebarOpen(false);
   };
 
   const handleDeleteConvo = async (id: string) => {
@@ -368,7 +388,9 @@ export default function Dashboard() {
   }, [chat.conversationTitle]);
 
   return (
-    <div className="flex h-screen bg-[var(--dash-bg)] font-sans overflow-hidden selection:bg-[#ef4d23]/20 selection:text-[#ef4d23] p-3 gap-3 transition-colors duration-500 min-h-0">
+    <div className={`flex h-screen md:h-screen h-[100dvh] bg-[var(--dash-bg)] font-sans overflow-hidden selection:bg-[#ef4d23]/20 selection:text-[#ef4d23] gap-1.5 md:gap-3 transition-colors duration-500 min-h-0 ${
+      showFullBleed ? 'p-0' : 'p-1.5 md:p-3'
+    }`}>
 
       {/* Mobile Overlay */}
       <AnimatePresence>
@@ -383,9 +405,13 @@ export default function Dashboard() {
         initial={{ width: isSidebarOpen ? 280 : 0 }}
         animate={{ width: isSidebarOpen ? 280 : 0 }}
         transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
-        className="h-full overflow-hidden shrink-0 z-50 absolute md:relative rounded-3xl"
+        className={`h-full overflow-hidden shrink-0 z-50 absolute md:relative transition-all ${
+          showFullBleed ? 'rounded-none' : 'rounded-3xl'
+        }`}
       >
-        <div className="w-[280px] h-full bg-[var(--dash-sidebar)] flex flex-col text-neutral-800 dark:text-neutral-200 shadow-sm border border-neutral-200/50 dark:border-neutral-700/50 rounded-3xl">
+        <div className={`w-[280px] h-full bg-[var(--dash-sidebar)] flex flex-col text-neutral-800 dark:text-neutral-200 shadow-sm border border-neutral-200/50 dark:border-neutral-700/50 transition-all ${
+          showFullBleed ? 'rounded-none border-y-0 border-l-0' : 'rounded-3xl'
+        }`}>
           <div className="p-6 flex flex-col h-full relative min-h-0">
             <button onClick={() => setIsSidebarOpen(false)}
               className="absolute top-6 right-6 text-neutral-400 hover:text-neutral-800 transition-colors md:hidden">
@@ -736,7 +762,9 @@ export default function Dashboard() {
                 key="chat" 
                 initial={{ opacity: 0, scale: 0.98 }} 
                 animate={{ opacity: 1, scale: 1 }}
-                className="flex flex-col lg:flex-row h-full gap-3 overflow-hidden p-0 pb-2 min-h-0 min-w-0 relative"
+                className={`flex flex-col lg:flex-row h-full overflow-hidden min-h-0 min-w-0 relative ${
+                  showFullBleed ? 'gap-0 p-0 pb-0' : 'gap-3 p-0 pb-2'
+                }`}
               >
                 {/* Side tabs to slide back panels when hidden */}
                 {!isChatOpen && (
@@ -809,6 +837,7 @@ export default function Dashboard() {
                         conversationTitle={chat.conversationTitle}
                         onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
                         isSidebarOpen={isSidebarOpen}
+                        isMaximized={showFullBleed}
                       />
                     </motion.div>
                   )}
@@ -847,10 +876,14 @@ export default function Dashboard() {
                       className={`min-w-0 min-h-0 h-full ${mobileTab === 'canvas' ? 'flex' : 'hidden lg:flex'} flex-col overflow-hidden relative`}
                       data-lenis-prevent="true"
                     >
-                      <div className="flex-1 flex flex-col min-h-0 bg-[var(--dash-canvas-bg)] rounded-2xl border border-neutral-200/60 dark:border-neutral-700/40 shadow-sm overflow-hidden relative" data-lenis-prevent="true">
+                      <div className={`flex-1 flex flex-col min-h-0 bg-[var(--dash-canvas-bg)] overflow-hidden relative transition-all ${
+                        showFullBleed 
+                          ? 'rounded-none border-0' 
+                          : 'rounded-2xl border border-neutral-200/60 dark:border-neutral-700/40 shadow-sm'
+                      }`} data-lenis-prevent="true">
                         {/* Right Panel Tabs */}
                         <div className="flex items-center gap-2 px-4 py-3 border-b border-neutral-100 dark:border-neutral-700/50 bg-[var(--dash-chat-bg)]">
-                          {!isChatOpen && (
+                          {(!isChatOpen || mobileTab === 'canvas') && (
                             <button 
                               onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
                               className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors mr-1 shrink-0"
@@ -859,7 +892,7 @@ export default function Dashboard() {
                               {isSidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
                             </button>
                           )}
-                          {!isChatOpen && chat.conversationTitle && (
+                          {(!isChatOpen || mobileTab === 'canvas') && chat.conversationTitle && (
                             <span className="text-sm font-semibold text-neutral-600 dark:text-neutral-400 truncate ml-1 mr-3 max-w-[200px]" title={chat.conversationTitle}>
                               {chat.conversationTitle}
                             </span>

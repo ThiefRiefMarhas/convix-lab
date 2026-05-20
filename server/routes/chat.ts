@@ -34,6 +34,27 @@ router.post('/', requireAuth, rateLimiter, async (req: AuthenticatedRequest, res
     res.flushHeaders();
   }
 
+  // Prevent connection timeouts on mobile/LAN by disabling socket timeout and keeping it alive
+  req.socket.setTimeout(0);
+  req.socket.setKeepAlive(true, 1000);
+
+  // Send a heartbeat comment every 15 seconds to keep proxies & mobile carriers from dropping the connection
+  const heartbeatInterval = setInterval(() => {
+    if (!res.writableEnded) {
+      res.write(': keep-alive\n\n');
+      if (typeof (res as any).flush === 'function') {
+        (res as any).flush();
+      }
+    }
+  }, 15000);
+
+  const cleanUp = () => {
+    clearInterval(heartbeatInterval);
+  };
+  res.on('finish', cleanUp);
+  res.on('close', cleanUp);
+  res.on('error', cleanUp);
+
   const sendEvent = (event: string, data: any) => {
     res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
     if (typeof (res as any).flush === 'function') {

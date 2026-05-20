@@ -70,6 +70,7 @@ interface ChatPanelProps {
   conversationTitle?: string | null;
   onToggleSidebar?: () => void;
   isSidebarOpen?: boolean;
+  isMaximized?: boolean;
 }
 
 const RESEARCH_MESSAGES = [
@@ -90,6 +91,7 @@ export default function ChatPanel({
   analysisPhase, phaseProgress, thinkingSteps,
   onSendMessage, onStartAnalysis, onStopStreaming, onSetModel, onClose, onUploadFile,
   conversationTitle = null, onToggleSidebar, isSidebarOpen = false,
+  isMaximized = false,
 }: ChatPanelProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [researchMsgIdx, setResearchMsgIdx] = useState(0);
@@ -117,7 +119,11 @@ export default function ChatPanel({
   }, [messages, streamingContent, activeTools, thinkingSteps]);
 
   return (
-    <div className="flex flex-col h-full min-h-0 bg-[var(--dash-chat-bg)] rounded-2xl border border-neutral-200/60 dark:border-neutral-700/40 overflow-hidden shadow-sm">
+    <div className={`flex flex-col h-full min-h-0 bg-[var(--dash-chat-bg)] overflow-hidden transition-all ${
+      isMaximized 
+        ? 'rounded-none border-0' 
+        : 'rounded-2xl border border-neutral-200/60 dark:border-neutral-700/40 shadow-sm'
+    }`}>
       {/* Header */}
       <div className="px-4 sm:px-5 py-3 border-b border-neutral-100 dark:border-neutral-700/50 bg-[var(--dash-chat-bg)] flex justify-between items-center shrink-0">
         <div className="flex items-center gap-2.5 min-w-0">

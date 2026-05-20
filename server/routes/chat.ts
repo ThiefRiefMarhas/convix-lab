@@ -47,7 +47,7 @@ router.post('/', requireAuth, rateLimiter, async (req: AuthenticatedRequest, res
     const usage = await getUserUsage(userId);
 
     if (usage && profile && usage.conversations_total >= profile.max_conversations && !conversationId) {
-      sendEvent('error', { message: `Max ${profile.max_conversations} conversations reached. Delete old ones.` });
+      sendEvent('error', { message: `Batas maksimum ${profile.max_conversations} percakapan aktif tercapai. Silakan hapus beberapa percakapan lama Anda di sidebar sebelah kiri untuk membuat percakapan baru sekarang.` });
       res.end();
       return;
     }

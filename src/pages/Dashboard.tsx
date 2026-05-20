@@ -4,7 +4,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useLocale } from '../context/LocaleContext';
 import type { Locale } from '../i18n/ui';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { LogOut, Plus, Menu, X, Wand2, Lightbulb, ArrowRight, Settings, Sparkles, MessageSquare, Trash2, PanelRightClose, PanelRightOpen, PanelLeftClose, PanelLeftOpen, Layers, Sun, Moon, Paperclip, Mic, MicOff, ChevronDown, FileText, BarChart3, Download } from 'lucide-react';
+import { LogOut, Plus, Menu, X, Wand2, Lightbulb, ArrowRight, Settings, Sparkles, MessageSquare, Trash2, PanelRightClose, PanelRightOpen, PanelLeftClose, PanelLeftOpen, Layers, Sun, Moon, Paperclip, Mic, MicOff, ChevronDown, FileText, BarChart3, Download, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 import ChatPanel from '../components/chat/ChatPanel';
@@ -513,6 +513,23 @@ export default function Dashboard() {
 
                 <div className="w-full relative">
                   <div className={`relative bg-[var(--dash-sidebar)] border rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] focus-within:shadow-[0_8px_40px_rgb(0,0,0,0.08)] transition-all duration-300 group ${isAgentMode ? 'border-[#ef4d23]/40 focus-within:border-[#ef4d23]' : 'border-neutral-200 dark:border-neutral-700 focus-within:border-neutral-300 dark:focus-within:border-neutral-600'}`}>
+                    {/* Absolutely blocked state for conversation limit */}
+                    {convos.conversations.length >= 20 && !chat.conversationId && (
+                      <div className="absolute inset-0 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md rounded-3xl flex flex-col items-center justify-center p-8 text-center z-50 border-2 border-red-500/30 dark:border-red-900/40 shadow-xl">
+                        <div className="w-14 h-14 rounded-2xl bg-red-500/10 dark:bg-red-950/30 flex items-center justify-center text-red-500 dark:text-red-400 mb-4 border border-red-200/20 dark:border-red-800/30 animate-bounce">
+                          <AlertTriangle size={28} />
+                        </div>
+                        <h3 className="text-lg font-black text-neutral-900 dark:text-neutral-100 tracking-tight mb-2">
+                          Batas Kapasitas Percakapan Tercapai
+                        </h3>
+                        <p className="text-sm text-neutral-600 dark:text-neutral-400 max-w-md leading-relaxed font-medium mb-5">
+                          Anda telah mencapai batas maksimum 20 percakapan aktif. Untuk membuat kecerdasan baru, silakan hapus beberapa percakapan lama Anda.
+                        </p>
+                        <div className="bg-red-50/50 dark:bg-red-950/10 border border-red-100/50 dark:border-red-900/20 rounded-2xl p-3.5 max-w-sm text-xs font-semibold text-neutral-500 dark:text-neutral-400 leading-relaxed shadow-sm">
+                          💡 <span className="text-neutral-700 dark:text-neutral-300">Solusi Instan:</span> Hapus beberapa percakapan lama Anda di sidebar sebelah kiri untuk membuat percakapan baru sekarang.
+                        </div>
+                      </div>
+                    )}
                     {/* Attached files */}
                     {(attachedFiles.length > 0 || isUploading) && (
                       <div className="absolute top-4 left-6 right-6 flex flex-wrap gap-2 z-10">

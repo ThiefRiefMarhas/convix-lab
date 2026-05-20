@@ -37,37 +37,121 @@ export function ExportModal({ conversationId, onClose }: ExportModalProps) {
     // Links
     html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" style="color: #ef4d23; text-decoration: none; font-weight: 500;">$1</a>');
 
-    // Process lists and paragraphs line by line
+    // Process lists, tables, and paragraphs line by line
     const lines = html.split('\n');
     const processedLines: string[] = [];
     let inList = false;
+    let inTable = false;
+    let tableRows: string[][] = [];
 
     for (let line of lines) {
       const trimmed = line.trim();
-      if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
-        if (!inList) {
-          processedLines.push('<ul style="margin-top: 4px; margin-bottom: 12px; padding-left: 20px; list-style-type: disc;">');
-          inList = true;
-        }
-        const itemContent = trimmed.substring(2);
-        processedLines.push(`<li style="margin-bottom: 6px; font-size: 13.5px; color: #374151; line-height: 1.5;">${itemContent}</li>`);
-      } else {
+      const isTableRow = trimmed.startsWith('|') && trimmed.endsWith('|');
+
+      if (isTableRow) {
+        // If we were in a list, close it
         if (inList) {
           processedLines.push('</ul>');
           inList = false;
         }
-        if (trimmed === '') {
+
+        // Check if it is a separator row (e.g. |---|---|)
+        const isSeparator = /^[|:\-\s]+$/.test(trimmed);
+        if (isSeparator) {
           continue;
         }
-        if (trimmed.startsWith('<h') || trimmed.startsWith('<blockquote') || trimmed.startsWith('<hr')) {
-          processedLines.push(trimmed);
+
+        const cells = trimmed.split('|').map(c => c.trim()).slice(1, -1);
+        if (!inTable) {
+          inTable = true;
+          tableRows = [cells];
         } else {
-          processedLines.push(`<p style="margin-top: 0; margin-bottom: 12px; font-size: 13.5px; color: #374151; line-height: 1.6; text-align: justify;">${trimmed}</p>`);
+          tableRows.push(cells);
+        }
+      } else {
+        // If we were in a table, render it now and close it
+        if (inTable) {
+          const headerCells = tableRows[0];
+          const bodyRows = tableRows.slice(1);
+          
+          let tableHTML = '<table style="width: 100%; border-collapse: collapse; margin-top: 12px; margin-bottom: 20px; font-size: 11.5px; page-break-inside: avoid; border: 1px solid #e5e7eb;">';
+          
+          // Header
+          tableHTML += '<thead><tr style="background-color: #f9fafb; border-bottom: 1.5px solid #e5e7eb;">';
+          for (const cell of headerCells) {
+            tableHTML += `<th style="padding: 8px 10px; text-align: left; font-weight: 700; color: #374151; border: 1px solid #e5e7eb;">${cell}</th>`;
+          }
+          tableHTML += '</tr></thead>';
+          
+          // Body
+          tableHTML += '<tbody>';
+          for (const row of bodyRows) {
+            tableHTML += '<tr style="border-bottom: 1px solid #e5e7eb; page-break-inside: avoid;">';
+            for (const cell of row) {
+              tableHTML += `<td style="padding: 8px 10px; color: #4b5563; border: 1px solid #e5e7eb; line-height: 1.4;">${cell}</td>`;
+            }
+            tableHTML += '</tr>';
+          }
+          tableHTML += '</tbody></table>';
+          
+          processedLines.push(tableHTML);
+          inTable = false;
+          tableRows = [];
+        }
+
+        if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+          if (!inList) {
+            processedLines.push('<ul style="margin-top: 4px; margin-bottom: 12px; padding-left: 20px; list-style-type: disc;">');
+            inList = true;
+          }
+          const itemContent = trimmed.substring(2);
+          processedLines.push(`<li style="margin-bottom: 6px; font-size: 13.5px; color: #374151; line-height: 1.5;">${itemContent}</li>`);
+        } else {
+          if (inList) {
+            processedLines.push('</ul>');
+            inList = false;
+          }
+          if (trimmed === '') {
+            continue;
+          }
+          if (trimmed.startsWith('<h') || trimmed.startsWith('<blockquote') || trimmed.startsWith('<hr')) {
+            processedLines.push(trimmed);
+          } else {
+            processedLines.push(`<p style="margin-top: 0; margin-bottom: 12px; font-size: 13.5px; color: #374151; line-height: 1.6; text-align: justify;">${trimmed}</p>`);
+          }
         }
       }
     }
+
+    // Final checks if document ends while still in a list or table
     if (inList) {
       processedLines.push('</ul>');
+    }
+    if (inTable) {
+      const headerCells = tableRows[0];
+      const bodyRows = tableRows.slice(1);
+      
+      let tableHTML = '<table style="width: 100%; border-collapse: collapse; margin-top: 12px; margin-bottom: 20px; font-size: 11.5px; page-break-inside: avoid; border: 1px solid #e5e7eb;">';
+      
+      // Header
+      tableHTML += '<thead><tr style="background-color: #f9fafb; border-bottom: 1.5px solid #e5e7eb;">';
+      for (const cell of headerCells) {
+        tableHTML += `<th style="padding: 8px 10px; text-align: left; font-weight: 700; color: #374151; border: 1px solid #e5e7eb;">${cell}</th>`;
+      }
+      tableHTML += '</tr></thead>';
+      
+      // Body
+      tableHTML += '<tbody>';
+      for (const row of bodyRows) {
+        tableHTML += '<tr style="border-bottom: 1px solid #e5e7eb; page-break-inside: avoid;">';
+        for (const cell of row) {
+          tableHTML += `<td style="padding: 8px 10px; color: #4b5563; border: 1px solid #e5e7eb; line-height: 1.4;">${cell}</td>`;
+        }
+        tableHTML += '</tr>';
+      }
+      tableHTML += '</tbody></table>';
+      
+      processedLines.push(tableHTML);
     }
 
     return processedLines.join('\n');

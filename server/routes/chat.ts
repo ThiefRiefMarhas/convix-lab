@@ -20,7 +20,7 @@ const router = Router();
  * 2. Analysis: Triggers the 4-phase research pipeline.
  */
 router.post('/', requireAuth, rateLimiter, async (req: AuthenticatedRequest, res: Response) => {
-  const { conversationId, message, model = 'Convix Fast', webSearchEnabled = false, attachmentIds = [], analysisMode = false } = req.body;
+  const { conversationId, message, model = 'Convix Fast', webSearchEnabled = false, attachmentIds = [], analysisMode = false, locale, indonesiaFocus } = req.body;
   const userId = req.user!.userId;
 
   // SSE headers
@@ -28,7 +28,11 @@ router.post('/', requireAuth, rateLimiter, async (req: AuthenticatedRequest, res
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
   res.setHeader('X-Accel-Buffering', 'no');
-  res.flushHeaders();
+  // Helps mobile proxies/browsers stream SSE without buffering
+  res.setHeader('Content-Encoding', 'identity');
+  if (typeof res.flushHeaders === 'function') {
+    res.flushHeaders();
+  }
 
   const sendEvent = (event: string, data: any) => {
     res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
@@ -132,7 +136,8 @@ router.post('/', requireAuth, rateLimiter, async (req: AuthenticatedRequest, res
       const fullReport = await generateFinalReport(
         firstUserMsg,
         phaseResults,
-        sendEvent
+        sendEvent,
+        { forceIndonesian: locale === 'id' || indonesiaFocus === true }
       );
 
       // Save assistant message
@@ -152,12 +157,7 @@ router.post('/', requireAuth, rateLimiter, async (req: AuthenticatedRequest, res
     // --- BRAINSTORM MODE (Default) ---
 
     // 4. Load conversation history
-    const { data: historyMessages } = await supabaseAdmin
-      .from('messages')
-      .select('role, content, metadata')
-      .eq('conversation_id', convoId)
-      .order('created_at', { ascending: true })
-      .limit(50);
+    const historyMessages = (history || []).slice(-50);
 
     // 5. Build context with token budget
     let fileContexts: string[] = [];
@@ -173,7 +173,8 @@ router.post('/', requireAuth, rateLimiter, async (req: AuthenticatedRequest, res
       }
     }
 
-    const isIndonesianConvo = (history || []).some(m => m.role === 'user' && detectIndonesian(m.content)) || detectIndonesian(message || '');
+    const forceIndonesian = locale === 'id' || indonesiaFocus === true;
+    const isIndonesianConvo = forceIndonesian || (history || []).some(m => m.role === 'user' && detectIndonesian(m.content)) || detectIndonesian(message || '');
     const systemPromptLanguage = isIndonesianConvo
       ? BRAINSTORM_PROMPT + "\n\nCRITICAL: You MUST speak, reply, and converse exclusively in INDONESIAN language. Never reply in English."
       : BRAINSTORM_PROMPT + "\n\nCRITICAL: You MUST speak, reply, and converse exclusively in ENGLISH language.";

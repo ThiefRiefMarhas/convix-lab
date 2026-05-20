@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useRef, useCallback, useEffect } from 'react';
-import { Search, Activity, ExternalLink, Globe, ZoomIn, ZoomOut, Maximize2, X, Users, Lightbulb, Target } from 'lucide-react';
+import { Search, Activity, ExternalLink, Globe, ZoomIn, ZoomOut, Maximize2, X, Users, Lightbulb, Target, Filter } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import type { ResearchSource } from '../../services/api';
 
@@ -54,10 +54,33 @@ export default function ResearchCanvas({ sources, isStreaming, ideaTitle }: Rese
   const [nodeOffsets, setNodeOffsets] = useState<Record<string, { x: number; y: number }>>({});
   const [dragNode, setDragNode] = useState<{ id: string; startX: number; startY: number } | null>(null);
 
+  // Filter state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterPhase, setFilterPhase] = useState<number | 'all'>('all');
+
+  // Filter sources
+  const filteredSources = useMemo(() => {
+    return sources.filter(s => {
+      const matchesSearch = !searchQuery || 
+        (s.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+         s.snippet?.toLowerCase().includes(searchQuery.toLowerCase()));
+      
+      let matchesPhase = true;
+      if (filterPhase !== 'all') {
+        const phaseStr = `Phase ${filterPhase}`;
+        matchesPhase = s.search_query?.includes(phaseStr) ?? false;
+        // Fallback for Phase 1 if no phase is specified
+        if (filterPhase === 1 && !s.search_query) matchesPhase = true;
+      }
+
+      return matchesSearch && matchesPhase;
+    });
+  }, [sources, searchQuery, filterPhase]);
+
   // Group sources by phase
   const groupedSources = useMemo(() => {
     const groups: Record<number, ResearchSource[]> = { 1: [], 2: [], 3: [], 4: [] };
-    for (const s of sources) {
+    for (const s of filteredSources) {
       if (s.search_query?.includes('Phase 1')) groups[1].push(s);
       else if (s.search_query?.includes('Phase 2')) groups[2].push(s);
       else if (s.search_query?.includes('Phase 3')) groups[3].push(s);
@@ -244,6 +267,39 @@ export default function ResearchCanvas({ sources, isStreaming, ideaTitle }: Rese
         onWheel={handleWheel}
         style={{ cursor: isPanning ? 'grabbing' : dragNode ? 'grabbing' : 'grab' }}
       >
+        {/* Top UI Panel (Search & Filters) */}
+        <div className="absolute top-4 left-4 z-20 flex gap-2 pointer-events-auto">
+          <div className="bg-white dark:bg-[#1c1c1c] border border-neutral-200 dark:border-[#333] rounded-lg shadow-lg flex items-center p-1 px-3">
+            <Search size={14} className="text-neutral-500 mr-2" />
+            <input 
+              type="text" 
+              placeholder="Search sources..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="bg-transparent border-none text-sm text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none w-48 py-1.5"
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery('')} className="text-neutral-500 hover:text-neutral-900 dark:hover:text-white ml-2">
+                <X size={14} />
+              </button>
+            )}
+          </div>
+          
+          <div className="bg-white dark:bg-[#1c1c1c] border border-neutral-200 dark:border-[#333] rounded-lg shadow-lg flex items-center p-1">
+            <Filter size={14} className="text-neutral-500 ml-2 mr-1" />
+            <select 
+              value={filterPhase}
+              onChange={(e) => setFilterPhase(e.target.value === 'all' ? 'all' : Number(e.target.value))}
+              className="bg-transparent border-none text-sm text-neutral-700 dark:text-neutral-300 focus:outline-none py-1.5 pl-1 pr-2 cursor-pointer"
+            >
+              <option value="all">All Phases</option>
+              {PHASE_CONFIG.map(p => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
         {/* Blueprint grid */}
         <div 
           className="absolute inset-0 pointer-events-none"

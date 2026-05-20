@@ -1,4 +1,6 @@
 import { supabase } from '../lib/supabase';
+import { getApiUrl } from '../lib/api-base';
+import { parseHttpErrorBody } from '../lib/user-errors';
 
 /**
  * Get the current user's Supabase access token for API calls.
@@ -27,8 +29,34 @@ export async function apiFetch(url: string, options: RequestInit = {}): Promise<
     headers['Content-Type'] = 'application/json';
   }
 
-  return fetch(url, { ...options, headers });
+  const fullUrl = url.startsWith('http') ? url : getApiUrl(url);
+
+  return fetch(fullUrl, {
+    ...options,
+    headers,
+    cache: 'no-store',
+  });
 }
+
+export const api = {
+  get: async (path: string) => {
+    const res = await apiFetch(`/api${path.startsWith('/') ? path : '/' + path}`);
+    if (!res.ok) throw { response: { status: res.status, data: await res.json().catch(() => ({})) } };
+    return { data: await res.json() };
+  },
+  post: async (path: string, body?: any) => {
+    const res = await apiFetch(`/api${path.startsWith('/') ? path : '/' + path}`, { method: 'POST', body: body ? JSON.stringify(body) : undefined });
+    if (!res.ok) throw { response: { status: res.status, data: await res.json().catch(() => ({})) } };
+    return { data: await res.json() };
+  },
+  patch: async (path: string, body?: any) => {
+    const res = await apiFetch(`/api${path.startsWith('/') ? path : '/' + path}`, { method: 'PATCH', body: body ? JSON.stringify(body) : undefined });
+    if (!res.ok) throw { response: { status: res.status, data: await res.json().catch(() => ({})) } };
+    return { data: await res.json() };
+  }
+};
+
+export default api;
 
 // ─── Conversations ──────────────────────────────────────────
 
@@ -113,21 +141,32 @@ export async function* streamChat(params: {
   webSearchEnabled?: boolean;
   attachmentIds?: string[];
   analysisMode?: boolean;
+  locale?: 'id' | 'en';
+  indonesiaFocus?: boolean;
 }): AsyncGenerator<ChatStreamEvent> {
   const token = await getAuthToken();
 
-  const response = await fetch('/api/chat', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify(params),
-  });
+  let response: Response;
+  try {
+    response = await fetch(getApiUrl('/api/chat'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'text/event-stream',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(params),
+      cache: 'no-store',
+    });
+  } catch (err) {
+    yield { type: 'error', data: { message: (err as Error).message, network: true } };
+    return;
+  }
 
   if (!response.ok) {
     const errText = await response.text();
-    yield { type: 'error', data: { message: `Request failed: ${errText}` } };
+    const message = parseHttpErrorBody(errText);
+    yield { type: 'error', data: { message, status: response.status } };
     return;
   }
 

@@ -46,7 +46,7 @@ interface CachedContent {
 export async function getCachedContent(cacheType: 'url' | 'search_query', cacheKey: string): Promise<CachedContent | null> {
   const { data, error } = await supabaseAdmin
     .from('content_cache')
-    .select('title, summary, summary_tokens, raw_content, domain')
+    .select('title, summary, summary_tokens, raw_content, domain, hit_count')
     .eq('cache_type', cacheType)
     .eq('cache_key', cacheKey)
     .gt('expires_at', new Date().toISOString())
@@ -57,7 +57,7 @@ export async function getCachedContent(cacheType: 'url' | 'search_query', cacheK
   // Increment hit count
   await supabaseAdmin
     .from('content_cache')
-    .update({ hit_count: (data as any).hit_count + 1 || 1 })
+    .update({ hit_count: (data.hit_count || 0) + 1 })
     .eq('cache_type', cacheType)
     .eq('cache_key', cacheKey);
 

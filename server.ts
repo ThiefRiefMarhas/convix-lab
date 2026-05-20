@@ -8,6 +8,11 @@ import chatRouter from "./server/routes/chat.js";
 import conversationsRouter from "./server/routes/conversations.js";
 import uploadRouter from "./server/routes/upload.js";
 import transcribeRouter from "./server/routes/transcribe.js";
+import exportRouter from "./server/routes/export.js";
+import swotRouter from "./server/routes/swot.js";
+import sourcesRouter from "./server/routes/sources.js";
+import analyticsRouter from "./server/routes/analytics.js";
+import insightsRouter from "./server/routes/insights.js";
 
 dotenv.config();
 
@@ -23,6 +28,11 @@ async function startServer() {
   app.use('/api/conversations', conversationsRouter);
   app.use('/api/upload', uploadRouter);
   app.use('/api/transcribe', transcribeRouter);
+  app.use('/api/export', exportRouter);
+  app.use('/api/swot', swotRouter);
+  app.use('/api/sources', sourcesRouter);
+  app.use('/api/analytics', analyticsRouter);
+  app.use('/api/insights', insightsRouter);
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {

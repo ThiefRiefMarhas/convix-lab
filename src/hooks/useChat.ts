@@ -4,10 +4,11 @@ import {
   getConversation,
   Message,
   ResearchSource,
-  ChatStreamEvent,
   UploadResult,
   uploadFile,
 } from '../services/api';
+import { useLocale } from '../context/LocaleContext';
+import { formatUserError, type UserFacingError } from '../lib/user-errors';
 
 interface ToolActivity {
   id: string;
@@ -34,6 +35,7 @@ export interface ThinkingStep {
 }
 
 export function useChat(initialConversationId?: string | null) {
+  const { locale, indonesiaFocus } = useLocale();
   const [conversationId, setConversationId] = useState<string | null>(initialConversationId || null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [sources, setSources] = useState<ResearchSource[]>([]);
@@ -41,7 +43,7 @@ export function useChat(initialConversationId?: string | null) {
   const [streamingContent, setStreamingContent] = useState('');
   const [activeTools, setActiveTools] = useState<ToolActivity[]>([]);
   const [currentModel, setCurrentModel] = useState('Convix Fast');
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<UserFacingError | null>(null);
   const [conversationTitle, setConversationTitle] = useState<string | null>(null);
 
   // Analysis State
@@ -72,6 +74,19 @@ export function useChat(initialConversationId?: string | null) {
       }
     }
   }, [sources.length]);
+
+  // Prevent page refresh/close while streaming or analyzing
+  useEffect(() => {
+    if (!isStreaming && analysisPhase !== 'analyzing') return;
+    
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isStreaming, analysisPhase]);
 
   // Load existing conversation
   useEffect(() => {
@@ -125,6 +140,8 @@ export function useChat(initialConversationId?: string | null) {
         webSearchEnabled: options?.webSearchEnabled,
         attachmentIds: options?.attachmentIds,
         analysisMode: options?.analysisMode,
+        locale,
+        indonesiaFocus,
       });
 
       let fullContent = '';
@@ -170,8 +187,9 @@ export function useChat(initialConversationId?: string | null) {
             
           case 'source_found':
             setSources(prev => {
-              if (prev.some(s => s.url === event.data.url)) {
-                return prev; // Deduplicate
+              // Deduplicate by URL within the SAME phase
+              if (prev.some(s => s.url === event.data.url && s.search_query === `Phase ${event.data.phase}`)) {
+                return prev; 
               }
               return [...prev, {
                 id: `src-${Date.now()}-${Math.random()}`,
@@ -257,7 +275,11 @@ export function useChat(initialConversationId?: string | null) {
             break;
 
           case 'error':
-            setError(event.data.message);
+            setError(formatUserError(
+              event.data.network ? new TypeError('Failed to fetch') : null,
+              locale,
+              { rawMessage: event.data.message, status: event.data.status }
+            ));
             break;
         }
       }
@@ -273,8 +295,8 @@ export function useChat(initialConversationId?: string | null) {
         };
         setMessages(prev => [...prev, assistantMsg]);
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to send message');
+    } catch (err: unknown) {
+      setError(formatUserError(err, locale));
       setAnalysisPhase('idle');
     } finally {
       setIsStreaming(false);
@@ -282,7 +304,7 @@ export function useChat(initialConversationId?: string | null) {
       setActiveTools([]);
       streamingRef.current = false;
     }
-  }, [conversationId, currentModel]);
+  }, [conversationId, currentModel, locale]);
 
   const startAnalysis = useCallback((ideaSummary?: string) => {
     // If we have an idea summary, pass it. Otherwise, pass the last user message or empty.
@@ -310,6 +332,15 @@ export function useChat(initialConversationId?: string | null) {
     setError(null);
     setConversationTitle(null);
   }, []);
+
+  // Sync initialConversationId parameter to internal conversationId state
+  useEffect(() => {
+    if (initialConversationId) {
+      setConversationId(initialConversationId);
+    } else {
+      resetChat();
+    }
+  }, [initialConversationId, resetChat]);
 
   const handleFileUpload = useCallback(async (file: File): Promise<UploadResult | null> => {
     return uploadFile(file, conversationId || undefined);

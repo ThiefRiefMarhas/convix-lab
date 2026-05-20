@@ -23,13 +23,18 @@ export async function rateLimiter(req: AuthenticatedRequest, res: Response, next
     const LIMIT_ANALYSES_PER_DAY = 5;
 
     // Check message limits for chat endpoint
-    if (req.path === '/chat') {
+    if (req.path === '/' || req.path === '') {
       // If it's a new analysis trigger (we'll look for phase trigger in body later)
       const isAnalysisTrigger = req.body.analysisMode === true;
       
       if (isAnalysisTrigger) {
-        // We don't have analysis count tracked natively yet, but we can reuse searches_today
-        // For now, if messages_today > limit, we block
+        if (usage.searches_today >= LIMIT_ANALYSES_PER_DAY) {
+          res.status(429).json({ 
+            error: 'Daily analysis limit reached',
+            message: `You have reached your daily limit of ${LIMIT_ANALYSES_PER_DAY} deep analyses. Try again tomorrow.` 
+          });
+          return;
+        }
       }
 
       if (usage.messages_today >= LIMIT_MESSAGES_PER_DAY) {

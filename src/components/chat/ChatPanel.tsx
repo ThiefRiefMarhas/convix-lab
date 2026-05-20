@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Wand2, X, AlertTriangle, Activity, Hexagon, Square } from 'lucide-react';
+import { Wand2, X, AlertTriangle, Activity, Square } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import MessageBubble from './MessageBubble';
 import ToolCallCard from './ToolCallCard';
@@ -8,6 +8,37 @@ import PhaseIndicator from './PhaseIndicator';
 import ThinkingPhase from './ThinkingPhase';
 import type { Message } from '../../services/api';
 import type { PhaseProgress, ThinkingStep } from '../../hooks/useChat';
+import type { UserFacingError } from '../../lib/user-errors';
+
+export const IntelligenceLogo = ({ className = "w-full h-full" }: { className?: string }) => (
+  <svg viewBox="0 0 32 32" className={className} fill="none">
+    {/* Connecting glowing network lines */}
+    <line x1="16" y1="16" x2="26" y2="16" stroke="currentColor" strokeWidth="1.2" strokeOpacity="0.4" />
+    <line x1="16" y1="16" x2="23.07" y2="23.07" stroke="currentColor" strokeWidth="1.2" strokeOpacity="0.4" />
+    <line x1="16" y1="16" x2="16" y2="26" stroke="currentColor" strokeWidth="1.2" strokeOpacity="0.4" />
+    <line x1="16" y1="16" x2="8.93" y2="23.07" stroke="currentColor" strokeWidth="1.2" strokeOpacity="0.4" />
+    <line x1="16" y1="16" x2="6" y2="16" stroke="currentColor" strokeWidth="1.2" strokeOpacity="0.4" />
+    <line x1="16" y1="16" x2="8.93" y2="8.93" stroke="currentColor" strokeWidth="1.2" strokeOpacity="0.4" />
+    <line x1="16" y1="16" x2="16" y2="6" stroke="currentColor" strokeWidth="1.2" strokeOpacity="0.4" />
+    <line x1="16" y1="16" x2="23.07" y2="8.93" stroke="currentColor" strokeWidth="1.2" strokeOpacity="0.4" />
+    
+    {/* outer circle outline */}
+    <circle cx="16" cy="16" r="10" stroke="currentColor" strokeWidth="1" strokeOpacity="0.25" strokeDasharray="3 3" />
+    
+    {/* Central Intelligence Core */}
+    <circle cx="16" cy="16" r="4.5" fill="currentColor" />
+    
+    {/* Neural nodes matching the 8 outer positions of the main logo */}
+    <circle cx="26" cy="16" r="2.2" fill="currentColor" />
+    <circle cx="23.071" cy="23.071" r="2.2" fill="currentColor" />
+    <circle cx="16" cy="26" r="2.2" fill="currentColor" />
+    <circle cx="8.929" cy="23.071" r="2.2" fill="currentColor" />
+    <circle cx="6" cy="16" r="2.2" fill="currentColor" />
+    <circle cx="8.929" cy="8.929" r="2.2" fill="currentColor" />
+    <circle cx="16" cy="6" r="2.2" fill="currentColor" />
+    <circle cx="23.071" cy="8.929" r="2.2" fill="currentColor" />
+  </svg>
+);
 
 interface ToolActivity {
   id: string;
@@ -26,7 +57,7 @@ interface ChatPanelProps {
   streamingContent: string;
   activeTools: ToolActivity[];
   currentModel: string;
-  error: string | null;
+  error: UserFacingError | null;
   analysisPhase: 'idle' | 'brainstorm' | 'analyzing' | 'complete';
   phaseProgress: PhaseProgress;
   thinkingSteps: ThinkingStep[];
@@ -86,8 +117,8 @@ export default function ChatPanel({
       {/* Header */}
       <div className="px-4 sm:px-5 py-3 border-b border-neutral-100 dark:border-neutral-700/50 bg-[var(--dash-chat-bg)] flex justify-between items-center shrink-0">
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#ef4d23]/20 to-[#ff7a55]/20 flex items-center justify-center">
-            <Hexagon size={14} className="text-[#ef4d23] fill-current" />
+          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#ef4d23]/20 to-[#ff7a55]/20 flex items-center justify-center p-1">
+            <IntelligenceLogo className="text-[#ef4d23] w-full h-full" />
           </div>
           <div className="min-w-0">
             <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100 leading-tight">Convix Intelligence</h3>
@@ -227,9 +258,11 @@ export default function ChatPanel({
                 <div className="flex items-start gap-2.5 bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 text-red-700 dark:text-red-400 px-4 py-3 rounded-xl text-sm">
                   <AlertTriangle size={16} className="text-red-500 shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-semibold text-[13px]">Something went wrong</p>
-                    <p className="text-[12px] text-red-600 dark:text-red-400 mt-0.5">{error}</p>
-                    <p className="text-[11px] text-red-400 dark:text-red-500 mt-1">Check your API keys in .env or try again.</p>
+                    <p className="font-semibold text-[13px]">{error.title}</p>
+                    <p className="text-[12px] text-red-600 dark:text-red-400 mt-0.5">{error.message}</p>
+                    {error.hint && (
+                      <p className="text-[11px] text-red-500/80 dark:text-red-400/80 mt-1.5 leading-relaxed">{error.hint}</p>
+                    )}
                   </div>
                 </div>
               </div>

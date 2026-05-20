@@ -348,6 +348,7 @@ export async function generateFinalReport(
   ideaSummary: string,
   phaseResults: PhaseResult[],
   sendEvent: SendEventFn,
+  options?: { forceIndonesian?: boolean },
 ): Promise<string> {
   const phaseContext = phaseResults.map(r =>
     `## ${r.name} (${r.sources.length} sources)\n${r.phaseSummary}`
@@ -355,11 +356,11 @@ export async function generateFinalReport(
 
   const totalSources = phaseResults.reduce((s, r) => s + r.sources.length, 0);
 
-  const isIndonesian = detectIndonesian(ideaSummary);
+  const isIndonesian = options?.forceIndonesian || detectIndonesian(ideaSummary);
   const messages: ChatMessage[] = [
     { 
       role: 'system', 
-      content: ANALYSIS_PROMPT + (isIndonesian ? '\n\nCRITICAL: You MUST write the entire final report and all headings in INDONESIAN language. Never output in English.' : '') 
+      content: ANALYSIS_PROMPT + (isIndonesian ? '\n\nCRITICAL: You MUST write the entire final report and all headings in INDONESIAN language. Never output in English.' : '\n\nCRITICAL: You MUST write the entire final report in ENGLISH language.') 
     },
     {
       role: 'user',

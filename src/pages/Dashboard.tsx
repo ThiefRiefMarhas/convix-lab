@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useLocale } from '../context/LocaleContext';
+import type { Locale } from '../i18n/ui';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { LogOut, Plus, Menu, X, Wand2, Lightbulb, ArrowRight, Settings, Sparkles, MessageSquare, Trash2, PanelRightClose, PanelRightOpen, PanelLeftClose, PanelLeftOpen, Layers, Sun, Moon, Paperclip, Mic, MicOff, ChevronDown, FileText } from 'lucide-react';
+import { LogOut, Plus, Menu, X, Wand2, Lightbulb, ArrowRight, Settings, Sparkles, MessageSquare, Trash2, PanelRightClose, PanelRightOpen, PanelLeftClose, PanelLeftOpen, Layers, Sun, Moon, Paperclip, Mic, MicOff, ChevronDown, FileText, BarChart3, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 import ChatPanel from '../components/chat/ChatPanel';
@@ -10,6 +12,10 @@ import ResearchCanvas from '../components/chat/ResearchCanvas';
 import { useChat } from '../hooks/useChat';
 import { useConversations } from '../hooks/useConversations';
 import { apiFetch } from '../services/api';
+import { ExportModal } from '../components/chat/ExportModal';
+import { SWOTPanel } from '../components/chat/SWOTPanel';
+import { AnalyticsPanel } from '../components/analytics/AnalyticsPanel';
+import { InsightsPanel } from '../components/insights/InsightsPanel';
 
 const Logo = () => (
   <svg width="32" height="32" viewBox="0 0 32 32" className="w-6 h-6 sm:w-7 sm:h-7 shrink-0" fill="none">
@@ -65,6 +71,7 @@ const templates = [
 export default function Dashboard() {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { locale, setLocale, strings, indonesiaFocus, setIndonesiaFocus } = useLocale();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const urlConvoId = searchParams.get('c');
@@ -84,6 +91,10 @@ export default function Dashboard() {
   const [isListening, setIsListening] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [transcriptionError, setTranscriptionError] = useState<string | null>(null);
+
+  const [activeView, setActiveView] = useState<'chat' | 'analytics'>('chat');
+  const [rightPanelTab, setRightPanelTab] = useState<'canvas' | 'swot' | 'insights'>('canvas');
+  const [isExportOpen, setIsExportOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const splitContainerRef = useRef<HTMLDivElement>(null);
@@ -118,23 +129,25 @@ export default function Dashboard() {
     window.addEventListener('pointerup', handlePointerUp);
   };
 
-  // Sync URL when conversation changes
+  // Sync URL and conversation state reactively
   useEffect(() => {
-    if (chat.conversationId && chat.conversationId !== urlConvoId) {
-      setSearchParams({ c: chat.conversationId }, { replace: true });
-      if (viewState === 'input') setViewState('chat');
-    } else if (!chat.conversationId && urlConvoId) {
-      setSearchParams({}, { replace: true });
-      setViewState('input');
-    }
-  }, [chat.conversationId, urlConvoId, setSearchParams, viewState]);
-
-  // Initial load check
-  useEffect(() => {
-    if (urlConvoId && viewState === 'input') {
+    if (urlConvoId) {
+      if (chat.conversationId !== urlConvoId) {
+        chat.setConversationId(urlConvoId);
+      }
       setViewState('chat');
+      setActiveView('chat');
+    } else if (chat.conversationId) {
+      // Sync newly created conversation ID to URL
+      setSearchParams({ c: chat.conversationId }, { replace: true });
+      setViewState('chat');
+      setActiveView('chat');
+    } else {
+      // No active conversation
+      setViewState('input');
+      setActiveView('chat');
     }
-  }, [urlConvoId]);
+  }, [urlConvoId, chat.conversationId, setSearchParams]);
 
   // Auto-close sidebar on mobile
   useEffect(() => {
@@ -189,6 +202,10 @@ export default function Dashboard() {
     } else {
       try {
         console.log('[Dashboard STT] Requesting microphone access...');
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          alert(strings.micAccessError);
+          return;
+        }
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         
         let mediaRecorder: MediaRecorder;
@@ -285,18 +302,18 @@ export default function Dashboard() {
   };
 
   const handleNewChat = () => {
+    setSearchParams({}, { replace: true });
     chat.resetChat();
     setViewState('input');
     setPrompt('');
     setIsChatOpen(true);
     setIsCanvasOpen(true);
     setChatWidth(55);
+    setActiveView('chat');
   };
 
   const handleSelectConvo = (id: string) => {
-    chat.setConversationId(id);
-    chat.loadConversation(id);
-    setViewState('chat');
+    setSearchParams({ c: id }, { replace: true });
     if (window.innerWidth < 768) setIsSidebarOpen(false);
   };
 
@@ -342,10 +359,16 @@ export default function Dashboard() {
             </div>
 
             {/* New Chat */}
-            <button onClick={handleNewChat}
-              className="flex items-center justify-center gap-2 bg-gradient-to-r from-[#ef4d23] to-[#ff7a55] hover:opacity-95 text-white w-full px-4 py-3.5 rounded-2xl transition-all font-semibold text-sm mb-8 shadow-lg shadow-[#ef4d23]/30 hover:shadow-xl hover:shadow-[#ef4d23]/40 group border border-[#ef4d23]/10">
+            <button onClick={() => { handleNewChat(); setActiveView('chat'); }}
+              className="flex items-center justify-center gap-2 bg-gradient-to-r from-[#ef4d23] to-[#ff7a55] hover:opacity-95 text-white w-full px-4 py-3.5 rounded-2xl transition-all font-semibold text-sm mb-3 shadow-lg shadow-[#ef4d23]/30 hover:shadow-xl hover:shadow-[#ef4d23]/40 group border border-[#ef4d23]/10">
               <Plus size={18} className="group-hover:rotate-90 transition-transform duration-300" />
-              <span>New Intelligence</span>
+              <span>{strings.newIntelligence}</span>
+            </button>
+            
+            <button onClick={() => setActiveView('analytics')}
+              className={`flex items-center gap-3 px-4 py-3 w-full rounded-xl transition-colors font-medium text-sm mb-8 ${activeView === 'analytics' ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100' : 'text-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-800/50'}`}>
+              <BarChart3 size={18} className={activeView === 'analytics' ? 'text-[#ef4d23]' : ''} />
+              <span>{strings.analytics}</span>
             </button>
 
             {/* Conversation History */}
@@ -356,15 +379,15 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <>
-                  {renderGroup('Today', convos.grouped.today, chat.conversationId, handleSelectConvo, handleDeleteConvo)}
-                  {renderGroup('Yesterday', convos.grouped.yesterday, chat.conversationId, handleSelectConvo, handleDeleteConvo)}
-                  {renderGroup('Previous 7 Days', convos.grouped.previous7Days, chat.conversationId, handleSelectConvo, handleDeleteConvo)}
-                  {renderGroup('Older', convos.grouped.older, chat.conversationId, handleSelectConvo, handleDeleteConvo)}
+                  {renderGroup(strings.today, convos.grouped.today, chat.conversationId, handleSelectConvo, handleDeleteConvo)}
+                  {renderGroup(strings.yesterday, convos.grouped.yesterday, chat.conversationId, handleSelectConvo, handleDeleteConvo)}
+                  {renderGroup(strings.previous7days, convos.grouped.previous7Days, chat.conversationId, handleSelectConvo, handleDeleteConvo)}
+                  {renderGroup(strings.older, convos.grouped.older, chat.conversationId, handleSelectConvo, handleDeleteConvo)}
 
                   {convos.conversations.length === 0 && (
                     <div className="text-center py-8">
-                      <p className="text-xs text-neutral-400 font-medium">No conversations yet</p>
-                      <p className="text-[11px] text-neutral-300 mt-1">Start by validating an idea above</p>
+                      <p className="text-xs text-neutral-400 font-medium">{strings.noConvosYet}</p>
+                      <p className="text-[11px] text-neutral-300 mt-1">{strings.startByValidating}</p>
                     </div>
                   )}
                 </>
@@ -378,14 +401,14 @@ export default function Dashboard() {
               <div className="bg-[var(--dash-sidebar)] border border-neutral-200 dark:border-neutral-700 shadow-xl rounded-2xl p-2 flex flex-col gap-1">
                 <button onClick={toggleTheme} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 text-sm font-medium text-neutral-700 dark:text-neutral-300 transition-colors">
                   {theme === 'dark' ? <Sun size={16} className="text-amber-500" /> : <Moon size={16} className="text-neutral-500" />}
-                  {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                  {theme === 'dark' ? strings.lightMode : strings.darkMode}
                 </button>
                 <button onClick={() => setIsSettingsModalOpen(true)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 text-sm font-medium text-neutral-700 dark:text-neutral-300 transition-colors">
-                  <Settings size={16} className="text-neutral-500" /> Settings
+                  <Settings size={16} className="text-neutral-500" /> {strings.settings}
                 </button>
                 <div className="h-px bg-neutral-100 dark:bg-neutral-700 my-1" />
                 <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/30 text-sm font-medium text-red-600 transition-colors">
-                  <LogOut size={16} className="text-red-500" /> Sign Out
+                  <LogOut size={16} className="text-red-500" /> {strings.signOut}
                 </button>
               </div>
             </div>
@@ -418,14 +441,27 @@ export default function Dashboard() {
 
         <div className="flex-1 flex flex-col overflow-hidden min-h-0">
           <AnimatePresence mode="wait">
-            {/* ─── Input View ─── */}
-            {viewState === 'input' && (
-                <motion.div key="input" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-                className="w-full h-full flex flex-col items-center md:justify-center max-w-4xl mx-auto px-4 overflow-y-auto pt-6 md:pt-0 pb-24 md:pb-0 custom-scrollbar">
+            {activeView === 'analytics' && (
+              <motion.div key="analytics" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full w-full">
+                <AnalyticsPanel />
+              </motion.div>
+            )}
+            
+            {activeView === 'chat' && viewState === 'input' && (
+              <motion.div key="input" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+              className="w-full h-full flex flex-col items-center md:justify-center max-w-4xl mx-auto px-4 overflow-y-auto pt-6 md:pt-0 pb-24 md:pb-0 custom-scrollbar">
 
                 <div className="text-center w-full mb-8 md:mb-10 md:mt-[-40px] mt-4 shrink-0">
                   <h1 className="text-3xl sm:text-4xl md:text-5xl font-medium text-neutral-900 dark:text-neutral-100 tracking-tight leading-tight">
-                    Validate <span className="font-serif italic text-[#ef4d23]">ideas</span> before<br className="hidden md:block" /> the market decides.
+                    {locale === 'id' ? (
+                      <>
+                        Validasi <span className="font-serif italic text-[#ef4d23]">ide</span> sebelum<br className="hidden md:block" /> pasar memutuskan.
+                      </>
+                    ) : (
+                      <>
+                        Validate <span className="font-serif italic text-[#ef4d23]">ideas</span> before<br className="hidden md:block" /> the market decides.
+                      </>
+                    )}
                   </h1>
                 </div>
 
@@ -449,7 +485,7 @@ export default function Dashboard() {
                               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                            <span className="animate-pulse">Mengunggah PDF...</span>
+                            <span className="animate-pulse">{strings.uploadingPdf}</span>
                           </div>
                         )}
                       </div>
@@ -468,7 +504,7 @@ export default function Dashboard() {
                                 }}
                                 className="px-4 py-2 bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 text-xs font-semibold rounded-lg transition-all active:scale-95"
                               >
-                                Tutup
+                                {strings.close}
                               </button>
                             </div>
                           ) : isTranscribing ? (
@@ -477,7 +513,7 @@ export default function Dashboard() {
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                               </svg>
-                              <span className="text-[14px] font-bold text-neutral-800 dark:text-neutral-200 animate-pulse tracking-wide block">Mentranskripsi suara Anda...</span>
+                              <span className="text-[14px] font-bold text-neutral-800 dark:text-neutral-200 animate-pulse tracking-wide block">{strings.transcribing}</span>
                             </div>
                           ) : (
                             <>
@@ -491,8 +527,8 @@ export default function Dashboard() {
                                 <span className="w-1 bg-[#ef4d23] rounded-full animate-bounce h-4" style={{ animationDelay: '0.7s', animationDuration: '0.5s' }} />
                               </div>
                               <div className="text-center pointer-events-none">
-                                <span className="text-[14px] font-bold text-neutral-800 dark:text-neutral-200 animate-pulse tracking-wide block">Mendengarkan suara Anda...</span>
-                                <span className="text-[11px] text-neutral-400 mt-0.5 block">Klik tombol mic merah di bawah untuk menyelesaikan</span>
+                                <span className="text-[14px] font-bold text-neutral-800 dark:text-neutral-200 animate-pulse tracking-wide block">{strings.listening}</span>
+                                <span className="text-[11px] text-neutral-400 mt-0.5 block">{strings.micHint}</span>
                               </div>
                             </>
                           )}
@@ -506,7 +542,7 @@ export default function Dashboard() {
                         disabled={isListening}
                         maxLength={10000}
                         data-lenis-prevent="true"
-                        placeholder={isListening ? '' : (isAgentMode ? "Let's brainstorm! What industry or problem are you exploring?" : "Describe your idea... e.g. A marketplace for artisanal, upcycled furniture...")}
+                        placeholder={isListening ? '' : (isAgentMode ? strings.agentBrainstormPlaceholder : strings.describeIdeaPlaceholder)}
                         className={`w-full min-h-[160px] max-h-[400px] overflow-y-auto custom-scrollbar bg-transparent px-6 ${(attachedFiles.length > 0 || isUploading) ? 'pt-16' : 'pt-6'} pb-20 text-[17px] text-neutral-900 dark:text-neutral-100 focus:outline-none resize-none rounded-3xl placeholder:text-neutral-400 dark:placeholder:text-neutral-500 disabled:opacity-30`}
                       />
                     </div>
@@ -632,7 +668,7 @@ export default function Dashboard() {
             )}
 
             {/* ─── Chat View (Split Screen) ─── */}
-            {viewState === 'chat' && (
+            {activeView === 'chat' && viewState === 'chat' && (
               <motion.div 
                 ref={splitContainerRef}
                 key="chat" 
@@ -743,10 +779,64 @@ export default function Dashboard() {
                       animate={{ width: isChatOpen ? `${100 - chatWidth}%` : '100%', opacity: 1 }}
                       exit={{ width: 0, opacity: 0 }}
                       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                      style={{ width: isChatOpen ? `${100 - chatWidth}%` : '100%' }}
                       className={`min-w-0 min-h-0 h-full ${mobileTab === 'canvas' ? 'flex' : 'hidden lg:flex'} flex-col overflow-hidden relative`}
+                      data-lenis-prevent="true"
                     >
-                      <ResearchCanvas sources={chat.sources} isStreaming={chat.isStreaming} />
+                      <div className="flex-1 flex flex-col min-h-0 bg-[var(--dash-canvas-bg)] rounded-2xl border border-neutral-200/60 dark:border-neutral-700/40 shadow-sm overflow-hidden relative" data-lenis-prevent="true">
+                        {/* Right Panel Tabs */}
+                        <div className="flex items-center gap-2 px-4 py-3 border-b border-neutral-100 dark:border-neutral-700/50 bg-[var(--dash-chat-bg)]">
+                          {(['canvas', 'swot', 'insights'] as const).map(tab => (
+                            <button
+                              key={tab}
+                              onClick={() => setRightPanelTab(tab)}
+                              className={`px-4 py-1.5 rounded-lg text-sm font-medium capitalize transition-colors ${
+                                rightPanelTab === tab 
+                                  ? 'bg-[#ef4d23]/10 text-[#ef4d23]' 
+                                  : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                              }`}
+                            >
+                              {tab}
+                            </button>
+                          ))}
+                          
+                          {/* Export Button */}
+                          <div className="ml-auto">
+                            <button 
+                              onClick={() => setIsExportOpen(true)}
+                              className="px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors"
+                            >
+                              <Download size={14} /> Export
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Right Panel Content */}
+                        <div className="flex-1 overflow-hidden relative">
+                          {rightPanelTab === 'canvas' && (
+                            <ResearchCanvas 
+                              key={chat.conversationId || 'new-chat'} 
+                              sources={chat.sources} 
+                              isStreaming={chat.isStreaming} 
+                              ideaTitle={chat.conversationTitle || undefined} 
+                            />
+                          )}
+                          {rightPanelTab === 'swot' && chat.conversationId && (
+                            <div className="h-full overflow-y-auto p-6 custom-scrollbar" data-lenis-prevent="true">
+                              <SWOTPanel conversationId={chat.conversationId} />
+                            </div>
+                          )}
+                          {rightPanelTab === 'insights' && chat.conversationId && (
+                            <div className="h-full overflow-y-auto p-6 custom-scrollbar" data-lenis-prevent="true">
+                              <InsightsPanel conversationId={chat.conversationId} />
+                            </div>
+                          )}
+                          {(rightPanelTab === 'swot' || rightPanelTab === 'insights') && !chat.conversationId && (
+                            <div className="h-full flex items-center justify-center p-8 text-neutral-400 text-sm">
+                              {strings.startConvoToView.replace('{tab}', rightPanelTab)}
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -755,6 +845,14 @@ export default function Dashboard() {
           </AnimatePresence>
         </div>
       </main>
+
+      {/* Export Modal */}
+      {isExportOpen && chat.conversationId && (
+        <ExportModal 
+          conversationId={chat.conversationId} 
+          onClose={() => setIsExportOpen(false)} 
+        />
+      )}
 
       {/* Settings Modal */}
       <AnimatePresence>
@@ -765,32 +863,71 @@ export default function Dashboard() {
             <motion.div initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 10 }}
               className="relative w-full max-w-md bg-[var(--dash-sidebar)] rounded-3xl shadow-2xl border border-neutral-200 dark:border-neutral-700 overflow-hidden z-10">
               <div className="flex items-center justify-between p-6 border-b border-neutral-100 dark:border-neutral-700">
-                <h2 className="text-lg font-bold text-neutral-900 dark:text-neutral-100">Settings</h2>
+                <h2 className="text-lg font-bold text-neutral-900 dark:text-neutral-100">{strings.settings}</h2>
                 <button onClick={() => setIsSettingsModalOpen(false)} className="text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors"><X size={20} /></button>
               </div>
               <div className="p-6 space-y-6">
                 <div>
-                  <label className="block text-[13px] font-bold text-neutral-500 uppercase tracking-wider mb-2">Profile</label>
+                  <label className="block text-[13px] font-bold text-neutral-500 uppercase tracking-wider mb-2">{strings.profile}</label>
                   <div className="flex items-center gap-4 mb-4">
                     <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#ef4d23] to-[#ff7a55] flex items-center justify-center text-white font-bold text-xl shadow-md">
                       {user?.email?.charAt(0).toUpperCase() || 'U'}
                     </div>
                     <div>
                       <p className="font-semibold text-neutral-900 dark:text-neutral-100">{user?.email || 'User'}</p>
-                      <p className="text-sm text-neutral-500">Beta Plan</p>
+                      <p className="text-sm text-neutral-500">{strings.betaPlan}</p>
                     </div>
                   </div>
                 </div>
                 <div>
-                  <label className="block text-[13px] font-bold text-neutral-500 uppercase tracking-wider mb-2">Theme</label>
+                  <label className="block text-[13px] font-bold text-neutral-500 uppercase tracking-wider mb-2">{strings.theme}</label>
                   <button onClick={toggleTheme} className="flex items-center gap-3 w-full px-4 py-3 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">
                     {theme === 'dark' ? <Sun size={16} className="text-amber-500" /> : <Moon size={16} className="text-neutral-500" />}
-                    {theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                    {theme === 'dark' ? strings.switchLight : strings.switchDark}
                   </button>
+                </div>
+                <div>
+                  <label className="block text-[13px] font-bold text-neutral-500 uppercase tracking-wider mb-2">{strings.language}</label>
+                  <p className="text-xs text-neutral-400 mb-2">{strings.languageDesc}</p>
+                  <div className="grid grid-cols-2 gap-2 mb-6">
+                    {(['id', 'en'] as Locale[]).map((lang) => (
+                      <button
+                        key={lang}
+                        onClick={() => setLocale(lang)}
+                        className={`px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors border ${
+                          locale === lang
+                            ? 'bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800 text-[#ef4d23]'
+                            : 'bg-neutral-100 dark:bg-neutral-800 border-transparent text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                        }`}
+                      >
+                        {lang === 'id' ? strings.indonesian : strings.english}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
+                  <div className="flex items-center justify-between">
+                    <div className="pr-4">
+                      <label className="block text-[13px] font-bold text-neutral-500 uppercase tracking-wider">{strings.indonesiaFocus}</label>
+                      <p className="text-xs text-neutral-400 mt-1">{strings.indonesiaFocusDesc}</p>
+                    </div>
+                    <button
+                      onClick={() => setIndonesiaFocus(!indonesiaFocus)}
+                      className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none ${
+                        indonesiaFocus ? 'bg-[#ef4d23]' : 'bg-neutral-300 dark:bg-neutral-700'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          indonesiaFocus ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
                 </div>
               </div>
               <div className="p-4 bg-neutral-50 dark:bg-neutral-800/50 border-t border-neutral-100 dark:border-neutral-700 flex justify-end">
-                <button onClick={() => setIsSettingsModalOpen(false)} className="px-5 py-2.5 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 text-sm font-semibold rounded-xl hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors">Done</button>
+                <button onClick={() => setIsSettingsModalOpen(false)} className="px-5 py-2.5 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 text-sm font-semibold rounded-xl hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors">{strings.done}</button>
               </div>
             </motion.div>
           </div>

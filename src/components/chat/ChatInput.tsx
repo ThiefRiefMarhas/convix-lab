@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ArrowUp, Paperclip, Globe, Sparkles, ChevronDown, Square, FileText, X, Mic, MicOff } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { apiFetch } from '../../services/api';
+import { useLocale } from '../../context/LocaleContext';
 
 const MODELS = [
   { id: 'Convix Pro', name: 'Convix Pro', desc: 'Best for complex validation' },
@@ -19,6 +20,7 @@ interface ChatInputProps {
 }
 
 export default function ChatInput({ onSend, onStop, isStreaming, currentModel, onModelChange, onUploadFile }: ChatInputProps) {
+  const { strings } = useLocale();
   const [input, setInput] = useState('');
   const [webSearch, setWebSearch] = useState(false);
   const [isModelOpen, setIsModelOpen] = useState(false);
@@ -34,13 +36,17 @@ export default function ChatInput({ onSend, onStop, isStreaming, currentModel, o
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  // Auto-resize textarea
+  // Auto-resize textarea — stay compact when empty (scrollHeight includes padding)
   useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 160) + 'px';
+    const el = textareaRef.current;
+    if (!el) return;
+    if (!input.trim()) {
+      el.style.height = '40px';
+    } else {
+      el.style.height = 'auto';
+      el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
     }
-  }, [input]);
+  }, [input, isStreaming, attachedFiles]);
 
   const toggleVoice = async () => {
     if (isListening) {
@@ -52,6 +58,10 @@ export default function ChatInput({ onSend, onStop, isStreaming, currentModel, o
     } else {
       try {
         console.log('Requesting microphone access...');
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          alert(strings.micAccessError);
+          return;
+        }
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         
         let mediaRecorder: MediaRecorder;
@@ -122,15 +132,15 @@ export default function ChatInput({ onSend, onStop, isStreaming, currentModel, o
               } else {
                 const errText = await res.text();
                 console.error('Transcription failed:', errText);
-                setTranscriptionError('Gagal mentranskripsi audio. Silakan coba lagi.');
+                setTranscriptionError(strings.transcribeFailed);
               }
             } catch (err: any) {
               clearTimeout(timeoutId);
               console.error('Error contacting transcribe API:', err);
               if (err.name === 'AbortError') {
-                setTranscriptionError('Waktu proses habis (maksimal 10 detik). Pastikan koneksi internet stabil.');
+                setTranscriptionError(strings.transcribeTimeout);
               } else {
-                setTranscriptionError('Koneksi terputus atau gagal memproses suara.');
+                setTranscriptionError(strings.transcribeConnectionError);
               }
             } finally {
               setIsTranscribing(false);
@@ -144,7 +154,7 @@ export default function ChatInput({ onSend, onStop, isStreaming, currentModel, o
         setIsListening(true);
       } catch (err) {
         console.error('Error starting media recorder:', err);
-        alert('Gagal mengakses mikrofon. Pastikan Anda telah memberikan izin mikrofon di browser.');
+        alert(strings.micAccessError);
       }
     }
   };
@@ -219,7 +229,7 @@ export default function ChatInput({ onSend, onStop, isStreaming, currentModel, o
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              <span className="animate-pulse">Mengunggah PDF...</span>
+              <span className="animate-pulse">{strings.uploadingPdf}</span>
             </div>
           )}
         </div>
@@ -234,9 +244,10 @@ export default function ChatInput({ onSend, onStop, isStreaming, currentModel, o
             onKeyDown={handleKeyDown}
             disabled={isStreaming}
             maxLength={10000}
-            placeholder={isStreaming ? 'AI is responding...' : 'Reply to analysis...'}
+            placeholder={isStreaming ? strings.chatPlaceholderStreaming : strings.chatPlaceholder}
             rows={1}
-            className="w-full bg-transparent border-0 px-3 py-2 pr-12 text-sm text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-0 resize-none disabled:opacity-50 placeholder:text-neutral-400 dark:placeholder:text-neutral-500"
+            style={{ height: !input.trim() ? '40px' : undefined }}
+            className="w-full bg-transparent border-0 px-3 py-2 pr-12 text-sm leading-5 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-0 resize-none disabled:opacity-50 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 min-h-[40px] max-h-[160px] overflow-y-auto"
           />
 
           {/* Voice input active wave overlay */}
@@ -252,7 +263,7 @@ export default function ChatInput({ onSend, onStop, isStreaming, currentModel, o
                     }}
                     className="px-2 py-1 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 text-[10px] font-semibold rounded transition-all active:scale-95"
                   >
-                    Tutup
+                    {strings.close}
                   </button>
                 </div>
               ) : isTranscribing ? (
@@ -261,7 +272,7 @@ export default function ChatInput({ onSend, onStop, isStreaming, currentModel, o
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  <span className="text-[12px] font-bold text-neutral-800 dark:text-neutral-200 tracking-wide animate-pulse">Mentranskripsi...</span>
+                  <span className="text-[12px] font-bold text-neutral-800 dark:text-neutral-200 tracking-wide animate-pulse">{strings.transcribing}</span>
                 </div>
               ) : (
                 <>
@@ -273,13 +284,13 @@ export default function ChatInput({ onSend, onStop, isStreaming, currentModel, o
                       <span className="w-1 bg-[#ef4d23] rounded-full animate-bounce h-6" style={{ animationDelay: '0.3s', animationDuration: '0.7s' }} />
                       <span className="w-1 bg-[#ef4d23] rounded-full animate-bounce h-4" style={{ animationDelay: '0.4s', animationDuration: '0.6s' }} />
                     </div>
-                    <span className="text-[12px] font-bold text-[#ef4d23] tracking-wide animate-pulse">Mendengarkan suara Anda...</span>
+                    <span className="text-[12px] font-bold text-[#ef4d23] tracking-wide animate-pulse">{strings.listening}</span>
                   </div>
                   <button
                     onClick={toggleVoice}
                     className="px-2.5 py-1 bg-[#ef4d23] hover:bg-[#d9441f] text-white rounded-lg text-[10px] font-bold uppercase transition-all shadow-sm"
                   >
-                    Selesai
+                    {strings.doneLabel}
                   </button>
                 </>
               )}
@@ -319,7 +330,7 @@ export default function ChatInput({ onSend, onStop, isStreaming, currentModel, o
             onClick={() => fileRef.current?.click()}
             disabled={isStreaming || isUploading}
             className="p-2 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors disabled:opacity-40"
-            title="Attach file"
+            title={strings.attachFile}
           >
             <Paperclip size={16} />
           </button>
@@ -334,7 +345,7 @@ export default function ChatInput({ onSend, onStop, isStreaming, currentModel, o
                   ? 'bg-red-50 dark:bg-red-950/30 text-red-500 border border-red-200 dark:border-red-800 animate-pulse'
                   : 'text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
               }`}
-              title={isListening ? 'Stop listening' : 'Voice input'}
+              title={isListening ? strings.stopListening : strings.voiceInput}
             >
               {isListening ? <MicOff size={16} /> : <Mic size={16} />}
             </button>
@@ -349,10 +360,10 @@ export default function ChatInput({ onSend, onStop, isStreaming, currentModel, o
                 ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800'
                 : 'text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
             }`}
-            title="Search the web"
+            title={strings.search}
           >
             <Globe size={14} />
-            <span className="hidden sm:inline">{webSearch ? 'Search ON' : 'Search'}</span>
+            <span className="hidden sm:inline">{webSearch ? strings.searchOn : strings.search}</span>
           </button>
 
           {/* Model selector */}

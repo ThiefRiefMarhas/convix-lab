@@ -15,9 +15,11 @@ export function getSupabaseAdmin(): SupabaseClient {
   const anonKey = (process.env.VITE_SUPABASE_ANON_KEY || '').trim();
   const finalKey = serviceKey || anonKey;
 
-  console.log('[Auth Debug] Lazily initializing Supabase Admin Client...');
-  console.log('[Auth Debug] Lazy URL:', url || 'MISSING');
-  console.log('[Auth Debug] Lazy Key length:', finalKey ? finalKey.length : 0);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[Auth Debug] Lazily initializing Supabase Admin Client...');
+    console.log('[Auth Debug] Lazy URL:', url || 'MISSING');
+    console.log('[Auth Debug] Lazy Key length:', finalKey ? finalKey.length : 0);
+  }
 
   if (!url) {
     console.error('[Supabase Startup] ERROR: supabaseUrl is empty!');
@@ -55,12 +57,14 @@ export const supabaseAdmin: SupabaseClient = new Proxy({} as SupabaseClient, {
 
 // Verify user JWT from Authorization header
 export async function verifyUserToken(authHeader: string | undefined): Promise<{ userId: string; email: string } | null> {
-  console.log('[Auth Debug] Received Auth Header:', authHeader ? `${authHeader.substring(0, 20)}...` : 'undefined');
-  console.log('[Auth Debug] Current process.env.SUPABASE_URL:', process.env.SUPABASE_URL || 'UNDEFINED');
-  console.log('[Auth Debug] Current process.env.VITE_SUPABASE_URL:', process.env.VITE_SUPABASE_URL || 'UNDEFINED');
-  console.log('[Auth Debug] Current process.env.SUPABASE_SERVICE_ROLE_KEY length:', process.env.SUPABASE_SERVICE_ROLE_KEY ? process.env.SUPABASE_SERVICE_ROLE_KEY.length : 0);
-  console.log('[Auth Debug] Current process.env.VITE_SUPABASE_ANON_KEY length:', process.env.VITE_SUPABASE_ANON_KEY ? process.env.VITE_SUPABASE_ANON_KEY.length : 0);
-  console.log('[Auth Debug] Is activeAdminClient initialized?', !!activeAdminClient);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[Auth Debug] Received Auth Header:', authHeader ? `${authHeader.substring(0, 20)}...` : 'undefined');
+    console.log('[Auth Debug] Current process.env.SUPABASE_URL:', process.env.SUPABASE_URL || 'UNDEFINED');
+    console.log('[Auth Debug] Current process.env.VITE_SUPABASE_URL:', process.env.VITE_SUPABASE_URL || 'UNDEFINED');
+    console.log('[Auth Debug] Current process.env.SUPABASE_SERVICE_ROLE_KEY length:', process.env.SUPABASE_SERVICE_ROLE_KEY ? process.env.SUPABASE_SERVICE_ROLE_KEY.length : 0);
+    console.log('[Auth Debug] Current process.env.VITE_SUPABASE_ANON_KEY length:', process.env.VITE_SUPABASE_ANON_KEY ? process.env.VITE_SUPABASE_ANON_KEY.length : 0);
+    console.log('[Auth Debug] Is activeAdminClient initialized?', !!activeAdminClient);
+  }
   
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     console.warn('[Auth Debug] Missing or invalid Bearer header structure.');
@@ -93,7 +97,6 @@ export async function verifyUserToken(authHeader: string | undefined): Promise<{
 
 // Helper: Get user profile
 export async function getUserProfile(userId: string) {
-  if (!supabaseAdmin) return null;
   const { data, error } = await supabaseAdmin
     .from('profiles')
     .select('*')
@@ -106,7 +109,6 @@ export async function getUserProfile(userId: string) {
 
 // Helper: Get or reset user usage (resets daily counters)
 export async function getUserUsage(userId: string) {
-  if (!supabaseAdmin) return null;
   const { data, error } = await supabaseAdmin
     .from('user_usage')
     .select('*')
@@ -140,7 +142,6 @@ export async function getUserUsage(userId: string) {
 
 // Helper: Increment usage counter
 export async function incrementUsage(userId: string, field: 'messages_today' | 'searches_today' | 'files_total' | 'conversations_total') {
-  if (!supabaseAdmin) return;
   const usage = await getUserUsage(userId);
   if (!usage) return;
 

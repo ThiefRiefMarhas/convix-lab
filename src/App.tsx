@@ -4,6 +4,7 @@ import { Loader2 } from 'lucide-react';
 import AppRoutes from './AppRoutes';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { LocaleProvider } from './context/LocaleContext';
 import AuthModal from './components/auth/AuthModal';
 import Lenis from 'lenis';
 
@@ -28,6 +29,7 @@ export default function App() {
 
   return (
     <ThemeProvider>
+      <LocaleProvider>
       <AuthProvider>
         <AnimatePresence mode="wait">
           {isInitializing && (
@@ -53,6 +55,7 @@ export default function App() {
           </>
         )}
       </AuthProvider>
+      </LocaleProvider>
     </ThemeProvider>
   );
 }

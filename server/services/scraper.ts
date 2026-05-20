@@ -1,6 +1,7 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { getCachedContent, processContent } from './content-pipeline.js';
+import { extractDomain } from './tavily.js';
 
 export interface ScrapeResult {
   url: string;
@@ -131,10 +132,3 @@ export async function scrapeUrl(url: string): Promise<ScrapeResult> {
   }
 }
 
-function extractDomain(url: string): string {
-  try {
-    return new URL(url).hostname.replace('www.', '');
-  } catch {
-    return url;
-  }
-}

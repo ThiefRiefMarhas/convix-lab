@@ -1,5 +1,5 @@
 import CinematicHero from '../components/CinematicHero';
-import VideoEmbed from '../components/VideoEmbed';
+import InsightsHub, { type Article, type Video } from '../components/InsightsHub';
 import Footer from '../components/Footer';
 import { Check, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
@@ -7,6 +7,66 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import confetti from 'canvas-confetti';
+
+const pricingVideos: Video[] = [
+  {
+    id: "pricing-vid-1",
+    title: "Rigor in Startup Evaluation & Economic Strength",
+    description: "A deep dive into how modern early-stage venture capital firms evaluate financial viability and operational efficiency in high-uncertainty markets.",
+    videoUrl: "https://www.youtube-nocookie.com/embed/Th8JoIan4dg",
+    duration: "18:45",
+    coverGradient: "from-emerald-600/20 to-teal-700/20"
+  },
+  {
+    id: "pricing-vid-2",
+    title: "Unit Economics: The Vital Metrics",
+    description: "Y Combinator partners break down customer acquisition cost (CAC), lifetime value (LTV), and pricing models for scalable SaaS products.",
+    videoUrl: "https://www.youtube-nocookie.com/embed/dQ7ZvO5DpIw",
+    duration: "14:20",
+    coverGradient: "from-indigo-600/20 to-violet-700/20"
+  }
+];
+
+const pricingArticles: Article[] = [
+  {
+    id: "pricing-art-1",
+    title: "Calculating the ROI of Validation: Why $49 Saves $49,000",
+    category: "Unit Economics",
+    readTime: "7 min",
+    excerpt: "A mathematical breakdown of early hypothesis testing. Understand the catastrophic financial drag of developing unvalidated software compared to immediate automated stress-testing.",
+    author: "Arief Fajar",
+    date: "May 20, 2026",
+    coverGradient: "from-emerald-500 to-teal-600",
+    content: [
+      { type: "paragraph", text: "In software development, there is a recurring illusion: the fastest way to validate an idea is to build it. Founders commit code, hire freelancers, lease infrastructure, and register corporations under the impression that physical execution is the only true litmus test. This approach is not only slow; it is mathematically inefficient." },
+      { type: "heading", text: "The Cost of Blind Construction" },
+      { type: "paragraph", text: "Let's model the baseline costs of a typical 'simple' product build. Designing assets, building database schemas, establishing authentication, and implementing basic payments takes an average of 150 developer hours. Even at modest rates, this translates to $15,000 to $25,000 in immediate capital. If the core value proposition has a critical structural gap—which 72% of early-stage ideas do—the entire investment is lost." },
+      { type: "quote", text: "The most expensive code in the world is the code written to build a product that nobody wants." },
+      { type: "paragraph", text: "Compare this with automated strategic stress-testing. By spending a nominal amount ($49 for Pro validation) on an objective, database-grounded engine, you immediately identify competitive saturation, unit economics failure points, and regulatory risks before writing a single line of code. The Return on Investment (ROI) is not just positive—it is orders of magnitude high." },
+      { type: "heading", text: "Valuing Developer Opportunity Cost" },
+      { type: "paragraph", text: "Beyond capital, the primary constraint of any builder is time. Every three months spent coding a dead-end idea is three months not spent exploring a highly viable, high-margin market gap. Validation is not an expense; it is a cheap insurance policy for your most scarce resource: your focus." }
+    ]
+  },
+  {
+    id: "pricing-art-2",
+    title: "The Unit Economics Stress Test: Can Your Idea Actually Make Money?",
+    category: "Financial Modeling",
+    readTime: "9 min",
+    excerpt: "Why premium margins are the only path to long-term startup survival and how to model SaaS vs hybrid monetization engines.",
+    author: "Arief Fajar",
+    date: "May 20, 2026",
+    coverGradient: "from-cyan-600 to-blue-800",
+    content: [
+      { type: "paragraph", text: "Many startup failures are attributed to 'poor marketing' or 'lack of product-market fit.' But under closer inspection, the root cause is often simpler and more lethal: the unit economics never made sense. If your Customer Acquisition Cost (CAC) is $80, and your Lifetime Value (LTV) is $60, no amount of growth hacking or brand awareness will save your company." },
+      { type: "heading", text: "The Premium Margin Mandate" },
+      { type: "paragraph", text: "Modern startups must operate under a premium margin mandate. In highly competitive digital landscapes, advertising costs fluctuate and platform algorithms change. A low-margin product offers zero margin for error. If a single customer support ticket or database surge consumes your monthly gross profit, the business is fundamentally unstable." },
+      { type: "quote", text: "If your business model requires millions of users to reach profitability, you are not building a startup; you are buying a ticket to a lottery." },
+      { type: "paragraph", text: "To avoid this trap, founders must model their monetization mechanisms early. SaaS (Software-as-a-Service) is highly attractive due to recurring revenue, but hybrid engines—combining base subscriptions with usage-based or pay-as-you-go metrics—often align incentives much better with the actual value delivered." },
+      { type: "heading", text: "Stress-Testing Your Pricing Logic" },
+      { type: "paragraph", text: "When evaluating your startup idea in Convix, the monetization feasibility module stress-tests your proposed model against actual benchmarks in your vertical. It calculates your required transaction volumes, estimated CAC bounds, and break-even points, providing you with a clear, sober assessment of whether your business can sustain itself without venture capital life support." }
+    ]
+  }
+];
 
 function FAQItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
@@ -156,10 +216,11 @@ export default function Pricing() {
         </div>
       </section>
 
-      <VideoEmbed
-        title={`"Serious Builders Need Serious Systems."`}
-        videoUrl="https://www.youtube-nocookie.com/embed/Th8JoIan4dg"
-        description="How the best startup founders evaluate and filter ideas with strategic rigor."
+      <InsightsHub
+        sectionTitle="Validation Economics & Strategic Case Studies"
+        sectionSubtitle="Analyze startup ROI, unit economics risks, and operational stress-testing."
+        articles={pricingArticles}
+        videos={pricingVideos}
       />
       <Footer />
     </>

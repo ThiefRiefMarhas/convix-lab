@@ -1,6 +1,7 @@
 import React from 'react';
-import { Wand2, FileText, Copy, Check } from 'lucide-react';
+import { FileText, Copy, Check } from 'lucide-react';
 import type { Message } from '../../services/api';
+import { IntelligenceLogo } from './ChatPanel';
 
 interface MessageBubbleProps {
   message: Message;
@@ -26,8 +27,8 @@ const MessageBubble = React.memo(function MessageBubble({ message, isStreaming =
               <span className="text-[10px] font-bold text-white dark:text-neutral-900">Y</span>
             </div>
           ) : (
-            <div className="w-5 h-5 rounded-md bg-gradient-to-br from-[#ef4d23] to-[#ff7a55] flex items-center justify-center">
-              <Wand2 size={10} className="text-white" />
+            <div className="w-5 h-5 rounded-md bg-gradient-to-br from-[#ef4d23] to-[#ff7a55] flex items-center justify-center p-0.5">
+              <IntelligenceLogo className="text-white w-full h-full" />
             </div>
           )}
           <span className="text-[13px] font-semibold text-neutral-700 dark:text-neutral-300">
@@ -249,52 +250,133 @@ function CodeBlock({ code, lang }: { code: string; lang: string; key?: string | 
   );
 }
 
-/**
- * Inline text formatting — handles bold, citations, inline code.
- * Returns a flat array of React nodes.
- */
 function formatInline(text: string): React.ReactNode {
   if (!text) return null;
 
-  // Split on bold markers
-  const parts = text.split(/(\*\*[^*]+\*\*)/g);
-  const result: React.ReactNode[] = [];
+  interface FormatNode {
+    type: 'text' | 'code' | 'cite' | 'bold' | 'italic';
+    val: string;
+    children?: FormatNode[];
+  }
 
-  parts.forEach((part, i) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      result.push(<strong key={`b-${i}`} className="font-semibold text-neutral-900 dark:text-white">{part.slice(2, -2)}</strong>);
-      return;
+  // Phase 1: Code blocks (no nested formatting allowed inside inline code)
+  let nodes: FormatNode[] = [];
+  const codeParts = text.split(/(`[^`]+`)/g);
+  codeParts.forEach(part => {
+    if (part.startsWith('`') && part.endsWith('`') && part.length > 2) {
+      nodes.push({ type: 'code', val: part.slice(1, -1) });
+    } else if (part) {
+      nodes.push({ type: 'text', val: part });
     }
-    
-    // Split on citations
-    const citeParts = part.split(/(\[\d+\])/g);
-    citeParts.forEach((cp, j) => {
-      if (/^\[\d+\]$/.test(cp)) {
-        result.push(
-          <sup key={`cite-${i}-${j}`} className="ml-0.5 cursor-pointer text-[10px] font-bold text-[#ef4d23] hover:text-[#d9441f]">
-            {cp}
-          </sup>
-        );
-        return;
-      }
-      
-      // Inline code
-      const codeParts = cp.split(/(`[^`]+`)/g);
-      codeParts.forEach((ccp, k) => {
-        if (ccp.startsWith('`') && ccp.endsWith('`')) {
-          result.push(
-            <code key={`code-${i}-${j}-${k}`} className="bg-neutral-100 dark:bg-neutral-800 text-[#c7254e] dark:text-[#ff8ca3] px-1.5 py-0.5 rounded text-[13px] font-mono">
-              {ccp.slice(1, -1)}
-            </code>
-          );
-          return;
-        }
-        if (ccp) {
-          result.push(<React.Fragment key={`text-${i}-${j}-${k}`}>{ccp}</React.Fragment>);
-        }
-      });
-    });
   });
 
-  return <>{result}</>;
+  // Phase 2: Citations (no nested formatting allowed)
+  nodes = nodes.flatMap((node): FormatNode[] => {
+    if (node.type !== 'text') return [node];
+    const citeParts = node.val.split(/(\[\d+\])/g);
+    return citeParts.map((part): FormatNode => {
+      if (/^\[\d+\]$/.test(part)) {
+        return { type: 'cite', val: part };
+      }
+      return { type: 'text', val: part };
+    }).filter(n => n.val !== '');
+  });
+
+  // Phase 3: Bold (** or __)
+  nodes = nodes.flatMap((node): FormatNode[] => {
+    if (node.type !== 'text') return [node];
+    
+    // Split by ** first
+    const splitStars = node.val.split(/(\*\*(?:\S|\S.*?\S)\*\*)/g);
+    let starProcessed = splitStars.map((part): FormatNode => {
+      if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
+        return { type: 'bold', val: part.slice(2, -2) };
+      }
+      return { type: 'text', val: part };
+    });
+
+    // Then split by __ on any remaining text nodes
+    return starProcessed.flatMap((node2): FormatNode[] => {
+      if (node2.type !== 'text') return [node2];
+      const splitUnders = node2.val.split(/(__(?:\S|\S.*?\S)__)/g);
+      return splitUnders.map((part): FormatNode => {
+        if (part.startsWith('__') && part.endsWith('__') && part.length > 4) {
+          return { type: 'bold', val: part.slice(2, -2) };
+        }
+        return { type: 'text', val: part };
+      });
+    }).filter(n => n.val !== '');
+  });
+
+  // Helper to parse italics in a raw string
+  const parseItalicsStr = (val: string): FormatNode[] => {
+    const splitStars = val.split(/(\*(?!\*)(?:\S|\S.*?\S)\*(?!\*))/g);
+    let starProcessed = splitStars.map((part): FormatNode => {
+      if (part.startsWith('*') && part.endsWith('*') && part.length > 2 && !part.startsWith('**')) {
+        return { type: 'italic', val: part.slice(1, -1) };
+      }
+      return { type: 'text', val: part };
+    });
+
+    return starProcessed.flatMap((node2): FormatNode[] => {
+      if (node2.type !== 'text') return [node2];
+      const splitUnders = node2.val.split(/(_(?:\S|\S.*?\S)_)/g);
+      return splitUnders.map((part): FormatNode => {
+        if (part.startsWith('_') && part.endsWith('_') && part.length > 2 && !part.startsWith('__')) {
+          return { type: 'italic', val: part.slice(1, -1) };
+        }
+        return { type: 'text', val: part };
+      });
+    }).filter(n => n.val !== '');
+  };
+
+  // Phase 4: Italic (* or _) - applies to 'text' nodes, and inside 'bold' nodes too!
+  nodes = nodes.flatMap((node): FormatNode[] => {
+    if (node.type === 'text') {
+      return parseItalicsStr(node.val);
+    }
+    if (node.type === 'bold') {
+      return [{
+        type: 'bold',
+        val: node.val,
+        children: parseItalicsStr(node.val)
+      }];
+    }
+    return [node];
+  });
+
+  // Recursive renderer to React elements
+  const renderNode = (node: FormatNode, index: string): React.ReactNode => {
+    switch (node.type) {
+      case 'code':
+        return (
+          <code key={index} className="bg-neutral-100 dark:bg-neutral-800 text-[#c7254e] dark:text-[#ff8ca3] px-1.5 py-0.5 rounded text-[13px] font-mono">
+            {node.val}
+          </code>
+        );
+      case 'cite':
+        return (
+          <sup key={index} className="ml-0.5 cursor-pointer text-[10px] font-bold text-[#ef4d23] hover:text-[#d9441f]">
+            {node.val}
+          </sup>
+        );
+      case 'bold':
+        return (
+          <strong key={index} className="font-semibold text-neutral-900 dark:text-white">
+            {node.children ? node.children.map((child, i) => renderNode(child, `${index}-${i}`)) : node.val}
+          </strong>
+        );
+      case 'italic':
+        return (
+          <em key={index} className="italic">
+            {node.val}
+          </em>
+        );
+      case 'text':
+      default:
+        return <React.Fragment key={index}>{node.val}</React.Fragment>;
+    }
+  };
+
+  return <>{nodes.map((node, i) => renderNode(node, String(i)))}</>;
 }

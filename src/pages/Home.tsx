@@ -1,11 +1,83 @@
 import CinematicHero from '../components/CinematicHero';
 import DashboardPreview from '../components/DashboardPreview';
-import VideoEmbed from '../components/VideoEmbed';
+import InsightsHub, { type Article, type Video } from '../components/InsightsHub';
 import Footer from '../components/Footer';
 import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ArrowRight, TrendingUp, ShieldCheck, Crosshair, BarChart2, Star } from 'lucide-react';
+
+const homeVideos: Video[] = [
+  {
+    id: "home-vid-1",
+    title: "AI Will Not Replace Founders. Weak Strategy Will.",
+    description: "Y Combinator partners explain how AI tools accelerate operations, but why founder intuition and strategy remain the ultimate bottle-neck.",
+    videoUrl: "https://www.youtube-nocookie.com/embed/TANaRNMbYgk",
+    duration: "12:15",
+    coverGradient: "from-orange-500/20 to-red-600/20"
+  },
+  {
+    id: "home-vid-2",
+    title: "How to Build Startups That Matter",
+    description: "A deep-dive masterclass on discovering real human needs, validating product assumptions, and mapping critical initial paths.",
+    videoUrl: "https://www.youtube-nocookie.com/embed/jn9mHzXJIV0",
+    duration: "18:40",
+    coverGradient: "from-blue-600/20 to-indigo-700/20"
+  }
+];
+
+const homeArticles: Article[] = [
+  {
+    id: "home-art-1",
+    title: "The Art of the Pivot: Separating Healthy Friction From Structural Gaps",
+    category: "Strategy",
+    readTime: "6 min",
+    excerpt: "Building is hard, but building the wrong thing is fatal. Learn how to diagnose user engagement friction and decide when to pivot your product core.",
+    author: "Arief Fajar",
+    date: "May 18, 2026",
+    coverGradient: "from-blue-600 to-indigo-700",
+    content: [
+      { type: "paragraph", text: "Every founder experiences friction. You launch, and the initial reaction is quiet. Users sign up, but they don't return. The temptation is to work harder—to build more features, increase marketing spend, or push harder in sales. But often, the friction isn't operational; it's structural." },
+      { type: "heading", text: "Diagnosing Structural Friction" },
+      { type: "paragraph", text: "There is a fundamental difference between healthy early-stage friction (users needing onboarding help) and structural gaps (the product simply isn't needed). If your primary retention curve drops to zero after 30 days, regardless of user education, you are solving a non-existent problem." },
+      { type: "quote", text: "The cold truth is that most startups do not fail from poor engineering; they fail from a lack of market discovery." },
+      { type: "paragraph", text: "To identify real gaps, look at user behavior in isolation. Are they trying to solve the problem using hacky workarounds? If they are writing custom scripts or using Excel spreadsheets to bridge the gap, the demand is real. If they just ignore the problem entirely, you are pushing water uphill." },
+      { type: "heading", text: "The Pivot Decision Framework" },
+      { type: "paragraph", text: "When you choose to pivot, do not pivot in a vacuum. Evaluate your coordinates using these parameters:" },
+      { type: "list", text: [
+        "Founder-Market Fit: Does the new direction match your deep unfair advantages?",
+        "Regulatory Velocity: Will the pivot introduce heavy compliance walls?",
+        "Monetization Realism: Are customers willing to pay for this alternative solution out of their existing budgets?"
+      ] },
+      { type: "paragraph", text: "By using analytical tracking tools like Convix, you can test these hypothetical pivot scenarios against real competitive signals before writing a single line of new code." }
+    ]
+  },
+  {
+    id: "home-art-2",
+    title: "Regulatory Blind Spots: The Silent Killer of Promising Ideas",
+    category: "Risk Mapping",
+    readTime: "8 min",
+    excerpt: "Many brilliant ideas die not from lack of demand, but from complex regulatory traps. Discover how to identify and bypass hidden compliance minefields.",
+    author: "Arief Fajar",
+    date: "May 19, 2026",
+    coverGradient: "from-red-500 to-amber-600",
+    content: [
+      { type: "paragraph", text: "It happens all the time: a team builds a flawless web application that solves a major painful problem, gets initial sign-ups, and suddenly receives a cease-and-desist letter or realizes they cannot clear compliance requirements without a massive funding round." },
+      { type: "heading", text: "Why Compliance Trumps Code" },
+      { type: "paragraph", text: "In fields like fintech, healthtech, and AI safety, regulatory frameworks are evolving faster than ever. If your product architecture is built on a foundation that violates emerging data residency rules or medical device classifications, your entire technology stack becomes an expensive liability." },
+      { type: "quote", text: "Security and compliance are not post-launch add-ons; they are primary architectural constraints." },
+      { type: "paragraph", text: "Take the example of AI-powered diagnostic tools. If your model processes patient data, you are immediately subject to HIPAA or GDPR constraints. If it makes active recommendations, it might fall under medical device acts. Bypassing these assessments early in the brainstorming phase is a multi-million dollar mistake." },
+      { type: "heading", text: "How to Stress-Test Risk Early" },
+      { type: "paragraph", text: "Before committing resources, map out the regulatory dependencies. Ask these critical questions:" },
+      { type: "list", text: [
+        "Where does the primary user data reside and who is responsible for its processing?",
+        "Are there dominant incumbent players who use lobbying and regulatory compliance as defensive moats?",
+        "What are the minimum security standards required to close an enterprise contract in this sector?"
+      ] },
+      { type: "paragraph", text: "Using structured risk-indexing systems lets you flag these obstacles during the validation phase, helping you design compliance safeguards into your MVP from day one." }
+    ]
+  }
+];
 
 export default function Home() {
   const navigate = useNavigate();
@@ -291,11 +363,12 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== VIDEO EMBED ===== */}
-      <VideoEmbed
-        title={`"AI Will Not Replace Founders. Weak Strategy Will."`}
-        videoUrl="https://www.youtube-nocookie.com/embed/TANaRNMbYgk"
-        description="Y Combinator on how the best AI startup ideas emerge from strategic thinking, not trend-chasing."
+      {/* ===== INSIGHTS & MEDIA HUB ===== */}
+      <InsightsHub
+        sectionTitle={<>Insights, <span className="font-serif italic font-normal text-[var(--fg-secondary)]">Masterclasses</span> & Playbooks</>}
+        sectionSubtitle="Deep research, tactical validation frameworks, and curated masterclasses designed to build high-conviction startups."
+        articles={homeArticles}
+        videos={homeVideos}
       />
 
       {/* ===== FINAL CTA ===== */}

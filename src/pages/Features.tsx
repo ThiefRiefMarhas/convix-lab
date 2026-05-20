@@ -1,9 +1,75 @@
 import CinematicHero from '../components/CinematicHero';
-import VideoEmbed from '../components/VideoEmbed';
+import InsightsHub, { type Article, type Video } from '../components/InsightsHub';
 import Footer from '../components/Footer';
 import { motion } from 'motion/react';
 import { Activity, Target, Shield, Zap, BarChart3, Users, TrendingUp, Search, Brain, FileText, Mic, Image, MessageSquare, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
+
+const featuresVideos: Video[] = [
+  {
+    id: "features-vid-1",
+    title: "Operationalizing Strategy in the Age of Co-Pilots",
+    description: "Reid Hoffman explains how AI-native tools shift early startup cycles from purely manual research to strategic orchestration and high-fidelity testing.",
+    videoUrl: "https://www.youtube-nocookie.com/embed/dQ7ZvO5DpIw",
+    duration: "15:30",
+    coverGradient: "from-purple-600/20 to-indigo-700/20"
+  },
+  {
+    id: "features-vid-2",
+    title: "How to Measure What Matters",
+    description: "YC partners outline the core metrics that indicate genuine organic growth, retention, and strategic fit for early products.",
+    videoUrl: "https://www.youtube-nocookie.com/embed/Th8JoIan4dg",
+    duration: "11:45",
+    coverGradient: "from-amber-500/20 to-orange-600/20"
+  }
+];
+
+const featuresArticles: Article[] = [
+  {
+    id: "features-art-1",
+    title: "Under the Hood: How Convix Calculates Market Opportunity Scores",
+    category: "Data Science",
+    readTime: "10 min",
+    excerpt: "An architectural deep dive into the vector math, embedding distance metrics, and multi-layered trend indices that compute our objective opportunity verdict.",
+    author: "Arief Fajar",
+    date: "May 17, 2026",
+    coverGradient: "from-emerald-600 to-teal-700",
+    content: [
+      { type: "paragraph", text: "At the core of the Convix analysis pipeline lies the Market Opportunity Score (MOS)—a mathematically rigorous, multi-factored index engineered to calculate the commercial viability of early-stage software concepts. Rather than relying on simple pattern-matching or subjective generative AI heuristics, Convix executes three highly structured processing passes across high-dimensional vector spaces, public financial filings, and real-time search velocity databases." },
+      { type: "heading", text: "Vector Cosine Similarity & Cluster Analysis" },
+      { type: "paragraph", text: "The initial pass maps the user's detailed product description into a 1536-dimensional semantic space using advanced text-embedding models. This creates a dense coordinate vector representing the idea's functional profile. Convix then executes a series of fast K-Nearest Neighbors (KNN) searches inside our Supabase Pgvector database, which indexes over 1.2 million active startup profiles, patent applications, and commercial landing pages. By calculating the Cosine Similarity—where CosSim(A, B) = (A ⋅ B) / (||A|| ||B||)—the system establishes the exact distance between the proposed concept and the nearest operational solutions." },
+      { type: "quote", text: "Market opportunity is inversely proportional to semantic cluster density. True strategic wedges exist only where coordinate distance maps to sparse vectors." },
+      { type: "paragraph", text: "If the Cosine Similarity indicates heavy alignment (CosSim > 0.85) with existing systems, the opportunity score is penalized. However, semantic novelty alone is insufficient; the system must verify whether the identified void represents genuine demand or a 'barren landscape' where no customer willingness to pay exists." },
+      { type: "heading", text: "Integrating Live Search Velocity & Trend Weights" },
+      { type: "paragraph", text: "The second pass pulls real-time search indicators, parsing interest growth metrics over 30, 90, and 365-day intervals. This data is fed into a custom moving average equation, capturing whether the topic is entering a hyper-growth phase or stabilizing. The final Market Opportunity Score is calculated via a normalized, weighted equation:" },
+      { type: "list", text: [
+        "Semantic Novelty (40%): Calculated as 1 minus the maximum Cosine Similarity value.",
+        "Trend Velocity (30%): Calculated as the standardized Z-score of query growth curves.",
+        "Regulatory Friction Score (30%): Determined by mapping entity classes against compliance databases."
+      ] },
+      { type: "paragraph", text: "The composite index is then scaled between 0 and 100, providing founders with a clear, mathematically sound benchmark to justify their seed-stage allocation strategies." }
+    ]
+  },
+  {
+    id: "features-art-2",
+    title: "Decoding Competitor Density: Beyond Simple Keyword Searches",
+    category: "Competitive Intel",
+    readTime: "9 min",
+    excerpt: "Why standard keyword matching fails to detect indirect market alternatives, and how semantic embeddings map structural competitors using the Herfindahl-Hirschman Index (HHI).",
+    author: "Arief Fajar",
+    date: "May 18, 2026",
+    coverGradient: "from-purple-600 to-indigo-700",
+    content: [
+      { type: "paragraph", text: "When conducting early-stage competitive research, many founders fall into the 'Google Search Trap.' They enter three or four direct keyword combinations, notice the absence of an identical product name, and declare they have a blue ocean runway. This shallow analysis is highly dangerous. Keyword searches only detect active companies that utilize identical marketing jargon; they fail to map structural alternatives and indirect substitutes that command the user's budget." },
+      { type: "heading", text: "The Trap of Syntactic Matching" },
+      { type: "paragraph", text: "Competitor density is a function of problem-space overlap, not term-space overlap. If you are building a collaborative project manager for high-growth hardware teams, your core competitors are not merely 'hardware project managers.' Your true competitors are physical whiteboard grids, custom spreadsheets, legacy JIRA instances, and asynchronous Slack chains. These alternatives represent entrenched customer habits and must be accounted for in your cost of customer acquisition (CAC) modeling." },
+      { type: "quote", text: "A competitor is any alternative process that consumes a portion of your target user's limited operational budget." },
+      { type: "paragraph", text: "To model this, Convix implements a semantic classification parser. Instead of checking for literal word matches, our system extracts functional entity relationships (e.g., 'tracks inventory,' 'schedules dispatch') and calculates their occurrence across heterogeneous business verticals. This enables the engine to detect when a market is heavily contested by adjacent tools that can easily extend their feature set to absorb your niche." },
+      { type: "heading", text: "The Herfindahl-Hirschman Concentration Index" },
+      { type: "paragraph", text: "To determine true market lock-in, the competitive intelligence module calculates the Herfindahl-Hirschman Index (HHI) for your vertical. HHI is calculated by summing the squares of the market shares of all industry participants. A highly concentrated market (HHI > 2500) indicates that dominant platforms command strong distribution moats, meaning your go-to-market strategy must rely on a hyper-focused semantic wedge rather than horizontal competition." }
+    ]
+  }
+];
 
 const faqs = [
   { q: "How is Convix different from just using ChatGPT?", a: "ChatGPT generates content. Convix makes strategic decisions. We run structured analysis modules — market gap scoring, competitor density mapping, risk indexing — that are purpose-built for idea validation. ChatGPT will hype your idea. Convix will challenge it." },
@@ -428,11 +494,12 @@ export default function Features() {
           </div>
         </div>
       </section>
-
-      <VideoEmbed
-        title={`"Strategic Thinking Becomes Operational."`}
-        videoUrl="https://www.youtube-nocookie.com/embed/dQ7ZvO5DpIw"
-        description="Reid Hoffman on how great founders build systems for strategic execution."
+      {/* ===== INSIGHTS & MEDIA HUB ===== */}
+      <InsightsHub
+        sectionTitle={<>Deep Dives, <span className="font-serif italic font-normal text-[var(--fg-secondary)]">Calculations</span> & Algorithms</>}
+        sectionSubtitle="Under the hood tutorials, metrics architectures, and masterclasses designed to quantify startup viability."
+        articles={featuresArticles}
+        videos={featuresVideos}
       />
       <Footer />
     </>

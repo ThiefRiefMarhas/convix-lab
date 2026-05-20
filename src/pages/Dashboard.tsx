@@ -475,15 +475,14 @@ export default function Dashboard() {
 
       {/* ─── Main Content ─── */}
       <main className="flex-1 flex flex-col relative h-full overflow-hidden min-h-0">
-        {/* Top bar */}
-        <div className="w-full p-3 flex items-center sticky top-0 z-30 shrink-0">
-          <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2.5 rounded-xl hover:bg-white/80 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400 transition-colors">
-            {isSidebarOpen ? <PanelLeftClose size={20} /> : <PanelLeftOpen size={20} />}
-          </button>
-          {viewState === 'chat' && chat.conversationTitle && (
-            <span className="ml-3 text-sm font-semibold text-neutral-600 truncate">{chat.conversationTitle}</span>
-          )}
-        </div>
+        {/* Top bar (only shown when not in active chat view) */}
+        {viewState !== 'chat' && (
+          <div className="w-full p-3 flex items-center sticky top-0 z-30 shrink-0">
+            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2.5 rounded-xl hover:bg-white/80 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400 transition-colors">
+              {isSidebarOpen ? <PanelLeftClose size={20} /> : <PanelLeftOpen size={20} />}
+            </button>
+          </div>
+        )}
 
         <div className="flex-1 flex flex-col overflow-hidden min-h-0">
           <AnimatePresence mode="wait">
@@ -737,7 +736,7 @@ export default function Dashboard() {
                 key="chat" 
                 initial={{ opacity: 0, scale: 0.98 }} 
                 animate={{ opacity: 1, scale: 1 }}
-                className="flex flex-col lg:flex-row h-full gap-3 overflow-hidden p-1 pb-3 min-h-0 min-w-0 relative"
+                className="flex flex-col lg:flex-row h-full gap-3 overflow-hidden p-0 pb-2 min-h-0 min-w-0 relative"
               >
                 {/* Side tabs to slide back panels when hidden */}
                 {!isChatOpen && (
@@ -807,6 +806,9 @@ export default function Dashboard() {
                         onSetModel={chat.setModel}
                         onClose={() => setIsChatOpen(false)}
                         onUploadFile={chat.uploadFile}
+                        conversationTitle={chat.conversationTitle}
+                        onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+                        isSidebarOpen={isSidebarOpen}
                       />
                     </motion.div>
                   )}
@@ -848,6 +850,21 @@ export default function Dashboard() {
                       <div className="flex-1 flex flex-col min-h-0 bg-[var(--dash-canvas-bg)] rounded-2xl border border-neutral-200/60 dark:border-neutral-700/40 shadow-sm overflow-hidden relative" data-lenis-prevent="true">
                         {/* Right Panel Tabs */}
                         <div className="flex items-center gap-2 px-4 py-3 border-b border-neutral-100 dark:border-neutral-700/50 bg-[var(--dash-chat-bg)]">
+                          {!isChatOpen && (
+                            <button 
+                              onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
+                              className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors mr-1 shrink-0"
+                              title={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
+                            >
+                              {isSidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
+                            </button>
+                          )}
+                          {!isChatOpen && chat.conversationTitle && (
+                            <span className="text-sm font-semibold text-neutral-600 dark:text-neutral-400 truncate ml-1 mr-3 max-w-[200px]" title={chat.conversationTitle}>
+                              {chat.conversationTitle}
+                            </span>
+                          )}
+                          
                           {(['canvas', 'swot', 'insights'] as const).map(tab => (
                             <button
                               key={tab}

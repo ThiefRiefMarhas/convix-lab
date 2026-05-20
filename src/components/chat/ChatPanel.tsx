@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Wand2, X, AlertTriangle, Activity, Square } from 'lucide-react';
+import { Wand2, X, AlertTriangle, Activity, Square, PanelLeftOpen, PanelLeftClose } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import MessageBubble from './MessageBubble';
 import ToolCallCard from './ToolCallCard';
@@ -67,6 +67,9 @@ interface ChatPanelProps {
   onSetModel: (model: string) => void;
   onClose: () => void;
   onUploadFile: (file: File) => Promise<{ id: string } | null>;
+  conversationTitle?: string | null;
+  onToggleSidebar?: () => void;
+  isSidebarOpen?: boolean;
 }
 
 const RESEARCH_MESSAGES = [
@@ -86,6 +89,7 @@ export default function ChatPanel({
   messages, sources, isStreaming, streamingContent, activeTools, currentModel, error,
   analysisPhase, phaseProgress, thinkingSteps,
   onSendMessage, onStartAnalysis, onStopStreaming, onSetModel, onClose, onUploadFile,
+  conversationTitle = null, onToggleSidebar, isSidebarOpen = false,
 }: ChatPanelProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [researchMsgIdx, setResearchMsgIdx] = useState(0);
@@ -116,12 +120,23 @@ export default function ChatPanel({
     <div className="flex flex-col h-full min-h-0 bg-[var(--dash-chat-bg)] rounded-2xl border border-neutral-200/60 dark:border-neutral-700/40 overflow-hidden shadow-sm">
       {/* Header */}
       <div className="px-4 sm:px-5 py-3 border-b border-neutral-100 dark:border-neutral-700/50 bg-[var(--dash-chat-bg)] flex justify-between items-center shrink-0">
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#ef4d23]/20 to-[#ff7a55]/20 flex items-center justify-center p-1">
+        <div className="flex items-center gap-2.5 min-w-0">
+          {onToggleSidebar && (
+            <button 
+              onClick={onToggleSidebar} 
+              className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors mr-1 shrink-0"
+              title={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
+            >
+              {isSidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
+            </button>
+          )}
+          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#ef4d23]/20 to-[#ff7a55]/20 flex items-center justify-center p-1 shrink-0">
             <IntelligenceLogo className="text-[#ef4d23] w-full h-full" />
           </div>
           <div className="min-w-0">
-            <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100 leading-tight">Convix Intelligence</h3>
+            <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100 leading-tight truncate">
+              {conversationTitle || "Convix Intelligence"}
+            </h3>
             <p className="text-[11px] text-neutral-400 font-medium truncate">
               {isStreaming ? (
                 <span className="text-[#ef4d23] animate-pulse">Analyzing...</span>

@@ -103,6 +103,10 @@ export default function Dashboard() {
   const audioChunksRef = useRef<Blob[]>([]);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
+  // Synchronization refs to prevent URL vs local state race conditions
+  const prevUrlConvoIdRef = useRef<string | null>(null);
+  const prevChatConvoIdRef = useRef<string | null>(null);
+
   // Close user menu when clicking outside (handles PC click & mobile tap)
   useEffect(() => {
     function handleClickOutside(event: MouseEvent | TouchEvent) {
@@ -146,23 +150,42 @@ export default function Dashboard() {
     window.addEventListener('pointerup', handlePointerUp);
   };
 
-  // Sync URL and conversation state reactively
+  // Sync URL and conversation state reactively (with bulletproof race condition guards)
   useEffect(() => {
+    const prevUrlConvo = prevUrlConvoIdRef.current;
+    const prevChatConvo = prevChatConvoIdRef.current;
+
+    // Save current values for next execution
+    prevUrlConvoIdRef.current = urlConvoId;
+    prevChatConvoIdRef.current = chat.conversationId;
+
     if (urlConvoId) {
       if (chat.conversationId !== urlConvoId) {
         chat.setConversationId(urlConvoId);
       }
       setViewState('chat');
       setActiveView('chat');
-    } else if (chat.conversationId) {
-      // Sync newly created conversation ID to URL
-      setSearchParams({ c: chat.conversationId }, { replace: true });
-      setViewState('chat');
-      setActiveView('chat');
     } else {
-      // No active conversation
-      setViewState('input');
-      setActiveView('chat');
+      if (chat.conversationId) {
+        const isNewlyCreated = !prevChatConvo && chat.conversationId;
+        const isUrlCleared = prevUrlConvo && !urlConvoId;
+
+        if (isNewlyCreated && !isUrlCleared) {
+          // Sync newly generated conversation ID to URL
+          setSearchParams({ c: chat.conversationId }, { replace: true });
+          setViewState('chat');
+          setActiveView('chat');
+        } else {
+          // The user explicitly cleared the URL or clicked "Kecerdasan Baru"
+          chat.resetChat();
+          setViewState('input');
+          setActiveView('chat');
+        }
+      } else {
+        // Both URL and local states are null
+        setViewState('input');
+        setActiveView('chat');
+      }
     }
   }, [urlConvoId, chat.conversationId, setSearchParams]);
 

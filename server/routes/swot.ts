@@ -64,7 +64,7 @@ ${isIndonesian ? 'CRITICAL LANGUAGE INSTRUCTION: Since the report is written in 
 Report:
 ${reportMessage.content}`;
 
-    const swotJsonStr = await createCompletion([{ role: 'user', content: prompt }], 'Convix Fast', 2000, 0.2);
+    const swotJsonStr = await createCompletion([{ role: 'user', content: prompt }], 'Convix Fast', 2000, 0.2, 120000, true);
     
     // Parse JSON
     let swotData;
@@ -79,18 +79,31 @@ ${reportMessage.content}`;
       return;
     }
 
+    // --- SANITIZATION FOR DATABASE ---
+    const strengths = Array.isArray(swotData.strengths) ? swotData.strengths : [];
+    const weaknesses = Array.isArray(swotData.weaknesses) ? swotData.weaknesses : [];
+    const opportunities = Array.isArray(swotData.opportunities) ? swotData.opportunities : [];
+    const threats = Array.isArray(swotData.threats) ? swotData.threats : [];
+    
+    let overallScore = parseFloat(swotData.overall_score);
+    if (isNaN(overallScore)) {
+      overallScore = 7.0;
+    } else {
+      overallScore = Math.max(1, Math.min(10, overallScore));
+    }
+
     // 4. Save to database
     const { data: savedSwot, error: saveError } = await supabaseAdmin
       .from('swot_analyses')
       .upsert({
         conversation_id: conversationId,
         user_id: userId,
-        strengths: swotData.strengths,
-        weaknesses: swotData.weaknesses,
-        opportunities: swotData.opportunities,
-        threats: swotData.threats,
-        overall_score: swotData.overall_score,
-        ai_summary: swotData.ai_summary,
+        strengths,
+        weaknesses,
+        opportunities,
+        threats,
+        overall_score: overallScore,
+        ai_summary: swotData.ai_summary || '',
         updated_at: new Date().toISOString()
       }, { onConflict: 'conversation_id' })
       .select()

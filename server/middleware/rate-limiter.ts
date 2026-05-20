@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from './auth.js';
-import { supabaseAdmin, getUserUsage, getUserProfile } from '../services/supabase-admin.js';
+import { supabaseAdmin, getUserUsage, getUserProfile, getAnalysesCountToday } from '../services/supabase-admin.js';
 
 export async function rateLimiter(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
   const userId = req.user?.userId;
@@ -10,7 +10,7 @@ export async function rateLimiter(req: AuthenticatedRequest, res: Response, next
   }
 
   try {
-    const profile = await getUserProfile(userId);
+    const profile = await getUserProfile(userId, req.user?.email);
     const usage = await getUserUsage(userId);
 
     if (!profile || !usage) {
@@ -28,7 +28,12 @@ export async function rateLimiter(req: AuthenticatedRequest, res: Response, next
       const isAnalysisTrigger = req.body.analysisMode === true;
       
       if (isAnalysisTrigger) {
-        if (usage.searches_today >= LIMIT_ANALYSES_PER_DAY) {
+        // Query the number of analyses today (check database column first, fallback to messages query)
+        const analysesToday = usage.analyses_today !== undefined 
+          ? usage.analyses_today 
+          : await getAnalysesCountToday(userId);
+
+        if (analysesToday >= LIMIT_ANALYSES_PER_DAY) {
           res.status(429).json({ 
             error: 'Daily analysis limit reached',
             message: `You have reached your daily limit of ${LIMIT_ANALYSES_PER_DAY} deep analyses. Try again tomorrow.` 
@@ -36,6 +41,7 @@ export async function rateLimiter(req: AuthenticatedRequest, res: Response, next
           return;
         }
       }
+
 
       if (usage.messages_today >= LIMIT_MESSAGES_PER_DAY) {
         res.status(429).json({ 

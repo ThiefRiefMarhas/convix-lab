@@ -69,7 +69,7 @@ ${isIndonesian ? 'CRITICAL LANGUAGE INSTRUCTION: Since the report is written in 
 Report:
 ${reportMessage.content}`;
 
-    const jsonStr = await createCompletion([{ role: 'user', content: prompt }], 'Convix Fast', 2000, 0.2);
+    const jsonStr = await createCompletion([{ role: 'user', content: prompt }], 'Convix Fast', 2000, 0.2, 120000, true);
     
     // Parse JSON
     let data;
@@ -83,20 +83,59 @@ ${reportMessage.content}`;
       return;
     }
 
+    // --- SANITIZATION FOR DATABASE CONSTRAINTS ---
+    // 1. Verdict (CHECK constraint: 'green', 'yellow', 'red')
+    let verdict = (data.verdict || 'yellow').toLowerCase().trim();
+    if (!['green', 'yellow', 'red'].includes(verdict)) {
+      verdict = 'yellow';
+    }
+
+    // 2. Viability Score (CHECK constraint: 0 to 100)
+    let viabilityScore = parseInt(data.viability_score, 10);
+    if (isNaN(viabilityScore)) {
+      viabilityScore = 50;
+    } else {
+      viabilityScore = Math.max(0, Math.min(100, viabilityScore));
+    }
+
+    // 3. Difficulty (CHECK constraint: 'low', 'medium', 'high')
+    let difficulty = (data.difficulty || 'medium').toLowerCase().trim();
+    if (!['low', 'medium', 'high'].includes(difficulty)) {
+      difficulty = 'medium';
+    }
+
+    // 4. Competitor Count (Integer)
+    let competitorCount = parseInt(data.competitor_count, 10);
+    if (isNaN(competitorCount)) {
+      competitorCount = 0;
+    } else {
+      competitorCount = Math.max(0, competitorCount);
+    }
+
+    // 5. Key Metrics (JSONB)
+    const keyMetrics = typeof data.key_metrics === 'object' && data.key_metrics !== null 
+      ? data.key_metrics 
+      : { tam: 'Unknown', cagr: 'Unknown' };
+
+    // 6. Tags (text[])
+    const tags = Array.isArray(data.tags) 
+      ? data.tags.map((t: any) => String(t).trim()).filter(Boolean) 
+      : [];
+
     // 4. Save to database
     const { data: savedInsights, error: saveError } = await supabaseAdmin
       .from('conversation_insights')
       .upsert({
         conversation_id: conversationId,
         user_id: userId,
-        verdict: data.verdict,
-        viability_score: data.viability_score,
-        key_metrics: data.key_metrics,
-        tags: data.tags,
-        market_size: data.market_size,
-        competitor_count: data.competitor_count,
-        difficulty: data.difficulty,
-        ai_summary: data.ai_summary,
+        verdict,
+        viability_score: viabilityScore,
+        key_metrics: keyMetrics,
+        tags,
+        market_size: data.market_size || 'Unknown',
+        competitor_count: competitorCount,
+        difficulty,
+        ai_summary: data.ai_summary || '',
         updated_at: new Date().toISOString()
       }, { onConflict: 'conversation_id' })
       .select()
@@ -105,6 +144,7 @@ ${reportMessage.content}`;
     if (saveError) {
       throw saveError;
     }
+
 
     // 5. Also update conversation tags
     if (data.tags && data.tags.length > 0) {

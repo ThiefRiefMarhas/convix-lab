@@ -261,13 +261,32 @@ export async function* createStreamingCompletion(
 }
 
 /**
- * Non-streaming completion for quick tasks (e.g. title generation)
+ * Non-streaming completion for quick tasks or structured outputs.
  */
-export async function createCompletion(messages: ChatMessage[], modelName: string = 'Convix Fast', maxTokens?: number): Promise<string> {
+export async function createCompletion(
+  messages: ChatMessage[],
+  modelName: string = 'Convix Fast',
+  maxTokens?: number,
+  temperature?: number,
+  timeoutMs: number = 90000,
+  throwOnError: boolean = false
+): Promise<string> {
   const modelConfig = MODEL_MAP[modelName] || MODEL_MAP['Convix Fast'];
 
+  // Pre-flight check
+  if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY === 'YOUR_OPENROUTER_API_KEY_HERE') {
+    const errorMsg = 'OpenRouter API key not configured. Add your key to .env file (OPENROUTER_API_KEY).';
+    console.error(`[OpenRouter createCompletion] ${errorMsg}`);
+    if (throwOnError) {
+      throw new Error(errorMsg);
+    }
+    return 'New Conversation';
+  }
+
+  console.log(`[OpenRouter createCompletion] Calling models: ${modelConfig.models.join(' -> ')} (timeout: ${timeoutMs}ms)`);
+
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout for quick tasks
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   let response: Response;
   try {
@@ -282,19 +301,43 @@ export async function createCompletion(messages: ChatMessage[], modelName: strin
       body: JSON.stringify({
         models: modelConfig.models,
         messages,
-        temperature: 0.3,
+        temperature: temperature !== undefined ? temperature : 0.3,
         max_tokens: maxTokens || 100,
       }),
       signal: controller.signal,
     });
     clearTimeout(timeoutId);
 
-    if (!response.ok) return 'New Conversation';
+    if (!response.ok) {
+      const errText = await response.text();
+      let errMsg = `AI service error (${response.status})`;
+      try {
+        const errJson = JSON.parse(errText);
+        errMsg = errJson?.error?.message || errJson?.message || errMsg;
+      } catch { /* ignore */ }
+      
+      console.error(`[OpenRouter createCompletion] Error ${response.status}:`, errText);
+      if (throwOnError) {
+        throw new Error(errMsg);
+      }
+      return 'New Conversation';
+    }
 
     const data = await response.json();
-    return data.choices?.[0]?.message?.content?.trim() || 'New Conversation';
-  } catch {
+    const content = data.choices?.[0]?.message?.content?.trim();
+    if (!content) {
+      if (throwOnError) {
+        throw new Error('AI returned an empty response.');
+      }
+      return 'New Conversation';
+    }
+    return content;
+  } catch (error: any) {
     clearTimeout(timeoutId);
+    console.error('[OpenRouter createCompletion] Exception:', error.message || error);
+    if (throwOnError) {
+      throw error;
+    }
     return 'New Conversation';
   }
 }

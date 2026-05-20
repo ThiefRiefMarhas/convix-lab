@@ -101,7 +101,9 @@ router.post('/', requireAuth, rateLimiter, async (req: AuthenticatedRequest, res
 
     // --- ANALYSIS MODE ---
     if (analysisMode || shouldForceAnalysis) {
+      await incrementUsage(userId, 'analyses_today');
       const conversationHistory = (history || [])
+
         .filter(m => m.role === 'user' || m.role === 'assistant')
         .map(m => `${m.role.toUpperCase()}: ${m.content}`)
         .join('\n\n');

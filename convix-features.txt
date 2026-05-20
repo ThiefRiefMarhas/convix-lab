@@ -1,0 +1,100 @@
+========================================================================
+    CONVIX LAB - PRODUCT BRIEF & VIDEO CREATION GUIDE
+========================================================================
+
+Halo! Ini adalah dokumen panduan ringkas, padat, dan jelas mengenai 
+Platform "Convix Lab". Dokumen ini dibuat untuk membantumu memahami 
+produk, fitur, halaman, dan alur kerja aplikasi secara menyeluruh agar 
+bisa diterjemahkan ke dalam video komersial yang menarik.
+
+------------------------------------------------------------------------
+1. APA ITU CONVIX LAB? (ELEVATOR PITCH)
+------------------------------------------------------------------------
+Convix Lab adalah platform "AI-Driven Business Idea Validator & Market 
+Intelligence". Platform ini membantu wirausahawan, inovator, dan 
+analis bisnis untuk menguji kelayakan ide bisnis baru secara mendalam 
+hanya dalam hitungan detik. 
+
+Alih-alih membuat riset pasar manual yang memakan waktu berminggu-minggu, 
+Convix Lab menggunakan kecerdasan buatan, pencarian web real-time, dan 
+mesin pengikis (web scraper) untuk menyajikan laporan kelayakan bisnis, 
+analisis SWOT, metrik pasar, dan analisis investasi secara terstruktur 
+serta siap cetak.
+
+------------------------------------------------------------------------
+2. HALAMAN-HALAMAN UTAMA WEBSITE (SITE MAP)
+------------------------------------------------------------------------
+* Halaman Landing (Landing Page):
+  Halaman depan bernuansa premium, futuristik, dan sinematik yang 
+  menjelaskan proposisi nilai, fitur utama, paket harga (Pricing), 
+  testimoni, dan formulir Hubungi Kami (Contact).
+* Halaman Dashboard Utama (Dashboard Page):
+  Workspace kerja tempat pengguna menginput ide, melihat proses berpikir 
+  AI, berinteraksi dengan asisten riset, dan menganalisis hasil kelayakan.
+* Modal Pengaturan (Settings Modal):
+  Pop-up pengaturan instan untuk mengganti tema (Terang/Gelap), bahasa 
+  aplikasi, serta mengaktifkan "Fokus Riset Indonesia" untuk hasil riset 
+  berbasis pasar dan hukum lokal Indonesia.
+
+------------------------------------------------------------------------
+3. FITUR-FITUR UNGGULAN (CORE FEATURES)
+------------------------------------------------------------------------
+* Multi-Model Selection:
+  Pengguna bisa memilih kecerdasan model sesuai kebutuhan:
+  - Convix Pro (Validasi kompleks)
+  - Convix Fast (Pemindaian ide cepat)
+  - Convix Creative (Brainstorming kreatif & branding)
+* Input Multimedia & Suara (Voice & PDF Upload):
+  Input ide tidak hanya lewat ketikan teks, tetapi juga bisa menggunakan 
+  input suara langsung (Speech-to-Text) serta mengunggah dokumen referensi 
+  (PDF/Gambar).
+* Pencarian Web Real-Time (Real-Time Web Search):
+  Kemampuan mengikis data internet terbaru secara langsung untuk riset 
+  pasar yang akurat, lengkap dengan daftar referensi/tautan sumber terpercaya.
+* Indikator Proses Berpikir AI (Thinking Phase Indicator):
+  Menunjukkan transparansi analisis AI saat mengkaji ide secara beruntun 
+  (Menganalisis permintaan, mencari data pasar, menyusun laporan).
+* Laporan Kelayakan Bisnis & Verdict Badge:
+  Hasil kelayakan dilengkapi indikator visual tegas: 
+  - Recommended (Rekomendasi - Hijau ✅)
+  - Caution (Hati-hati - Kuning ⚠️)
+  - Not Recommended (Tidak Direkomendasikan - Merah 🚫)
+* Panel SWOT Otomatis (SWOT Analysis Panel):
+  Membuat matriks Kekuatan, Kelemahan, Peluang, dan Ancaman (SWOT) secara 
+  otomatis berdasarkan laporan riset, lengkap dengan skor angka kekuatan 
+  dan kutipan bukti nyata dari pasar.
+* Pusat Wawasan Kelayakan (Viability Insights Hub):
+  Menampilkan estimasi TAM (Total Addressable Market), CAGR (Growth Rate), 
+  tingkat kesulitan eksekusi, jumlah kompetitor, dan ringkasan eksekutif.
+* Ekspor Laporan PDF Profesional (Single-Click A4 PDF Exporter):
+  Satu tombol klik langsung untuk menyusun semua data riset, SWOT, dan 
+  metrik ke dalam dokumen laporan formal berukuran A4 yang siap dicetak 
+  atau dipresentasikan ke investor.
+
+------------------------------------------------------------------------
+4. ALUR KERJA PENGGUNA (USER JOURNEY FOR VIDEO SCENES)
+------------------------------------------------------------------------
+Berikut adalah 4 langkah mudah alur aplikasi yang sangat bagus untuk 
+divisualisasikan di dalam video komersial:
+
+Langkah 1: Input Ide Bisnis
+- Pengguna masuk ke Dashboard.
+- Mengetik ide atau menggunakan input suara mikrofon, misal: "Aplikasi penyewaan alat berat berbasis IoT untuk konstruksi di Jakarta."
+- Mengunggah file PDF pendukung jika ada, dan menyalakan pencarian web real-time.
+
+Langkah 2: AI Thinking & Scraping
+- Layar menunjukkan AI sedang bekerja secara transparan.
+- Tampil indikator fase berpikir AI dan daftar situs web yang sedang dikikis (scraped) datanya secara langsung untuk riset kompetitor lokal.
+
+Langkah 3: Laporan Kelayakan Muncul
+- Hasil analisis kelayakan muncul dalam bentuk kanvas riset yang sangat rapi.
+- Menampilkan Verdict Badge (misal: "Recommended ✅" dengan skor TAM $3B, kompetitor, dll.).
+- SWOT Panel menampilkan 4 kuadran SWOT interaktif.
+
+Langkah 4: Unduh Laporan Resmi
+- Pengguna mengeklik tombol "Export PDF".
+- Sistem langsung membuat dokumen A4 PDF terstruktur yang siap dibawa rapat atau dikirim ke investor.
+
+========================================================================
+                       TERIMA KASIH & SELAMAT BERKARYA!
+========================================================================

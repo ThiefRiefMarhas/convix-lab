@@ -95,11 +95,28 @@ export default function Dashboard() {
   const [activeView, setActiveView] = useState<'chat' | 'analytics'>('chat');
   const [rightPanelTab, setRightPanelTab] = useState<'canvas' | 'swot' | 'insights'>('canvas');
   const [isExportOpen, setIsExportOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const splitContainerRef = useRef<HTMLDivElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close user menu when clicking outside (handles PC click & mobile tap)
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent | TouchEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, []);
 
   const chat = useChat(urlConvoId);
   const convos = useConversations();
@@ -396,23 +413,29 @@ export default function Dashboard() {
           </div>
 
           {/* User Panel */}
-          <div className="p-3 mx-5 mb-5 mt-auto bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200/60 dark:border-neutral-700/40 rounded-2xl shadow-sm relative group shrink-0">
-            <div className="absolute bottom-[calc(100%+8px)] left-0 w-full opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 translate-y-2 group-hover:translate-y-0 z-50">
+          <div 
+            ref={userMenuRef}
+            className="p-3 mx-5 mb-5 mt-auto bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200/60 dark:border-neutral-700/40 rounded-2xl shadow-sm relative group shrink-0"
+          >
+            <div className={`absolute bottom-[calc(100%+8px)] left-0 w-full transition-all duration-200 translate-y-2 z-50 ${isUserMenuOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible group-hover:opacity-100 group-hover:visible group-hover:translate-y-0'}`}>
               <div className="bg-[var(--dash-sidebar)] border border-neutral-200 dark:border-neutral-700 shadow-xl rounded-2xl p-2 flex flex-col gap-1">
-                <button onClick={toggleTheme} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 text-sm font-medium text-neutral-700 dark:text-neutral-300 transition-colors">
+                <button onClick={(e) => { e.stopPropagation(); toggleTheme(); setIsUserMenuOpen(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 text-sm font-medium text-neutral-700 dark:text-neutral-300 transition-colors">
                   {theme === 'dark' ? <Sun size={16} className="text-amber-500" /> : <Moon size={16} className="text-neutral-500" />}
                   {theme === 'dark' ? strings.lightMode : strings.darkMode}
                 </button>
-                <button onClick={() => setIsSettingsModalOpen(true)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 text-sm font-medium text-neutral-700 dark:text-neutral-300 transition-colors">
+                <button onClick={(e) => { e.stopPropagation(); setIsSettingsModalOpen(true); setIsUserMenuOpen(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 text-sm font-medium text-neutral-700 dark:text-neutral-300 transition-colors">
                   <Settings size={16} className="text-neutral-500" /> {strings.settings}
                 </button>
                 <div className="h-px bg-neutral-100 dark:bg-neutral-700 my-1" />
-                <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/30 text-sm font-medium text-red-600 transition-colors">
+                <button onClick={(e) => { e.stopPropagation(); handleSignOut(); setIsUserMenuOpen(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/30 text-sm font-medium text-red-600 transition-colors">
                   <LogOut size={16} className="text-red-500" /> {strings.signOut}
                 </button>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-2 rounded-xl cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
+            <div 
+              onClick={() => setIsUserMenuOpen(prev => !prev)}
+              className="flex items-center gap-3 p-2 rounded-xl cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+            >
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ef4d23] to-[#ff7a55] flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-sm">
                 {user?.email?.charAt(0).toUpperCase() || 'U'}
               </div>

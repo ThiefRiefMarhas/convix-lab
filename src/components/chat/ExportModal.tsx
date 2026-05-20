@@ -13,130 +13,47 @@ export function ExportModal({ conversationId, onClose }: ExportModalProps) {
 
   const parseMarkdown = (md: string): string => {
     if (!md) return '';
-    let html = md;
     
-    // Clean escape characters or backticks
-    html = html
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-
-    // Headers
-    html = html.replace(/^### (.*$)/gim, '<h3 style="font-size: 15px; font-weight: 700; color: #111827; margin-top: 20px; margin-bottom: 8px; page-break-after: avoid;">$1</h3>');
-    html = html.replace(/^## (.*$)/gim, '<h2 style="font-size: 17px; font-weight: 800; color: #111827; margin-top: 26px; margin-bottom: 12px; border-bottom: 1.5px solid #f3f4f6; padding-bottom: 6px; page-break-after: avoid; text-transform: uppercase; letter-spacing: 0.3px;">$1</h2>');
-    html = html.replace(/^# (.*$)/gim, '<h1 style="font-size: 22px; font-weight: 900; color: #111827; margin-top: 30px; margin-bottom: 16px; page-break-after: avoid;">$1</h1>');
-    
-    // Bold
-    html = html.replace(/\*\*(.*?)\*\*/g, '<strong style="font-weight: 700; color: #111827;">$1</strong>');
-    html = html.replace(/__(.*?)__/g, '<strong style="font-weight: 700; color: #111827;">$1</strong>');
-    
-    // Italic
-    html = html.replace(/\*(.*?)\*/g, '<em style="font-style: italic;">$1</em>');
-    html = html.replace(/_(.*?)_/g, '<em style="font-style: italic;">$1</em>');
-    
-    // Links
-    html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" style="color: #ef4d23; text-decoration: none; font-weight: 500;">$1</a>');
-
-    // Process lists, tables, and paragraphs line by line
-    const lines = html.split('\n');
+    // Normalize line endings and split
+    const rawLines = md.replace(/\r\n/g, '\n').split('\n');
     const processedLines: string[] = [];
+    
     let inList = false;
     let inTable = false;
     let tableRows: string[][] = [];
 
-    for (let line of lines) {
-      const trimmed = line.trim();
-      const isTableRow = trimmed.startsWith('|') && trimmed.endsWith('|');
+    const formatInlineHTML = (text: string): string => {
+      if (!text) return '';
+      let formatted = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+      
+      // Bold
+      formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong style="font-weight: 700; color: #111827;">$1</strong>');
+      formatted = formatted.replace(/__(.*?)__/g, '<strong style="font-weight: 700; color: #111827;">$1</strong>');
+      
+      // Italic
+      formatted = formatted.replace(/\*(.*?)\*/g, '<em style="font-style: italic;">$1</em>');
+      formatted = formatted.replace(/_(.*?)_/g, '<em style="font-style: italic;">$1</em>');
+      
+      // Links
+      formatted = formatted.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" style="color: #ef4d23; text-decoration: none; font-weight: 500;">$1</a>');
+      
+      return formatted;
+    };
 
-      if (isTableRow) {
-        // If we were in a list, close it
-        if (inList) {
-          processedLines.push('</ul>');
-          inList = false;
-        }
-
-        // Check if it is a separator row (e.g. |---|---|)
-        const isSeparator = /^[|:\-\s]+$/.test(trimmed);
-        if (isSeparator) {
-          continue;
-        }
-
-        const cells = trimmed.split('|').map(c => c.trim()).slice(1, -1);
-        if (!inTable) {
-          inTable = true;
-          tableRows = [cells];
-        } else {
-          tableRows.push(cells);
-        }
-      } else {
-        // If we were in a table, render it now and close it
-        if (inTable) {
-          const headerCells = tableRows[0];
-          const bodyRows = tableRows.slice(1);
-          
-          let tableHTML = '<table style="width: 100%; border-collapse: collapse; margin-top: 12px; margin-bottom: 20px; font-size: 11.5px; page-break-inside: avoid; border: 1px solid #e5e7eb;">';
-          
-          // Header
-          tableHTML += '<thead><tr style="background-color: #f9fafb; border-bottom: 1.5px solid #e5e7eb;">';
-          for (const cell of headerCells) {
-            tableHTML += `<th style="padding: 8px 10px; text-align: left; font-weight: 700; color: #374151; border: 1px solid #e5e7eb;">${cell}</th>`;
-          }
-          tableHTML += '</tr></thead>';
-          
-          // Body
-          tableHTML += '<tbody>';
-          for (const row of bodyRows) {
-            tableHTML += '<tr style="border-bottom: 1px solid #e5e7eb; page-break-inside: avoid;">';
-            for (const cell of row) {
-              tableHTML += `<td style="padding: 8px 10px; color: #4b5563; border: 1px solid #e5e7eb; line-height: 1.4;">${cell}</td>`;
-            }
-            tableHTML += '</tr>';
-          }
-          tableHTML += '</tbody></table>';
-          
-          processedLines.push(tableHTML);
-          inTable = false;
-          tableRows = [];
-        }
-
-        if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
-          if (!inList) {
-            processedLines.push('<ul style="margin-top: 4px; margin-bottom: 12px; padding-left: 20px; list-style-type: disc;">');
-            inList = true;
-          }
-          const itemContent = trimmed.substring(2);
-          processedLines.push(`<li style="margin-bottom: 6px; font-size: 13.5px; color: #374151; line-height: 1.5;">${itemContent}</li>`);
-        } else {
-          if (inList) {
-            processedLines.push('</ul>');
-            inList = false;
-          }
-          if (trimmed === '') {
-            continue;
-          }
-          if (trimmed.startsWith('<h') || trimmed.startsWith('<blockquote') || trimmed.startsWith('<hr')) {
-            processedLines.push(trimmed);
-          } else {
-            processedLines.push(`<p style="margin-top: 0; margin-bottom: 12px; font-size: 13.5px; color: #374151; line-height: 1.6; text-align: justify;">${trimmed}</p>`);
-          }
-        }
-      }
-    }
-
-    // Final checks if document ends while still in a list or table
-    if (inList) {
-      processedLines.push('</ul>');
-    }
-    if (inTable) {
-      const headerCells = tableRows[0];
-      const bodyRows = tableRows.slice(1);
+    const renderTableHTML = (rows: string[][]): string => {
+      if (rows.length === 0) return '';
+      const headerCells = rows[0];
+      const bodyRows = rows.slice(1);
       
       let tableHTML = '<table style="width: 100%; border-collapse: collapse; margin-top: 12px; margin-bottom: 20px; font-size: 11.5px; page-break-inside: avoid; border: 1px solid #e5e7eb;">';
       
       // Header
       tableHTML += '<thead><tr style="background-color: #f9fafb; border-bottom: 1.5px solid #e5e7eb;">';
       for (const cell of headerCells) {
-        tableHTML += `<th style="padding: 8px 10px; text-align: left; font-weight: 700; color: #374151; border: 1px solid #e5e7eb;">${cell}</th>`;
+        tableHTML += `<th style="padding: 10px 12px; text-align: left; font-weight: 700; color: #374151; border: 1px solid #e5e7eb;">${formatInlineHTML(cell)}</th>`;
       }
       tableHTML += '</tr></thead>';
       
@@ -145,13 +62,120 @@ export function ExportModal({ conversationId, onClose }: ExportModalProps) {
       for (const row of bodyRows) {
         tableHTML += '<tr style="border-bottom: 1px solid #e5e7eb; page-break-inside: avoid;">';
         for (const cell of row) {
-          tableHTML += `<td style="padding: 8px 10px; color: #4b5563; border: 1px solid #e5e7eb; line-height: 1.4;">${cell}</td>`;
+          tableHTML += `<td style="padding: 10px 12px; color: #4b5563; border: 1px solid #e5e7eb; line-height: 1.5;">${formatInlineHTML(cell)}</td>`;
         }
         tableHTML += '</tr>';
       }
       tableHTML += '</tbody></table>';
+      return tableHTML;
+    };
+
+    for (let i = 0; i < rawLines.length; i++) {
+      const line = rawLines[i];
+      const trimmed = line.trim();
       
-      processedLines.push(tableHTML);
+      // Detect table row (starts with pipe)
+      const isTableRow = trimmed.startsWith('|');
+
+      if (isTableRow) {
+        // Close list if in one
+        if (inList) {
+          processedLines.push('</ul>');
+          inList = false;
+        }
+
+        // Check if it's a separator line (e.g. |---|---|)
+        const isSeparator = /^[|:\-\s]+$/.test(trimmed);
+        if (isSeparator) {
+          continue;
+        }
+
+        // Extract cells robustly
+        const cells = trimmed.split('|').map(c => c.trim());
+        if (trimmed.startsWith('|')) cells.shift();
+        if (trimmed.endsWith('|') && cells.length > 0) cells.pop();
+
+        if (!inTable) {
+          inTable = true;
+          tableRows = [cells];
+        } else {
+          tableRows.push(cells);
+        }
+      } else {
+        // If we were in a table, render it now
+        if (inTable) {
+          processedLines.push(renderTableHTML(tableRows));
+          inTable = false;
+          tableRows = [];
+        }
+
+        // Headers (starts with # after trimming)
+        if (trimmed.startsWith('#')) {
+          const headerLevel = (trimmed.match(/^#+/) || [''])[0].length;
+          const headerText = trimmed.replace(/^#+\s*/, '');
+          const cleanText = formatInlineHTML(headerText);
+          
+          if (headerLevel === 1) {
+            processedLines.push(`<h1 style="font-size: 22px; font-weight: 900; color: #111827; margin-top: 30px; margin-bottom: 16px; page-break-after: avoid;">${cleanText}</h1>`);
+          } else if (headerLevel === 2) {
+            processedLines.push(`<h2 style="font-size: 17px; font-weight: 800; color: #111827; margin-top: 26px; margin-bottom: 12px; border-bottom: 1.5px solid #f3f4f6; padding-bottom: 6px; page-break-after: avoid; text-transform: uppercase; letter-spacing: 0.3px;">${cleanText}</h2>`);
+          } else {
+            processedLines.push(`<h3 style="font-size: 15px; font-weight: 700; color: #111827; margin-top: 20px; margin-bottom: 8px; page-break-after: avoid;">${cleanText}</h3>`);
+          }
+        } 
+        // Horizontal rules
+        else if (trimmed === '---' || trimmed === '***') {
+          processedLines.push('<hr style="border: 0; border-top: 1.5px solid #e5e7eb; margin: 24px 0;" />');
+        }
+        // Lists
+        else if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+          if (!inList) {
+            processedLines.push('<ul style="margin-top: 4px; margin-bottom: 12px; padding-left: 20px; list-style-type: disc;">');
+            inList = true;
+          }
+          const itemContent = formatInlineHTML(trimmed.substring(2));
+          processedLines.push(`<li style="margin-bottom: 6px; font-size: 13.5px; color: #374151; line-height: 1.5;">${itemContent}</li>`);
+        } 
+        // Numbered lists
+        else if (/^\d+\.\s/.test(trimmed)) {
+          if (inList) {
+            processedLines.push('</ul>');
+            inList = false;
+          }
+          const match = trimmed.match(/^(\d+)\.\s(.*)/);
+          if (match) {
+            const num = match[1];
+            const text = formatInlineHTML(match[2]);
+            processedLines.push(`<p style="margin-top: 0; margin-bottom: 12px; font-size: 13.5px; color: #374151; line-height: 1.6;"><strong style="color: #ef4d23; font-weight: 700; margin-right: 6px;">${num}.</strong>${text}</p>`);
+          }
+        }
+        // Paragraphs or blockquotes
+        else {
+          if (inList) {
+            processedLines.push('</ul>');
+            inList = false;
+          }
+          
+          if (trimmed === '') {
+            continue;
+          }
+          
+          if (trimmed.startsWith('&gt;') || trimmed.startsWith('>')) {
+            const quoteText = trimmed.replace(/^(&gt;|>)\s*/, '');
+            processedLines.push(`<blockquote style="border-left: 4px solid #ef4d23; padding-left: 16px; margin: 16px 0; color: #4b5563; font-style: italic; font-size: 13.5px; line-height: 1.6;">${formatInlineHTML(quoteText)}</blockquote>`);
+          } else {
+            processedLines.push(`<p style="margin-top: 0; margin-bottom: 12px; font-size: 13.5px; color: #374151; line-height: 1.6; text-align: justify;">${formatInlineHTML(trimmed)}</p>`);
+          }
+        }
+      }
+    }
+
+    // Cleanup remaining table or list
+    if (inList) {
+      processedLines.push('</ul>');
+    }
+    if (inTable) {
+      processedLines.push(renderTableHTML(tableRows));
     }
 
     return processedLines.join('\n');

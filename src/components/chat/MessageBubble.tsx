@@ -76,70 +76,115 @@ export default MessageBubble;
 /**
  * Markdown renderer — handles headers, bold, lists, code, tables, verdict badges.
  */
+function renderTable(rows: string[][], key: string | number): React.ReactNode {
+  if (rows.length === 0) return null;
+  const headers = rows[0];
+  const bodyRows = rows.slice(1);
+
+  return (
+    <div key={key} className="overflow-x-auto my-4 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-sm">
+      <table className="w-full text-left text-[13.5px] border-collapse">
+        <thead>
+          <tr className="bg-neutral-50 dark:bg-neutral-800/60 border-b border-neutral-200 dark:border-neutral-700">
+            {headers.map((cell, cidx) => (
+              <th key={cidx} className="px-4 py-3 font-semibold text-neutral-900 dark:text-neutral-100 border-r border-neutral-200 dark:border-neutral-700 last:border-r-0">
+                {formatInline(cell)}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {bodyRows.map((row, ridx) => {
+            // Pad row if it has fewer cells than headers to keep structure aligned
+            const cells = [...row];
+            while (cells.length < headers.length) {
+              cells.push('');
+            }
+            return (
+              <tr key={ridx} className="border-b border-neutral-200 dark:border-neutral-700 last:border-b-0 hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30 transition-colors">
+                {cells.slice(0, headers.length).map((cell, cidx) => (
+                  <td key={cidx} className="px-4 py-2.5 text-neutral-700 dark:text-neutral-300 border-r border-neutral-200 dark:border-neutral-700 last:border-r-0">
+                    {formatInline(cell)}
+                  </td>
+                ))}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function renderMarkdown(content: string): React.ReactNode {
   if (!content) return null;
 
-  const lines = content.split('\n');
+  // Normalize line endings and split
+  const lines = content.replace(/\r\n/g, '\n').split('\n');
   const elements: React.ReactNode[] = [];
   let inCodeBlock = false;
   let codeLines: string[] = [];
   let codeLang = '';
 
   let inTable = false;
-  let tableRows: React.ReactNode[][] = [];
+  let tableRows: string[][] = [];
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
+    const trimmed = line.trim();
 
     // Code blocks
-    if (line.startsWith('```')) {
+    if (trimmed.startsWith('```')) {
       if (inCodeBlock) {
         elements.push(<CodeBlock key={i} code={codeLines.join('\n')} lang={codeLang} />);
         codeLines = [];
         inCodeBlock = false;
       } else {
-        codeLang = line.slice(3).trim();
+        codeLang = trimmed.slice(3).trim();
         inCodeBlock = true;
       }
       continue;
     }
-    if (inCodeBlock) { codeLines.push(line); continue; }
+    if (inCodeBlock) {
+      codeLines.push(line);
+      continue;
+    }
 
     // Tables
-    if (line.startsWith('|') && line.endsWith('|')) {
-      if (line.includes('---')) continue;
-      
-      const cells = line.split('|').slice(1, -1).map(c => c.trim());
-      
+    const isTableRow = trimmed.startsWith('|');
+
+    if (isTableRow) {
+      // Check if it's a separator line (e.g. |---|---|)
+      const isSeparator = /^[|:\-\s]+$/.test(trimmed);
+      if (isSeparator) {
+        continue;
+      }
+
+      // Extract cells robustly
+      const cells = trimmed.split('|').map(c => c.trim());
+      if (trimmed.startsWith('|')) cells.shift();
+      if (trimmed.endsWith('|') && cells.length > 0) cells.pop();
+
       if (!inTable) {
         inTable = true;
+        tableRows = [cells];
+      } else {
+        tableRows.push(cells);
+      }
+      continue;
+    } else {
+      // If we were in a table, render it now
+      if (inTable) {
+        elements.push(renderTable(tableRows, `table-${i}`));
+        inTable = false;
         tableRows = [];
       }
-      
-      tableRows.push(cells.map((cell, cidx) => (
-        <td key={cidx} className={`px-4 py-2.5 border-b border-neutral-200 dark:border-neutral-700 ${tableRows.length === 0 ? 'font-semibold bg-neutral-50 dark:bg-neutral-800/50 text-neutral-900 dark:text-neutral-100' : 'text-neutral-700 dark:text-neutral-300'}`}>
-          {formatInline(cell)}
-        </td>
-      )));
-      continue;
-    } else if (inTable) {
-      elements.push(
-        <div key={`table-${i}`} className="overflow-x-auto my-4 border border-neutral-200 dark:border-neutral-700 rounded-xl">
-          <table className="w-full text-left text-[13px] border-collapse">
-            <tbody>
-              {tableRows.map((row, ridx) => <tr key={ridx}>{row}</tr>)}
-            </tbody>
-          </table>
-        </div>
-      );
-      inTable = false;
-      tableRows = [];
     }
 
     // Verdict markers
-    if (line.includes('[VERDICT:GREEN]') || line.includes('[VERDICT:YELLOW]') || line.includes('[VERDICT:RED]')) {
-      const verdictType = line.includes('[VERDICT:GREEN]') ? 'green' : line.includes('[VERDICT:YELLOW]') ? 'yellow' : 'red';
-      const cleanLine = line.replace(/\[VERDICT:(GREEN|YELLOW|RED)\]/g, '').trim();
+    if (trimmed.includes('[VERDICT:GREEN]') || trimmed.includes('[VERDICT:YELLOW]') || trimmed.includes('[VERDICT:RED]')) {
+      const verdictType = trimmed.includes('[VERDICT:GREEN]') ? 'green' : trimmed.includes('[VERDICT:YELLOW]') ? 'yellow' : 'red';
+      const cleanLine = trimmed.replace(/\[VERDICT:(GREEN|YELLOW|RED)\]/g, '').trim();
       const icon = verdictType === 'green' ? '✅' : verdictType === 'yellow' ? '⚠️' : '🚫';
       const label = verdictType === 'green' ? 'Recommended' : verdictType === 'yellow' ? 'Caution' : 'Not Recommended';
       
@@ -156,31 +201,37 @@ function renderMarkdown(content: string): React.ReactNode {
     }
 
     // Blockquotes
-    if (line.startsWith('> ')) {
+    if (trimmed.startsWith('&gt;') || trimmed.startsWith('>')) {
+      const quoteText = trimmed.replace(/^(&gt;|>)\s*/, '');
       elements.push(
         <blockquote key={i} className="border-l-4 border-[#ef4d23] bg-orange-50/30 dark:bg-orange-950/20 pl-4 pr-2 py-2 my-3 rounded-r-lg text-neutral-700 dark:text-neutral-300 italic">
-          {formatInline(line.slice(2))}
+          {formatInline(quoteText)}
         </blockquote>
       );
       continue;
     }
 
     // Headers
-    if (line.startsWith('### ')) {
-      elements.push(<h4 key={i} className="font-semibold text-[13px] mt-6 mb-2 uppercase tracking-wide text-neutral-500 dark:text-neutral-400 flex items-center gap-2">{formatInline(line.slice(4))}</h4>);
-    } else if (line.startsWith('## ')) {
-      elements.push(<h3 key={i} className="font-bold text-[16px] mt-6 mb-3 text-neutral-900 dark:text-neutral-100">{formatInline(line.slice(3))}</h3>);
-    } else if (line.startsWith('# ')) {
-      elements.push(<h2 key={i} className="font-bold text-[18px] mt-6 mb-3 text-neutral-900 dark:text-neutral-100">{formatInline(line.slice(2))}</h2>);
+    if (trimmed.startsWith('#')) {
+      const headerLevel = (trimmed.match(/^#+/) || [''])[0].length;
+      const headerText = trimmed.replace(/^#+\s*/, '');
+      
+      if (headerLevel === 1) {
+        elements.push(<h2 key={i} className="font-bold text-[18px] mt-6 mb-3 text-neutral-900 dark:text-neutral-100">{formatInline(headerText)}</h2>);
+      } else if (headerLevel === 2) {
+        elements.push(<h3 key={i} className="font-bold text-[16px] mt-6 mb-3 text-neutral-900 dark:text-neutral-100">{formatInline(headerText)}</h3>);
+      } else {
+        elements.push(<h4 key={i} className="font-semibold text-[13px] mt-6 mb-2 uppercase tracking-wide text-neutral-500 dark:text-neutral-400 flex items-center gap-2">{formatInline(headerText)}</h4>);
+      }
     }
     // Horizontal rule
-    else if (line.trim() === '---' || line.trim() === '***') {
+    else if (trimmed === '---' || trimmed === '***') {
       elements.push(<hr key={i} className="my-6 border-neutral-200 dark:border-neutral-700" />);
     }
     // Bullet points
-    else if (line.match(/^\s*[-*]\s/)) {
+    else if (trimmed.match(/^[-*]\s/)) {
       const indent = line.search(/\S/);
-      const text = line.replace(/^\s*[-*]\s/, '');
+      const text = trimmed.replace(/^[-*]\s/, '');
       elements.push(
         <div key={i} className="flex gap-2.5 py-1" style={{ paddingLeft: Math.max(0, indent * 4) }}>
           <span className="text-[#ef4d23] shrink-0 mt-[7px] text-[6px]">●</span>
@@ -189,36 +240,31 @@ function renderMarkdown(content: string): React.ReactNode {
       );
     }
     // Numbered lists
-    else if (/^\s*\d+\.\s/.test(line)) {
-      const num = line.match(/(\d+)\.\s/)![1];
-      const text = line.replace(/^\s*\d+\.\s/, '');
-      elements.push(
-        <div key={i} className="flex gap-2.5 py-1">
-          <span className="text-[#ef4d23] font-semibold shrink-0 text-[14px] min-w-[20px] text-right">{num}.</span>
-          <span>{formatInline(text)}</span>
-        </div>
-      );
+    else if (/^\d+\.\s/.test(trimmed)) {
+      const match = trimmed.match(/^(\d+)\.\s(.*)/);
+      if (match) {
+        const num = match[1];
+        const text = match[2];
+        elements.push(
+          <div key={i} className="flex gap-2.5 py-1">
+            <span className="text-[#ef4d23] font-semibold shrink-0 text-[14px] min-w-[20px] text-right">{num}.</span>
+            <span>{formatInline(text)}</span>
+          </div>
+        );
+      }
     }
     // Empty line
-    else if (line.trim() === '') {
+    else if (trimmed === '') {
       elements.push(<div key={i} className="h-3" />);
     }
     // Normal text
     else {
-      elements.push(<p key={i} className="py-1">{formatInline(line)}</p>);
+      elements.push(<p key={i} className="py-1">{formatInline(trimmed)}</p>);
     }
   }
 
   if (inTable) {
-    elements.push(
-      <div key={`table-end`} className="overflow-x-auto my-4 border border-neutral-200 dark:border-neutral-700 rounded-xl">
-        <table className="w-full text-left text-[13px] border-collapse">
-          <tbody>
-            {tableRows.map((row, ridx) => <tr key={ridx}>{row}</tr>)}
-          </tbody>
-        </table>
-      </div>
-    );
+    elements.push(renderTable(tableRows, 'table-end'));
   }
 
   return <>{elements}</>;

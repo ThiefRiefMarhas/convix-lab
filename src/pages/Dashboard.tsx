@@ -101,7 +101,6 @@ export default function Dashboard() {
     }
   }, []);
 
-  const showFullBleed = viewState === 'chat' && (!isCanvasOpen || !isChatOpen || isMobile);
   const [isModelOpen, setIsModelOpen] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<{ id: string; name: string }[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -110,6 +109,8 @@ export default function Dashboard() {
   const [isListening, setIsListening] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [transcriptionError, setTranscriptionError] = useState<string | null>(null);
+
+  const showFullBleed = viewState === 'chat' && (!isCanvasOpen || !isChatOpen || isMobile);
 
   const [activeView, setActiveView] = useState<'chat' | 'analytics'>('chat');
   const [rightPanelTab, setRightPanelTab] = useState<'canvas' | 'swot' | 'insights'>('canvas');

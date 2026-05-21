@@ -111,7 +111,7 @@ export async function getUserProfile(userId: string, email?: string) {
       } else {
         const { data: { user } } = await supabaseAdmin.auth.admin.getUserById(userId);
         if (user) {
-          displayName = user.raw_user_meta_data?.full_name || user.raw_user_meta_data?.name || user.email?.split('@')[0] || 'User';
+          displayName = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'User';
         }
       }
 

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import type { ResearchSource } from '../../services/api';
 
 interface ResearchCanvasProps {
+  key?: string;
   sources: ResearchSource[];
   isStreaming: boolean;
   ideaTitle?: string;

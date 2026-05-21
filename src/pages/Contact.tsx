@@ -8,17 +8,17 @@ import { Send, Loader2 } from 'lucide-react';
 const contactVideos: Video[] = [
   {
     id: "contact-vid-1",
-    title: "Startup Pitch Deck Clinic (Y Combinator)",
-    description: "Y Combinator partners review and polish real early-stage startup pitch decks, highlighting what investors look for.",
-    videoUrl: "https://www.youtube-nocookie.com/embed/rP1Fcg3M2aU",
+    title: "How to Pitch Your Startup (Y Combinator)",
+    description: "Y Combinator partner Kevin Hale explains how to design and deliver a clear, concise, and compelling startup pitch for investors.",
+    videoUrl: "https://www.youtube-nocookie.com/embed/b4wH7nZ191Y",
     duration: "22:40",
     coverGradient: "from-purple-600/20 to-pink-700/20"
   },
   {
     id: "contact-vid-2",
-    title: "How to Design a Great SaaS Product",
-    description: "Expert product designer explains visual hierarchy, flow UX, and conversion design secrets for early-stage software products.",
-    videoUrl: "https://www.youtube-nocookie.com/embed/41fG6P44h4U",
+    title: "How to Build Products Users Love",
+    description: "Kevin Hale breaks down support-driven development, customer empathy, and the metrics that drive product excellence.",
+    videoUrl: "https://www.youtube-nocookie.com/embed/b4N4qg-gT9Y",
     duration: "14:55",
     coverGradient: "from-blue-600/20 to-indigo-700/20"
   }

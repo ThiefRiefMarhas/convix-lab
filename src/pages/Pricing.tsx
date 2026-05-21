@@ -11,16 +11,16 @@ const pricingVideos: Video[] = [
   {
     id: "pricing-vid-1",
     title: "SaaS Pricing Strategy (Y Combinator)",
-    description: "Y Combinator partners explain how early-stage SaaS startups should think about value metrics, pricing tiers, and capturing value.",
-    videoUrl: "https://www.youtube-nocookie.com/embed/wz1E7E5b8vE",
+    description: "Y Combinator partner Kevin Hale breaks down pricing thermodynamics—costs, value metrics, price discovery, and B2B pricing design.",
+    videoUrl: "https://www.youtube-nocookie.com/embed/PrYm93s8y5w",
     duration: "19:50",
     coverGradient: "from-emerald-600/20 to-teal-700/20"
   },
   {
     id: "pricing-vid-2",
     title: "How to Plan and Launch Your MVP",
-    description: "A comprehensive guide on building a lean Minimum Viable Product, focusing only on the core feature sets that drive value.",
-    videoUrl: "https://www.youtube-nocookie.com/embed/1hHMwLxN6EM",
+    description: "Michael Seibel (YC) gives a blueprint on building ridiculously simple, fast-shipping MVPs to instantly start learning from real users.",
+    videoUrl: "https://www.youtube-nocookie.com/embed/ZRQh-1a3zD4",
     duration: "16:15",
     coverGradient: "from-indigo-600/20 to-violet-700/20"
   }

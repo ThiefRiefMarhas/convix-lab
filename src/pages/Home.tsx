@@ -19,9 +19,9 @@ const homeVideos: Video[] = [
   },
   {
     id: "home-vid-2",
-    title: "How to Get and Evaluate Startup Ideas",
-    description: "Y Combinator partners explain how successful founders generate authentic ideas, test customer demand, and avoid false validation loops.",
-    videoUrl: "https://www.youtube-nocookie.com/embed/mKffdD55w0I",
+    title: "How to Evaluate Startup Ideas",
+    description: "Y Combinator partner Kevin Hale teaches you how to evaluate a startup concept as a hypothesis about fast growth, identifying core unfair advantages.",
+    videoUrl: "https://www.youtube-nocookie.com/embed/R9ItLv0842Q",
     duration: "18:24",
     coverGradient: "from-blue-600/20 to-indigo-700/20"
   }

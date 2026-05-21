@@ -7,17 +7,17 @@ import { Instagram, Linkedin, Mail } from 'lucide-react';
 const aboutVideos: Video[] = [
   {
     id: "about-vid-1",
-    title: "Steve Blank: How to Build a Startup (Lean Approach)",
-    description: "Lean startup pioneer Steve Blank explains the Customer Development methodology at Stanford Graduate School of Business.",
-    videoUrl: "https://www.youtube-nocookie.com/embed/13m3Ghe63J0",
+    title: "Steve Blank: The Principles of Lean",
+    description: "Lean startup pioneer Steve Blank explains the Customer Development methodology, highlighting the distinction between search and execution.",
+    videoUrl: "https://www.youtube-nocookie.com/embed/S4nCY0H4598",
     duration: "24:35",
     coverGradient: "from-blue-600/20 to-indigo-700/20"
   },
   {
     id: "about-vid-2",
     title: "How to Talk to Users (Mom Test Concepts)",
-    description: "YC partners break down how to ask potential users questions that strip away politeness and reveal actual, raw product needs.",
-    videoUrl: "https://www.youtube-nocookie.com/embed/MT4Ig2uqjTc",
+    description: "Pebble founder Eric Migicovsky explains the Customer Discovery art of extracting unbiased truth from user interviews.",
+    videoUrl: "https://www.youtube-nocookie.com/embed/CV2-Wd49hWw",
     duration: "12:10",
     coverGradient: "from-orange-500/20 to-amber-600/20"
   }

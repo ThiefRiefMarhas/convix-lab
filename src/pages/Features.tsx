@@ -18,7 +18,7 @@ const featuresVideos: Video[] = [
     id: "features-vid-2",
     title: "Evaluating Startup Ideas (Jared Friedman)",
     description: "Y Combinator's Jared Friedman breaks down the exact ten-point checklist that partners use to evaluate the potential of any new startup concept.",
-    videoUrl: "https://www.youtube-nocookie.com/embed/m7XGzOaWdKs",
+    videoUrl: "https://www.youtube-nocookie.com/embed/Th8JoIan4dg",
     duration: "15:40",
     coverGradient: "from-amber-500/20 to-orange-600/20"
   }

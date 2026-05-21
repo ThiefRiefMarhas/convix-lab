@@ -65,7 +65,7 @@ export default function Navbar() {
     { name: 'Contact', path: '/contact' },
   ];
 
-  const isNoHeroPage = location.pathname === '/subscription-success';
+  const isNoHeroPage = ['/subscription-success', '/privacy', '/terms'].includes(location.pathname);
   const isNavbarScrolled = scrolled || isNoHeroPage;
 
   return (

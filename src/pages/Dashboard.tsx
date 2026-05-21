@@ -77,7 +77,7 @@ export default function Dashboard() {
   const urlConvoId = searchParams.get('c');
 
   const [prompt, setPrompt] = useState('');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => typeof window !== 'undefined' ? window.innerWidth >= 1024 : true);
   const [viewState, setViewState] = useState<'input' | 'chat'>('input');
   const [isAgentMode, setIsAgentMode] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -92,6 +92,19 @@ export default function Dashboard() {
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Isolate Lenis smooth scrolling during Dashboard lifetime to prevent scroll-jacking in overflow panels
+  useEffect(() => {
+    const lenis = (window as any).lenis;
+    if (lenis) {
+      lenis.stop();
+    }
+    return () => {
+      if (lenis) {
+        lenis.start();
+      }
+    };
   }, []);
 
   // Auto-close sidebar on mobile/tablet screen sizes on mount
@@ -397,22 +410,30 @@ export default function Dashboard() {
       <AnimatePresence>
         {isSidebarOpen && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            onClick={() => setIsSidebarOpen(false)} className="md:hidden absolute inset-0 bg-black/20 z-40" />
+            onClick={() => setIsSidebarOpen(false)} className="lg:hidden absolute inset-0 bg-black/20 z-40" />
         )}
       </AnimatePresence>
 
       {/* ─── Sidebar ─── */}
       <motion.aside
-        initial={{ width: isSidebarOpen ? 280 : 0 }}
-        animate={{ width: isSidebarOpen ? 280 : 0 }}
-        transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
-        className={`h-full overflow-hidden shrink-0 z-50 absolute md:relative transition-all ${
-          showFullBleed ? 'rounded-none' : 'rounded-3xl'
-        }`}
+        initial={false}
+        animate={
+          isMobile
+            ? {
+                width: 280,
+                x: isSidebarOpen ? 0 : -280,
+                borderRadius: showFullBleed ? 0 : 24
+              }
+            : {
+                width: isSidebarOpen ? 280 : 0,
+                x: 0,
+                borderRadius: isSidebarOpen ? (showFullBleed ? 0 : 24) : 0
+              }
+        }
+        transition={{ type: 'tween', ease: 'easeInOut', duration: 0.28 }}
+        className="h-full overflow-hidden shrink-0 z-50 absolute lg:relative bg-[var(--dash-sidebar)] border-r border-neutral-200/50 dark:border-neutral-700/50"
       >
-        <div className={`w-[280px] h-full bg-[var(--dash-sidebar)] flex flex-col text-neutral-800 dark:text-neutral-200 shadow-sm border border-neutral-200/50 dark:border-neutral-700/50 transition-all ${
-          showFullBleed ? 'rounded-none border-y-0 border-l-0' : 'rounded-3xl'
-        }`}>
+        <div className="w-[280px] h-full flex flex-col text-neutral-800 dark:text-neutral-200 shadow-sm transition-colors duration-500">
           <div className="p-6 flex flex-col h-full relative min-h-0">
             <button onClick={() => setIsSidebarOpen(false)}
               className="absolute top-6 right-6 text-neutral-400 hover:text-neutral-800 transition-colors md:hidden">

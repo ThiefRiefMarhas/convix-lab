@@ -68,37 +68,30 @@ export default function InsightsHub({ sectionTitle, sectionSubtitle, articles, v
     }
   };
 
+  const getYouTubeId = (url: string) => {
+    const match = url.match(/\/embed\/([^?]+)/);
+    return match ? match[1] : '';
+  };
+
   const renderVideoCard = (video: Video, index: number) => {
+    const videoId = getYouTubeId(video.videoUrl);
+    const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+
     return (
       <div 
-        className="relative w-full h-full min-h-[320px] rounded-2xl overflow-hidden group/vid cursor-pointer flex flex-col justify-end p-6 border border-white/[0.06] bg-[#0c0e14] transition-all duration-300 hover:border-white/[0.15] hover:shadow-[0_12px_40px_rgba(0,0,0,0.55)]" 
+        className="relative w-full h-full min-h-[320px] rounded-2xl overflow-hidden group/vid cursor-pointer flex flex-col justify-end border transition-all duration-300 hover:shadow-lg" 
+        style={{ borderColor: 'var(--border)' }}
       >
-        {/* Ambient colorful glow in the background */}
-        <div className={`absolute -right-20 -top-20 w-72 h-72 rounded-full bg-gradient-to-br ${video.coverGradient} opacity-25 blur-3xl group-hover/vid:opacity-40 transition-opacity duration-500`} />
-        <div className={`absolute -left-20 -bottom-20 w-72 h-72 rounded-full bg-gradient-to-tr ${video.coverGradient} opacity-10 blur-3xl group-hover/vid:opacity-20 transition-opacity duration-500`} />
+        {/* YouTube Thumbnail */}
+        <img 
+          src={thumbnailUrl} 
+          alt={video.title}
+          className="absolute inset-0 w-full h-full object-cover"
+          loading="lazy"
+        />
 
-        {/* Ambient bottom-up dark gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" />
-
-        {/* Technical dot pattern */}
-        <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.05)_1px,transparent_1px)] [background-size:16px_16px] opacity-25 pointer-events-none" />
-
-        {/* Technical HUD Corner Brackets */}
-        <div className="absolute top-3 left-3 w-3 h-3 border-t border-l border-white/10 pointer-events-none group-hover/vid:border-white/30 transition-colors duration-300" />
-        <div className="absolute top-3 right-3 w-3 h-3 border-t border-r border-white/10 pointer-events-none group-hover/vid:border-white/30 transition-colors duration-300" />
-        <div className="absolute bottom-3 left-3 w-3 h-3 border-b border-l border-white/10 pointer-events-none group-hover/vid:border-white/30 transition-colors duration-300" />
-        <div className="absolute bottom-3 right-3 w-3 h-3 border-b border-r border-white/10 pointer-events-none group-hover/vid:border-white/30 transition-colors duration-300" />
-
-        {/* Elegant Background Index Number in serif */}
-        <div className="absolute top-4 right-14 text-4xl font-serif italic text-white/[0.03] select-none pointer-events-none font-light">
-          0{index + 1}
-        </div>
-
-        {/* Pulsing Status Tag */}
-        <div className="absolute top-4 left-4 z-20 flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-md border border-white/10 font-mono text-[9px] font-bold tracking-wider text-white">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          STREAM_READY
-        </div>
+        {/* Bottom gradient for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent z-10" />
 
         {/* Duration Tag */}
         <div className="absolute top-4 right-4 z-20 flex items-center gap-1 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md border border-white/10 font-mono text-[9px] font-semibold text-neutral-300">
@@ -108,20 +101,17 @@ export default function InsightsHub({ sectionTitle, sectionSubtitle, articles, v
 
         {/* Play Button Icon */}
         <div className="absolute inset-0 flex items-center justify-center z-20">
-          <div className="w-13 h-13 rounded-full bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center group-hover/vid:scale-105 group-hover/vid:bg-[#ef4d23] group-hover/vid:border-[#ef4d23] group-hover/vid:shadow-[0_0_20px_rgba(239,77,35,0.45)] transition-all duration-300 shadow-lg">
-            <Play size={18} className="text-white fill-white ml-0.5" />
+          <div className="w-16 h-16 rounded-full bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center group-hover/vid:scale-110 group-hover/vid:bg-[#ef4d23] group-hover/vid:border-[#ef4d23] group-hover/vid:shadow-[0_0_20px_rgba(239,77,35,0.45)] transition-all duration-300 shadow-lg">
+            <Play size={22} className="text-white fill-white ml-1" />
           </div>
         </div>
 
         {/* Card Metadata Details */}
-        <div className="relative z-20">
-          <span className="text-[9px] font-mono font-bold text-orange-400 uppercase tracking-widest block mb-1">
-            CINEMATIC SEMINAR
-          </span>
-          <h3 className="text-base md:text-lg font-bold tracking-tight text-white mb-1.5 leading-snug group-hover/vid:text-orange-200 transition-colors duration-300">
+        <div className="relative z-20 p-6">
+          <h3 className="text-base md:text-lg font-bold tracking-tight text-white mb-1.5 leading-snug">
             {video.title}
           </h3>
-          <p className="text-xs text-neutral-400 line-clamp-2 leading-relaxed font-normal opacity-90 max-w-xl">
+          <p className="text-xs text-neutral-300 line-clamp-2 leading-relaxed font-normal opacity-90 max-w-xl">
             {video.description}
           </p>
         </div>

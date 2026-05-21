@@ -1,0 +1,20 @@
+{
+  "name": "Convix Idea Lab",
+  "short_name": "Convix",
+  "description": "AI-powered strategic validation platform for founders. Validate ideas, analyze market gaps, assess risks, and build with conviction.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b0f1a",
+  "theme_color": "#ef4d23",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "lang": "en"
+}

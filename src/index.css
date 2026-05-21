@@ -471,3 +471,13 @@ button, a, [role="button"], input[type="submit"], input[type="button"], select, 
   background: var(--glass-strong) !important;
   box-shadow: var(--shadow-md);
 }
+
+/* Custom smooth theme transition */
+.theme-transition {
+  transition:
+    background-color var(--duration-normal) var(--ease-premium),
+    border-color var(--duration-normal) var(--ease-premium),
+    color var(--duration-normal) var(--ease-premium),
+    box-shadow var(--duration-normal) var(--ease-premium);
+}
+

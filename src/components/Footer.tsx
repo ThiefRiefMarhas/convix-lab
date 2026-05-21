@@ -37,8 +37,8 @@ const navCols = [
     heading: 'Resources',
     links: [
       { label: 'Documentation', to: '/features' },
-      { label: 'Privacy Policy', to: '/about' },
-      { label: 'Terms of Service', to: '/about' },
+      { label: 'Privacy Policy', to: '/privacy' },
+      { label: 'Terms of Service', to: '/terms' },
     ],
   },
 ];

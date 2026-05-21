@@ -8,18 +8,18 @@ import { Send, Loader2 } from 'lucide-react';
 const contactVideos: Video[] = [
   {
     id: "contact-vid-1",
-    title: "Connecting Builders & Shapers Beyond Trends",
-    description: "A conversation with next-generation builders who skip the marketing buzzwords to build highly practical, useful products that solve immediate human needs.",
-    videoUrl: "https://www.youtube-nocookie.com/embed/jn9mHzXJIV0",
-    duration: "15:30",
+    title: "Startup Pitch Deck Clinic (Y Combinator)",
+    description: "Y Combinator partners review and polish real early-stage startup pitch decks, highlighting what investors look for.",
+    videoUrl: "https://www.youtube-nocookie.com/embed/rP1Fcg3M2aU",
+    duration: "22:40",
     coverGradient: "from-purple-600/20 to-pink-700/20"
   },
   {
     id: "contact-vid-2",
-    title: "How to Build a Venture Studio",
-    description: "Venture studio partners discuss model viability, validation pipelines, and funding mechanisms for rapid product scaling.",
-    videoUrl: "https://www.youtube-nocookie.com/embed/CBYhVcO4WgI",
-    duration: "13:10",
+    title: "How to Design a Great SaaS Product",
+    description: "Expert product designer explains visual hierarchy, flow UX, and conversion design secrets for early-stage software products.",
+    videoUrl: "https://www.youtube-nocookie.com/embed/41fG6P44h4U",
+    duration: "14:55",
     coverGradient: "from-blue-600/20 to-indigo-700/20"
   }
 ];
@@ -60,10 +60,12 @@ const contactArticles: Article[] = [
       { type: "quote", text: "Investors don't just invest in your vision; they invest in your understanding of the risks." },
       { type: "paragraph", text: "Using the Convix Gap Detection and Risk Index metrics inside your pitch decks changes the conversation. Instead of saying 'our market is huge,' you say: 'We have mapped 24 competitors across this space and identified a distinct semantic void in this exact pricing tier.' This demonstrates absolute mastery of your environment." },
       { type: "heading", text: "De-risking the Seed Round" },
-      { type: "paragraph", text: "By presenting an objective strategic scorecard as part of your pitch materials, you prove to investors that you have rigorous filtering mechanisms. It shows that you did not choose this path blindly, but evaluated it against market signals, unit economics stress-tests, and regulatory boundaries. In a crowded fundraising market, that analytical rigor is your ultimate competitive edge." }
+      { type: "paragraph", text: "By presenting an objective strategic scorecard as part of your pitch materials, you de-risk the seed investment. It shows that you did not choose this path blindly, but evaluated it against market signals, unit economics stress-tests, and regulatory boundaries. In a crowded fundraising market, that analytical rigor is your ultimate competitive edge." }
     ]
   }
 ];
+
+const standardTransition = { duration: 0.58, ease: [0.22, 1, 0.36, 1] };
 
 /* ============================================
    EYE-TRACKING CHARACTER ANIMATION SYSTEM
@@ -240,6 +242,96 @@ export default function Contact() {
         subheadline="Connect with the Convix team for partnerships, enterprise strategy, or founder support."
       />
 
+      {/* ===== THE ACCELERATOR PIPELINE ORCHESTRATOR ===== */}
+      <section className="cinematic-section" style={{ backgroundColor: 'var(--bg-card)', borderBottom: '1px solid var(--border)' }}>
+        <div className="max-w-5xl mx-auto px-6">
+          <motion.div 
+            initial={{ opacity: 0, y: 24 }} 
+            whileInView={{ opacity: 1, y: 0 }} 
+            viewport={{ once: true }} 
+            transition={standardTransition}
+            className="text-center mb-20"
+          >
+            <span className="text-xs font-mono font-bold tracking-widest text-[#ef4d23] uppercase mb-3 block">
+              Execution Architecture
+            </span>
+            <h2 className="text-3xl md:text-5xl font-medium tracking-tight mb-4" style={{ color: 'var(--fg)' }}>
+              The Accelerator <span className="font-serif italic text-[#ef4d23]">Pipeline Orchestrator</span>
+            </h2>
+            <p className="text-sm md:text-base leading-relaxed max-w-2xl mx-auto" style={{ color: 'var(--fg-secondary)' }}>
+              Under the hood of the 12-second validation sweep. A high-density pipeline that turns raw inputs into investor-grade strategic scorecards.
+            </p>
+          </motion.div>
+
+          {/* Linear flowchart horizontal layout on desktop, vertical on mobile */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
+            {/* Visual connector track behind steps on desktop */}
+            <div className="hidden md:block absolute top-[44px] left-[10%] right-[10%] h-[1px] bg-gradient-to-r from-[#ef4d23]/50 to-[#3b82f6]/50 z-0 pointer-events-none" />
+
+            {[
+              {
+                step: '01',
+                name: 'Ingestion & Payload',
+                sub: 'Intake Engine',
+                desc: 'Consolidates unstructured text, PDF pitch decks, microphone streams, or UI screenshots into a unified schema-compliant validation token.',
+                color: 'from-orange-500/20 to-red-600/20',
+                border: 'border-[#ef4d23]/30',
+                text: 'text-[#ef4d23]'
+              },
+              {
+                step: '02',
+                name: 'Semantic Scrape',
+                sub: 'Tavily Web Crawler',
+                desc: 'Spawns high-concurrency background scraping bots to index active competitor offerings, localized user pain-points, and pricing tiers.',
+                color: 'from-amber-500/20 to-yellow-600/20',
+                border: 'border-amber-500/20',
+                text: 'text-amber-500'
+              },
+              {
+                step: '03',
+                name: 'KNN Alignment',
+                sub: 'Vector Math Space',
+                desc: 'Projects scraped tokens into high-dimensional semantic spaces to calculate vector distances and identify pure, unserved market gaps.',
+                color: 'from-emerald-500/20 to-teal-600/20',
+                border: 'border-emerald-500/20',
+                text: 'text-emerald-500'
+              },
+              {
+                step: '04',
+                name: 'Structured Brief',
+                sub: 'Gemini Verdict',
+                desc: 'Soothes raw mathematical distances into 8 highly readable strategic scorecards with specific, actionable startup roadmaps.',
+                color: 'from-blue-500/20 to-indigo-600/20',
+                border: 'border-blue-500/20',
+                text: 'text-blue-500'
+              }
+            ].map((node, i) => (
+              <motion.div 
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ ...standardTransition, delay: i * 0.1 }}
+                className="relative z-10 p-6 rounded-2xl border transition-all duration-300 flex flex-col items-center text-center group hover:shadow-lg"
+                style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-card)' }}
+              >
+                {/* Glowing step badge */}
+                <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${node.color} flex items-center justify-center border ${node.border} mb-6 shadow-lg relative group-hover:scale-110 transition-transform duration-300`}>
+                  <span className={`text-base font-bold font-mono ${node.text}`}>{node.step}</span>
+                  {i === 2 && (
+                    <span className="absolute inset-0 rounded-full border border-emerald-500 animate-ping opacity-30" />
+                  )}
+                </div>
+
+                <span className="text-[10px] font-mono uppercase block mb-1" style={{ color: 'var(--fg-muted)' }}>{node.sub}</span>
+                <h3 className="text-[15px] font-bold mb-3 tracking-tight" style={{ color: 'var(--fg)' }}>{node.name}</h3>
+                <p className="text-[12px] leading-relaxed" style={{ color: 'var(--fg-secondary)' }}>{node.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Contact Form with Eye Characters */}
       <section className="cinematic-section relative overflow-hidden" style={{ backgroundColor: 'var(--bg)' }}>
         {/* Ambient orbs */}
@@ -250,7 +342,7 @@ export default function Contact() {
           initial={{ opacity: 0, y: 40, scale: 0.96 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
           viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          transition={standardTransition}
           className="max-w-[1100px] mx-auto glass-panel rounded-[2rem] overflow-hidden flex flex-col lg:flex-row relative z-10"
         >
           {/* Left — Character Stage */}
@@ -368,7 +460,7 @@ export default function Contact() {
                 {success && <div className="p-3 text-sm text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">{success}</div>}
 
                 <button type="submit" disabled={isLoading}
-                  className="w-full h-12 text-base font-semibold bg-[#ef4d23] hover:bg-[#d9441f] text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full h-12 text-base font-semibold bg-[#ef4d23] hover:bg-[#d9441f] text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
                 >
                   {isLoading ? <><Loader2 size={18} className="animate-spin" /> Sending...</> : <><Send size={16} /> Send Message</>}
                 </button>

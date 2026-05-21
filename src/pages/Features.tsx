@@ -8,18 +8,18 @@ import { useState } from 'react';
 const featuresVideos: Video[] = [
   {
     id: "features-vid-1",
-    title: "Operationalizing Strategy in the Age of Co-Pilots",
-    description: "Reid Hoffman explains how AI-native tools shift early startup cycles from purely manual research to strategic orchestration and high-fidelity testing.",
-    videoUrl: "https://www.youtube-nocookie.com/embed/dQ7ZvO5DpIw",
-    duration: "15:30",
+    title: "How to Find Product-Market Fit",
+    description: "Y Combinator partners dive into the actionable metrics, signals, and frameworks early-stage founders must use to define and reach product-market fit.",
+    videoUrl: "https://www.youtube-nocookie.com/embed/0LNQxT9LvM0",
+    duration: "21:15",
     coverGradient: "from-purple-600/20 to-indigo-700/20"
   },
   {
     id: "features-vid-2",
-    title: "How to Measure What Matters",
-    description: "YC partners outline the core metrics that indicate genuine organic growth, retention, and strategic fit for early products.",
-    videoUrl: "https://www.youtube-nocookie.com/embed/Th8JoIan4dg",
-    duration: "11:45",
+    title: "Evaluating Startup Ideas (Jared Friedman)",
+    description: "Y Combinator's Jared Friedman breaks down the exact ten-point checklist that partners use to evaluate the potential of any new startup concept.",
+    videoUrl: "https://www.youtube-nocookie.com/embed/m7XGzOaWdKs",
+    duration: "15:40",
     coverGradient: "from-amber-500/20 to-orange-600/20"
   }
 ];
@@ -79,8 +79,11 @@ const faqs = [
   { q: "What happens after I get my validation report?", a: "You receive a structured strategic brief with a market verdict, risk breakdown, monetization pathway suggestions, and a differentiation scorecard. From there, the AI can generate pivot strategies or positioning recommendations on demand." },
 ];
 
+const standardTransition = { duration: 0.58, ease: [0.22, 1, 0.36, 1] };
+
 export default function Features() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [sandboxTab, setSandboxTab] = useState<'vibe' | 'convix'>('vibe');
 
   return (
     <>
@@ -95,7 +98,7 @@ export default function Features() {
       {/* ===== BENTO GRID — 8 Strategic Intelligence Modules ===== */}
       <section className="cinematic-section" style={{ backgroundColor: 'var(--bg)' }}>
         <div className="max-w-6xl mx-auto">
-          <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-16">
+          <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={standardTransition} className="mb-16">
             <p className="text-xs font-semibold uppercase tracking-widest text-[#ef4d23] mb-4">Intelligence modules</p>
             <h2 className="text-3xl md:text-5xl font-medium tracking-tight" style={{ color: 'var(--fg)' }}>
               The <span className="font-serif italic" style={{ color: 'var(--fg-secondary)' }}>engine</span> behind<br />every decision.
@@ -105,7 +108,7 @@ export default function Features() {
           {/* ─── Bento Row 1: Big featured + 2 small ─── */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             {/* Featured: Market Opportunity Score */}
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={standardTransition}
               className="md:col-span-2 glass-panel rounded-2xl p-8 relative overflow-hidden hover-depth">
               <div className="absolute -right-10 -top-10 w-56 h-56 bg-[#ef4d23]/6 rounded-full blur-3xl pointer-events-none" />
               <Target size={24} className="text-[#ef4d23] mb-5" />
@@ -135,7 +138,7 @@ export default function Features() {
             </motion.div>
 
             {/* Validation Confidence */}
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }}
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ ...standardTransition, delay: 0.1 }}
               className="glass-panel rounded-2xl p-6 hover-depth flex flex-col justify-between">
               <div>
                 <Shield size={22} className="text-[#ef4d23] mb-4" />
@@ -165,7 +168,7 @@ export default function Features() {
           {/* ─── Bento Row 2: 3 equal cards ─── */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             {/* Strategic Risk Index */}
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={standardTransition}
               className="glass-panel rounded-2xl p-6 hover-depth">
               <Activity size={22} className="text-[#ef4d23] mb-4" />
               <h3 className="font-semibold mb-2" style={{ color: 'var(--fg)' }}>Strategic Risk Index</h3>
@@ -186,7 +189,7 @@ export default function Features() {
             </motion.div>
 
             {/* Brand Positioning */}
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }}
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ ...standardTransition, delay: 0.1 }}
               className="glass-panel rounded-2xl p-6 hover-depth">
               <BarChart3 size={22} className="text-[#ef4d23] mb-4" />
               <h3 className="font-semibold mb-2" style={{ color: 'var(--fg)' }}>Brand Positioning</h3>
@@ -207,7 +210,7 @@ export default function Features() {
             </motion.div>
 
             {/* Competitor Density */}
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }}
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ ...standardTransition, delay: 0.2 }}
               className="glass-panel rounded-2xl p-6 hover-depth">
               <Users size={22} className="text-[#ef4d23] mb-4" />
               <h3 className="font-semibold mb-2" style={{ color: 'var(--fg)' }}>Competitor Density</h3>
@@ -230,7 +233,7 @@ export default function Features() {
           {/* ─── Bento Row 3: wide card + small ─── */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Monetization Feasibility */}
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={standardTransition}
               className="glass-panel rounded-2xl p-6 hover-depth">
               <TrendingUp size={22} className="text-[#ef4d23] mb-4" />
               <h3 className="font-semibold mb-2" style={{ color: 'var(--fg)' }}>Monetization Feasibility</h3>
@@ -249,7 +252,7 @@ export default function Features() {
             </motion.div>
 
             {/* Founder-Market Fit + Real Gap Detection — stacked */}
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }}
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ ...standardTransition, delay: 0.1 }}
               className="glass-panel rounded-2xl p-6 hover-depth">
               <Zap size={22} className="text-[#ef4d23] mb-4" />
               <h3 className="font-semibold mb-2" style={{ color: 'var(--fg)' }}>Founder-Market Fit</h3>
@@ -266,7 +269,7 @@ export default function Features() {
             </motion.div>
 
             {/* Real Gap Detection — featured binary verdict */}
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }}
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ ...standardTransition, delay: 0.2 }}
               className="glass-panel rounded-2xl p-6 hover-depth relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent pointer-events-none rounded-2xl" />
               <Search size={22} className="text-[#ef4d23] mb-4" />
@@ -283,6 +286,223 @@ export default function Features() {
                   <div className="text-2xl font-bold mb-1" style={{ color: 'var(--fg-muted)' }}>✗</div>
                   <div className="text-[11px] font-semibold" style={{ color: 'var(--fg-muted)' }}>SATURATED</div>
                 </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== THE VECTOR NICHE SANDBOX — Editorial coordinate simulation ===== */}
+      <section className="cinematic-section" style={{ backgroundColor: 'var(--bg-card)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
+        <div className="max-w-6xl mx-auto">
+          <motion.div 
+            initial={{ opacity: 0, y: 24 }} 
+            whileInView={{ opacity: 1, y: 0 }} 
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.58, ease: [0.22, 1, 0.36, 1] }} 
+            className="mb-16 text-center"
+          >
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#ef4d23] mb-4">Under the hood telemetry</p>
+            <h2 className="text-3xl md:text-5xl font-medium tracking-tight" style={{ color: 'var(--fg)' }}>
+              The math of <span className="font-serif italic" style={{ color: 'var(--fg-secondary)' }}>defensibility</span>.
+            </h2>
+            <p className="text-[15px] max-w-2xl mx-auto mt-4" style={{ color: 'var(--fg-secondary)' }}>
+              We transform qualitative startup claims into coordinate vectors. Compare how basic chatbots react versus Convix's multi-layered semantic mapping.
+            </p>
+          </motion.div>
+
+          <div className="flex flex-col lg:flex-row gap-12 items-stretch">
+            {/* Left Column — Telemetry Scoreboard */}
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }} 
+              whileInView={{ opacity: 1, y: 0 }} 
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.58, ease: [0.22, 1, 0.36, 1] }}
+              className="flex-1 flex flex-col justify-between"
+            >
+              <div>
+                {/* Mode Selector */}
+                <div className="inline-flex rounded-full p-1 mb-8" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
+                  <button 
+                    onClick={() => setSandboxTab('vibe')}
+                    className={`px-6 py-2.5 rounded-full text-xs font-semibold tracking-tight transition-all cursor-pointer ${sandboxTab === 'vibe' ? 'bg-red-500/10 text-red-500 font-bold border border-red-500/20' : 'text-[var(--fg-muted)]'}`}
+                  >
+                    Generic AI (Hype Advice)
+                  </button>
+                  <button 
+                    onClick={() => setSandboxTab('convix')}
+                    className={`px-6 py-2.5 rounded-full text-xs font-semibold tracking-tight transition-all cursor-pointer ${sandboxTab === 'convix' ? 'bg-emerald-500/10 text-emerald-500 font-bold border border-emerald-500/20' : 'text-[var(--fg-muted)]'}`}
+                  >
+                    Convix Engine (Scraped Quant)
+                  </button>
+                </div>
+
+                <div className="space-y-6">
+                  <div>
+                    <span className="text-xs uppercase tracking-wider font-semibold" style={{ color: 'var(--fg-muted)' }}>Input Hypothesis</span>
+                    <p className="text-[16px] font-medium mt-1 leading-relaxed" style={{ color: 'var(--fg)' }}>
+                      "I am going to build a personalized AI fitness planner for active executives—it is completely unique!"
+                    </p>
+                  </div>
+
+                  <div className="h-px" style={{ backgroundColor: 'var(--border)' }} />
+
+                  {/* Dynamic Indicators */}
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <span className="text-[11px] uppercase tracking-wider font-semibold" style={{ color: 'var(--fg-muted)' }}>Opportunity Score</span>
+                      <div className="flex items-baseline gap-1 mt-1">
+                        <span className={`text-4xl font-bold font-mono tracking-tight transition-all duration-500 ${sandboxTab === 'vibe' ? 'text-red-500' : 'text-emerald-500'}`}>
+                          {sandboxTab === 'vibe' ? '34.2' : '91.8'}
+                        </span>
+                        <span className="text-xs" style={{ color: 'var(--fg-muted)' }}>/ 100</span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <span className="text-[11px] uppercase tracking-wider font-semibold" style={{ color: 'var(--fg-muted)' }}>Competitor Density</span>
+                      <p className="text-sm font-semibold mt-2.5" style={{ color: 'var(--fg)' }}>
+                        {sandboxTab === 'vibe' ? 'High Cluster (HHI 3.42k)' : 'Sparse Wedge (HHI 410)'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="text-[11px] uppercase tracking-wider font-semibold" style={{ color: 'var(--fg-muted)' }}>Analysis Telemetry Logs</span>
+                    <div className="bg-[#0b0f1a] rounded-xl p-4 border border-white/[0.04] font-mono text-[11px] text-white/70 mt-2 space-y-1.5 min-h-[110px] flex flex-col justify-center">
+                      {sandboxTab === 'vibe' ? (
+                        <>
+                          <p className="text-red-400">● WARN: Semantic similarity index {'>'} 0.86</p>
+                          <p className="text-white/40">Querying active SaaS indices... 84 alternatives found.</p>
+                          <p className="text-white/40">FitGenius, FlexAI, and WorkoutBot identified in exact niche tier.</p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-emerald-400">● OK: Vector coordinates pivoted successfully.</p>
+                          <p className="text-white/40">Isolated segment: executive cardiology rehabilitation focus.</p>
+                          <p className="text-white/40">Willingness-to-pay (LTV/CAC ratio) optimized. Defensibility verified.</p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Verdict card */}
+              <div className={`mt-8 p-4 rounded-xl border flex items-center justify-between transition-all duration-500 ${sandboxTab === 'vibe' ? 'bg-red-500/5 border-red-500/20' : 'bg-emerald-500/5 border-emerald-500/20'}`}>
+                <div>
+                  <span className="text-[10px] font-bold tracking-wider uppercase block text-white/50">Strategic Verdict</span>
+                  <span className={`text-md font-bold tracking-tight ${sandboxTab === 'vibe' ? 'text-red-400' : 'text-emerald-400'}`}>
+                    {sandboxTab === 'vibe' ? 'SATURATED DUPLICATION TRAP' : 'HIGH-VIABILITY DEFENSIVE NICHE'}
+                  </span>
+                </div>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${sandboxTab === 'vibe' ? 'bg-red-500/10 text-red-400' : 'bg-emerald-500/10 text-emerald-400'}`}>
+                  {sandboxTab === 'vibe' ? '!' : '✓'}
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Right Column — 2D High-Dimensional Vector coordinate Map */}
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }} 
+              whileInView={{ opacity: 1, y: 0 }} 
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.58, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
+              className="flex-1 min-h-[400px] bg-[#0b0f1a] rounded-[2rem] border border-white/[0.06] shadow-xl p-8 relative flex flex-col justify-between overflow-hidden"
+            >
+              {/* SVG Grid Pattern */}
+              <div className="absolute inset-0 z-0 opacity-40">
+                <svg width="100%" height="100%">
+                  <defs>
+                    <pattern id="grid-pattern" width="40" height="40" patternUnits="userSpaceOnUse">
+                      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
+                    </pattern>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#grid-pattern)" />
+                  {/* Outer and Inner circles */}
+                  <circle cx="50%" cy="50%" r="35%" fill="none" stroke="rgba(255,255,255,0.02)" strokeWidth="1" />
+                  <circle cx="50%" cy="50%" r="15%" fill="none" stroke="rgba(255,255,255,0.02)" strokeWidth="1" />
+                  {/* Axis lines */}
+                  <line x1="0" y1="50%" x2="100%" y2="50%" stroke="rgba(255,255,255,0.02)" strokeWidth="1" />
+                  <line x1="50%" y1="0" x2="50%" y2="100%" stroke="rgba(255,255,255,0.02)" strokeWidth="1" />
+                </svg>
+              </div>
+
+              {/* Header inside canvas */}
+              <div className="relative z-10 flex items-center justify-between text-[11px] font-mono text-white/30">
+                <span>VECTOR EMBEDDING INDEX — 1,536 DIMENSIONS</span>
+                <span>DENSE CLUSTERS</span>
+              </div>
+
+              {/* Interactive nodes stage */}
+              <div className="relative z-10 w-full h-[280px] flex items-center justify-center">
+                {/* 1. Saturated competitor nodes (Clustered in the center) */}
+                <div className="absolute w-24 h-24 rounded-full border border-red-500/10 bg-red-500/5 flex items-center justify-center animate-pulse pointer-events-none">
+                  <span className="text-[9px] font-mono text-red-500/50">RED OCEAN</span>
+                </div>
+                
+                {/* Small competitor dots */}
+                {[
+                  { x: -20, y: -15, name: 'FitAI' },
+                  { x: 15, y: -25, name: 'GymBot' },
+                  { x: -10, y: 25, name: 'WorkoutPro' },
+                  { x: 25, y: 10, name: 'FlexScheduler' },
+                  { x: 5, y: -8, name: 'AI Coach' },
+                  { x: -30, y: 5, name: 'MacroTrack' }
+                ].map((dot, idx) => (
+                  <div 
+                    key={idx}
+                    className="absolute w-2.5 h-2.5 rounded-full bg-red-500/60 shadow-lg shadow-red-500/20 cursor-default group"
+                    style={{ transform: `translate(${dot.x}px, ${dot.y}px)` }}
+                    title={dot.name}
+                  >
+                    <span className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/80 text-[8px] font-mono text-white px-1.5 py-0.5 rounded border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
+                      {dot.name}
+                    </span>
+                  </div>
+                ))}
+
+                {/* 2. Isolated Defensive Blue Ocean quadrant */}
+                <div className="absolute w-20 h-20 rounded-full border border-emerald-500/10 bg-emerald-500/5 flex items-center justify-center pointer-events-none" style={{ transform: 'translate(120px, -80px)' }} />
+                <span className="absolute text-[8px] font-mono text-emerald-500/40 uppercase tracking-widest pointer-events-none" style={{ transform: 'translate(120px, -140px)' }}>BLUE OCEAN WEDGE</span>
+
+                {/* 3. The Active User Idea Node (Framer Motion Animated slide) */}
+                <motion.div
+                  animate={sandboxTab === 'vibe' ? { x: 0, y: 0 } : { x: 120, y: -80 }}
+                  transition={standardTransition}
+                  className="absolute z-20 flex flex-col items-center"
+                >
+                  {/* Glowing core */}
+                  <div className={`w-4 h-4 rounded-full flex items-center justify-center relative shadow-lg transition-colors duration-500 ${sandboxTab === 'vibe' ? 'bg-red-500 shadow-red-500/50' : 'bg-emerald-400 shadow-emerald-400/50'}`}>
+                    <span className="absolute w-8 h-8 rounded-full border animate-ping opacity-60 transition-colors duration-500" style={{ borderColor: sandboxTab === 'vibe' ? '#ef4444' : '#34d399' }} />
+                  </div>
+                  {/* User label */}
+                  <span className={`text-[10px] font-bold font-mono px-2 py-0.5 rounded mt-3 shadow-md border whitespace-nowrap transition-colors duration-500 ${sandboxTab === 'vibe' ? 'bg-red-950/80 border-red-500/40 text-red-200' : 'bg-emerald-950/80 border-emerald-500/40 text-emerald-200'}`}>
+                    {sandboxTab === 'vibe' ? 'Your Idea (Saturated Copycat)' : 'Your Niche (Quantified Wedge)'}
+                  </span>
+                </motion.div>
+
+                {/* Motion trajectory line */}
+                {sandboxTab === 'convix' && (
+                  <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
+                    <motion.path 
+                      d="M 190 140 Q 230 80 310 60" 
+                      fill="none" 
+                      stroke="rgba(52,211,153,0.3)" 
+                      strokeWidth="2" 
+                      strokeDasharray="4 4"
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={standardTransition}
+                    />
+                  </svg>
+                )}
+              </div>
+
+              {/* Bottom canvas metadata */}
+              <div className="relative z-10 flex items-center justify-between text-[9px] font-mono text-white/20">
+                <span>SIMULATION ACTIVE</span>
+                <span>SYSTEM STATUS: COMPILING DATA</span>
               </div>
             </motion.div>
           </div>
@@ -340,7 +560,7 @@ export default function Features() {
           {/* Row 2: PDF (wide) + Voice (narrow) */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             {/* PDF Upload — 2/3 width, horizontal layout */}
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }}
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ ...standardTransition, delay: 0.1 }}
               className="md:col-span-2 glass-panel rounded-2xl p-6 flex gap-6 hover-depth">
               <div className="w-12 h-12 rounded-xl bg-[#ef4d23]/10 flex items-center justify-center shrink-0 mt-1">
                 <FileText size={22} className="text-[#ef4d23]" />
@@ -360,7 +580,7 @@ export default function Features() {
             </motion.div>
 
             {/* Voice Input — 1/3 width, tall card */}
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }}
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ ...standardTransition, delay: 0.2 }}
               className="glass-panel rounded-2xl p-6 hover-depth flex flex-col">
               <div className="w-12 h-12 rounded-xl bg-[#ef4d23]/10 flex items-center justify-center mb-4">
                 <Mic size={22} className="text-[#ef4d23]" />
@@ -382,7 +602,7 @@ export default function Features() {
           {/* Row 3: Screenshot (narrow) + AI Chat (wide) */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Screenshot */}
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }}
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ ...standardTransition, delay: 0.1 }}
               className="glass-panel rounded-2xl p-6 hover-depth">
               <div className="w-12 h-12 rounded-xl bg-[#ef4d23]/10 flex items-center justify-center mb-4">
                 <Image size={22} className="text-[#ef4d23]" />
@@ -394,7 +614,7 @@ export default function Features() {
             </motion.div>
 
             {/* AI Chat — 2/3 width, with chat bubble mockup */}
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }}
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ ...standardTransition, delay: 0.2 }}
               className="md:col-span-2 glass-panel rounded-2xl p-6 hover-depth">
               <div className="flex items-center gap-3 mb-5">
                 <div className="w-12 h-12 rounded-xl bg-[#ef4d23]/10 flex items-center justify-center">
@@ -475,7 +695,7 @@ export default function Features() {
           </motion.div>
           <div className="space-y-3">
             {faqs.map((faq, i) => (
-              <motion.div key={i} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}
+              <motion.div key={i} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ ...standardTransition, delay: i * 0.05 }}
                 className="glass-panel rounded-2xl overflow-hidden">
                 <button
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}

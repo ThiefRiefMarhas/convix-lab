@@ -1,149 +1,202 @@
-# Convix Idea Lab: Production-Grade AI Startup Validation Engine
+# 🏛️ Convix Idea Lab: Production-Grade AI Startup Validation Engine
 
-> **The strategic validation platform for high-conviction builders.**
-> Validate startup ideas, competitive landscapes, market gaps, and real-world community sentiment before writing a single line of product code.
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/ThiefRiefMarhas/convix-lab)
+[![Vite Version](https://img.shields.io/badge/vite-v6.4.2-blue.svg)](https://vite.dev/)
+[![React Version](https://img.shields.io/badge/react-v19.0.1-blue.svg)](https://react.dev/)
+[![Tailwind Version](https://img.shields.io/badge/tailwind-v4.0.0-38bdf8.svg)](https://tailwindcss.com/)
+[![Supabase](https://img.shields.io/badge/supabase-postgres-2a9d8f.svg)](https://supabase.com/)
+[![Locales](https://img.shields.io/badge/locales-ID%20%7C%20EN-orange.svg)](#-multilingual-i18n-engine)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
+> **Convix Idea Lab** is a high-fidelity, production-grade artificial intelligence validation engine designed for early-stage startup concepts. It acts as an automated market research and analysis department, executing deep, multi-phase audits across competitor landscapes, market vulnerabilities, and organic community discussions before resources are committed to software development.
 
 ---
 
-## ⚡ The Convix Thesis
+## 🧭 Architectural Overview
 
-Most startups fail not from a lack of builder dedication, but because they build something the market does not need. **Convix Idea Lab** acts as an AI-native research department that interrogates, analyzes, and stresses startup ideas through an orchestrated swarm of web-scraping and reasoning agents.
-
-By processing structured search matrices across competitive spaces, customer complaints, and market signals in real-time, Convix provides founders with the raw, unfiltered truth—backed by traceable sources—packaged into an institutional-grade investment memo.
-
----
-
-## 🚀 Orchestrated 4-Phase Pipeline Architecture
-
-Convix does not rely on simple LLM prompts. It executes a stateful, parallelized **4-Phase Research Pipeline** that guarantees multi-dimensional validation:
+Convix does not rely on static LLM prompts. It employs a stateful, parallelized multi-agent workflow that crawls real-time indices, gathers qualitative user feedback from high-intent forums, and synthesizes structured investment memos.
 
 ```mermaid
 graph TD
-    A[Raw Idea Input] --> B[Phase 1: Competitors]
-    A --> C[Phase 2: Market Gap]
-    A --> D[Phase 3: Community]
+    A[Raw Startup Idea Input] --> B[Phase 1: Competitive Landscape]
+    A --> C[Phase 2: Market Vulnerability]
+    A --> D[Phase 3: Community Sentiment]
     
-    B --> E[Deep Web Search & Content Scraping]
+    B --> E[Autonomous Web Search & Site Scraping]
     C --> E
     D --> E
     
     E --> F[Real-Time State Hydration]
-    F --> G[Phase 4: Investment Memo Synthesis]
+    F --> G[Phase 4: Synthesis & Memo Compilation]
     
-    G --> H[Final Investment Verdict & Action Plan]
+    G --> H[Final Strategic Scorecard & Action Plan]
 ```
 
-### 🔬 Detailed Phase Execution List
-1. **Phase 1: Competitor Landscape Analysis**
-   * **Mission:** Discover direct/indirect competitors, product offerings, and current market capture.
-   * **AI Operations:** The research agent constructs search matrices, crawls landing pages, and maps active competitor positioning.
-2. **Phase 2: Market Gap Discovery**
-   * **Mission:** Locate competitive vulnerabilities, unserved niches, and unique value hooks.
-   * **AI Operations:** Processes scraped target content to highlight features, price gaps, and structural inefficiencies of market incumbents.
-3. **Phase 3: Organic Community Sentiment**
-   * **Mission:** Gather authentic qualitative data directly from discussions on high-intent channels.
-   * **AI Operations:** Mines Reddit, Hacker News, Quora, and industry-specific forums to extract raw user frustrations, feedback, and wishlist items.
-4. **Phase 4: Synthesis & Final Executive Verdict**
-   * **Mission:** Harmonize all research logs into a highly actionable, structured strategic memo.
-   * **AI Operations:** Performs full-context reasoning via custom-tuned expert models (Claude/Gemini) to output a complete, publication-ready analysis.
+### 🔬 Stateful 4-Phase Research Pipeline
+
+1.  **Phase 1: Competitive Landscape Audit**
+    *   **Objective:** Identify direct, indirect, and adjacent competitors.
+    *   **Operations:** Constructs search matrices to query Tavily API, parses landing page content, and maps active competitor positioning.
+2.  **Phase 2: Market Vulnerability Discovery**
+    *   **Objective:** Uncover pricing discrepancies, feature gaps, and structural inefficiencies of incumbents.
+    *   **Operations:** Evaluates crawled target data to isolate unserved market segments and strategic value hooks.
+3.  **Phase 3: Qualitative Community Mining**
+    *   **Objective:** Gather unfiltered user frustrations and demand signals.
+    *   **Operations:** Crawls communities such as Reddit, Hacker News, and industry forums to extract real-world complaints and wishlist items.
+4.  **Phase 4: Synthesis & Memo Compilation**
+    *   **Objective:** Generate a comprehensive, investor-ready market validation report.
+    *   **Operations:** Uses high-context models (Claude 3.5 Sonnet / Gemini Pro) to cross-reference gathered data and output an executive evaluation.
 
 ---
 
-## 🎨 High-Fidelity UI/UX & Real-Time Blueprint Visualizer
+## 🛠️ Technology Stack & System Requirements
 
-* **The Research Canvas:** An interactive, node-based SVG workspace designed from scratch to visualize the AI's crawling process.
-  * **Dynamic User State:** The central "Input Idea" node is dynamically hydrated with the user's raw prompt.
-  * **Full Repositioning Control:** Drag-and-drop nodes to customize your research layout dynamically.
-  * **Hover Detail Cards:** Interactive source cards display web favicons, domain tracking tags, and snippet previews for a rich, descriptive user experience.
-* **Premium Cinematic SaaS Aesthetics:** A minimal, dark-mode-first editorial design built with Vanilla CSS, glassmorphism overlays, custom scrollbars, and sleek micro-animations using Framer Motion (`motion/react`).
-* **Adaptive Navigation:** Premium, responsive layouts optimized for all viewport states. The mobile header collapses neatly, housing the premium CTA "Build Smarter" button inside the mobile drawer under Contact.
-
----
-
-## 🔒 Enterprise-Grade Stability & Resilient Infrastructure
-
-* **Cascading Timeout Fallbacks (`Promise.race`):** External APIs (Tavily/OpenRouter) are wrapped in custom timeout middleware (15s for search/scrape, 180s for massive synthesis), preventing infinite pending states and conserving token budgets.
-* **Proactive Rate Limiting:** Server-side usage-based rate limits protect the database and compute infrastructure, failing open gracefully during database downtime to ensure uninterrupted developer UX.
-* **Lenis Smooth Scroll Protection:** Implements precise `data-lenis-prevent="true"` properties across scrollable containers to completely resolve touchpad and mouse-wheel scrolling conflicts common in smooth-scrolling containers.
-* **Cloud-Native Deployment (Google Cloud Run):**
-  * Multi-stage `Dockerfile` compiles static assets via Vite and packages them alongside an Express Node runtime.
-  * Dynamically binds to host `0.0.0.0` on port `8080`, ready for frictionless production deployment.
-
----
-
-## 🛠️ Tech Stack & Key Integrations
+### Core Technology Matrix
 
 | Layer | Technology | Purpose |
 | :--- | :--- | :--- |
-| **Frontend Core** | React 18, Vite, TypeScript | Modern, high-performance SPA foundation |
-| **Visuals & Layout**| Tailwind CSS, Vanilla HSL variables | Dynamic light/dark theme system |
-| **Motion & Icons** | Framer Motion, Lucide Icons | Fluid micro-interactions and iconography |
-| **Backend API** | Node.js, Express, TypeScript | Highly responsive API layer |
-| **Orchestration** | OpenRouter SDK | Unified dynamic model routing (Claude 3.5 Sonnet / Gemini Pro) |
-| **Web Research** | Tavily Search API | Deep web-mining and page content extraction |
-| **Auth & Data** | Supabase, PostgreSQL | Secure RLS user auth, usage metrics, and history logs |
+| **Frontend Core** | React 19, Vite 6, TypeScript 5 | High-performance SPA foundation |
+| **State & Styling** | Tailwind CSS, HSL CSS variables | Seamless Light/Dark theme transition |
+| **Visual Layer** | Framer Motion, Lucide React | Hardware-accelerated fluid micro-interactions |
+| **Backend Core** | Node.js, Express, tsx | Modern TypeScript API execution runtime |
+| **Web Crawling** | Tavily Search & Cheerio | Real-time web-scraping and page extraction |
+| **Orchestration** | OpenRouter SDK | Dynamic, fault-tolerant model routing |
+| **Data & Auth** | Supabase, PostgreSQL | Relational storage, Row Level Security (RLS) |
+
+### System Requirements
+*   **Node.js**: `^20.0.0` or higher
+*   **Package Manager**: `npm` or `yarn`
+*   **Database**: PostgreSQL compatible database (configured for Supabase RLS)
+
+---
+
+## 🔒 Security, Integrity & Resilient Design
+
+*   **Server-Sent Events (SSE) Keep-Alive:** Long-running web validation processes are protected against NAT/proxy timeout drops via a robust 15-second server heartbeat signal and TCP-level socket configuration (`setKeepAlive(true, 1000)`).
+*   **Cascading Fallback Mechanisms (`Promise.race`):** External network requests are wrapped in custom timeouts (15 seconds for search/scrape actions, 180 seconds for synthesis) to prevent thread blockages.
+*   **Bilateral Redirect Guards:** Protected app routes feature custom state-transition locks inside the authentication layer to handle modal closures cleanly without freezing the user interface on cancelled attempts.
+*   **Lenis Scroll Integration:** Scrollable panels employ `data-lenis-prevent="true"` properties to resolve touch and trackpad event propagation conflicts.
+
+---
+
+## 📦 Directory Structure
+
+```directory
+convix-idea-lab/
+├── public/                 # Static assets, sitemap.xml, robots.txt, manifest.json
+├── src/
+│   ├── components/         # Reusable UI components
+│   │   ├── auth/           # AuthModal, ProtectedRoute
+│   │   ├── chat/           # ChatPanel, ExportModal, ResearchCanvas, SWOTPanel
+│   │   ├── landing/        # CinematicHero, Landing layout components
+│   │   └── ui/             # Dynamic buttons, icons, indicators
+│   ├── context/            # Global context providers (Auth, Theme, Locale)
+│   ├── hooks/              # Custom React hooks (useChat, useConversations)
+│   ├── i18n/               # Localization strings (ui.ts)
+│   ├── layouts/            # Page layouts
+│   ├── lib/                # Shared utilities (supabase client, error utilities)
+│   ├── pages/              # Main view entrypoints (Home, About, Dashboard, Legal)
+│   ├── services/           # API request layer
+│   ├── App.tsx             # Root Application Component
+│   ├── AppRoutes.tsx       # Page routing definition
+│   ├── index.css           # Core styling, variables, theme overrides
+│   └── main.tsx            # DOM mounting and initiation
+├── server/                 # Express API server (Node.js runtime)
+│   ├── middleware/         # Auth verify, rate limiters
+│   ├── routes/             # API Router files (chat, upload, export, swot, etc.)
+│   ├── services/           # Back-end services (openrouter, tavily, scraper)
+│   └── prompts/            # Tuned system prompt guidelines for LLM
+├── supabase/               # Database migrations and seed definitions
+├── Dockerfile              # Cloud-native build instructions
+├── package.json            # Manifest file for scripts and dependencies
+└── tsconfig.json           # TypeScript compilation configuration
+```
+
+---
+
+## 📡 API Specification (Core Endpoints)
+
+### 1. Start Analysis Pipeline
+*   **Endpoint:** `POST /api/chat`
+*   **Headers:** `Content-Type: application/json`, `Authorization: Bearer <JWT>`
+*   **Payload:**
+    ```json
+    {
+      "message": "A marketplace for upcycled local Indonesian furniture.",
+      "conversationId": "uuid-string-or-null",
+      "enableWebSearch": true
+    }
+    ```
+*   **Response:** Stream of Server-Sent Events (SSE) representing phase progression, discovered sources, and generated tokens.
+
+### 2. Retrieve SWOT Analysis
+*   **Endpoint:** `GET /api/swot/:conversationId`
+*   **Response Format:**
+    ```json
+    {
+      "strengths": [{"text": "String", "score": 8, "evidence": "String"}],
+      "weaknesses": [{"text": "String", "score": 6, "evidence": "String"}],
+      "opportunities": [{"text": "String", "score": 9, "evidence": "String"}],
+      "threats": [{"text": "String", "score": 5, "evidence": "String"}],
+      "overall_score": 75,
+      "ai_summary": "Overall execution summary."
+    }
+    ```
 
 ---
 
 ## ⚙️ Local Installation & Development
 
-### Prerequisites
-* Node.js v20 or higher installed.
-* Active Supabase instance.
-* API keys for OpenRouter and Tavily.
+1.  **Clone the Repository & Install Dependencies:**
+    ```bash
+    git clone https://github.com/ThiefRiefMarhas/convix-lab.git
+    cd convix-lab
+    npm install
+    ```
 
-### Setup Steps
+2.  **Configure Environment Variables:**
+    Create a `.env` file in the project root:
+    ```env
+    # Supabase Database Configuration
+    VITE_SUPABASE_URL=your_supabase_project_url
+    VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+    SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 
-1. **Clone & Install Dependencies:**
-   ```bash
-   git clone https://github.com/ThiefRiefMarhas/convix-lab.git
-   cd convix-lab
-   npm install
-   ```
+    # AI Model and Search Providers
+    OPENROUTER_API_KEY=your_openrouter_api_key
+    OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
+    TAVILY_API_KEY=your_tavily_api_key
 
-2. **Configure Environment Variables:**
-   Create a `.env` file in the root of the project:
-   ```env
-   # Supabase Credentials
-   VITE_SUPABASE_URL=your_supabase_project_url
-   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-   SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+    # Express Server Port Config
+    PORT=3000
+    ```
 
-   # AI and Search Providers
-   OPENROUTER_API_KEY=your_openrouter_api_key
-   OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
-   TAVILY_API_KEY=your_tavily_api_key
+3.  **Start Local Development Environment:**
+    ```bash
+    npm run dev
+    ```
+    *Runs the frontend HMR server and backend Express API concurrently.*
 
-   # Server Config
-   PORT=3000
-   ```
-
-3. **Start Local Development Environment:**
-   ```bash
-   npm run dev
-   ```
-   *Runs frontend HMR server and backend API concurrently.*
-
-4. **Verify Production Build Locally:**
-   ```bash
-   npm run build
-   npm start
-   ```
+4.  **Verify Production Build:**
+    ```bash
+    npm run build
+    npm start
+    ```
 
 ---
 
-## 📦 Docker & Production Build Verification
+## 📦 Containerization & Deployment
 
-### Local Container Build
-To package and verify the container:
+### Production Container Build
+To package and verify the container locally:
 ```bash
 docker build -t convix-lab .
 docker run -p 8080:8080 --env-file .env convix-lab
 ```
-Open [http://localhost:8080](http://localhost:8080) to confirm container health.
+Open [http://localhost:8080](http://localhost:8080) to verify container health status.
 
-### Deployment to Google Cloud Run
-Deploying the pre-configured container is simple:
+### Google Cloud Run Deployment
+Deploy the container with a single execution step:
 ```bash
 gcloud builds submit --tag gcr.io/your-project-id/convix-lab
 gcloud run deploy convix-lab --image gcr.io/your-project-id/convix-lab --platform managed --port 8080
@@ -151,7 +204,7 @@ gcloud run deploy convix-lab --image gcr.io/your-project-id/convix-lab --platfor
 
 ---
 
-## 👨‍💻 Founder & Builder
+## 👨‍💻 Founder & Developer
 
 **Arief Fajar**
 * *Founder & Builder — Convix Software*

@@ -5,70 +5,756 @@
 <h1 align="center">Convix Idea Lab</h1>
 
 <p align="center">
-  <strong>AI-Native Startup Validation Engine — Automated Market Intelligence at Scale</strong>
+  <strong>Autonomous Multi-Agent Market Intelligence System</strong>
+</p>
+
+<p align="center">
+  Convix deploys specialized AI research agents that autonomously investigate markets, analyze competitors, detect demand signals from real communities, and generate investor-grade startup validation reports — without human intervention.
 </p>
 
 <p align="center">
   <a href="https://github.com/ThiefRiefMarhas/convix-lab"><img src="https://img.shields.io/badge/build-passing-brightgreen.svg?style=flat-square" alt="Build"></a>
-  <a href="https://vite.dev/"><img src="https://img.shields.io/badge/Vite-6.2.3-646CFF?style=flat-square&logo=vite&logoColor=white" alt="Vite"></a>
-  <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-19.0.1-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React"></a>
-  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.8-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript"></a>
-  <a href="https://tailwindcss.com/"><img src="https://img.shields.io/badge/Tailwind-4.1-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind"></a>
-  <a href="https://supabase.com/"><img src="https://img.shields.io/badge/Supabase-PostgreSQL-3FCF8E?style=flat-square&logo=supabase&logoColor=white" alt="Supabase"></a>
-  <a href="https://openrouter.ai/"><img src="https://img.shields.io/badge/OpenRouter-Multi--Model-FF6B35?style=flat-square" alt="OpenRouter"></a>
+  <img src="https://img.shields.io/badge/agents-4%20specialized-6366F1?style=flat-square" alt="Agents">
+  <img src="https://img.shields.io/badge/reasoning-multi--phase-FF6B35?style=flat-square" alt="Reasoning">
+  <img src="https://img.shields.io/badge/sources-130%2B%20per%20analysis-3FCF8E?style=flat-square" alt="Sources">
+  <img src="https://img.shields.io/badge/orchestration-autonomous-3178C6?style=flat-square" alt="Orchestration">
   <a href="#"><img src="https://img.shields.io/badge/license-MIT-green.svg?style=flat-square" alt="License"></a>
 </p>
 
+<br/>
+
+```
+User: "AI-powered accounting software for Indonesian SMEs"
+                              │
+                    ┌─────────▼──────────┐
+                    │  Orchestrator Agent │ ← Concept extraction, strategic question generation
+                    └─────────┬──────────┘
+          ┌───────────────────┼───────────────────┐
+          ▼                   ▼                   ▼
+┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
+│  Competitor      │ │  Market Gap      │ │  Community       │
+│  Intelligence    │ │  Discovery       │ │  Signal Mining   │
+│  Agent           │ │  Agent           │ │  Agent           │
+│  (40+ sources)   │ │  (40+ sources)   │ │  (30+ sources)   │
+└────────┬────────┘ └────────┬────────┘ └────────┬────────┘
+         │                   │                   │
+         └───────────────────┼───────────────────┘
+                    ┌────────▼────────┐
+                    │  Strategic       │
+                    │  Synthesis Agent │ ← Cross-references all agent findings
+                    └────────┬────────┘
+                    ┌────────▼────────┐
+                    │  [VERDICT:GREEN] │
+                    │  82% viability   │
+                    │  134 sources     │
+                    └─────────────────┘
+```
+
 <p align="center">
-  <a href="#-quickstart">Quickstart</a> •
-  <a href="#-system-architecture">Architecture</a> •
-  <a href="#-the-4-phase-research-pipeline">Pipeline</a> •
-  <a href="#-api-reference">API</a> •
-  <a href="#-deployment">Deployment</a> •
-  <a href="#-contributing">Contributing</a>
+  <a href="#-multi-agent-architecture">Agent Architecture</a> •
+  <a href="#-inter-agent-communication--shared-memory">Communication</a> •
+  <a href="#-reasoning-architecture">Reasoning</a> •
+  <a href="#-example-investigation-flow">Example</a> •
+  <a href="#-quickstart">Quickstart</a>
 </p>
 
 ---
 
 ## Table of Contents
 
-- [Vision \& Philosophy](#-vision--philosophy)
-- [Quickstart](#-quickstart)
+- [Why Traditional AI Fails](#-why-traditional-ai-fails)
+- [Multi-Agent Architecture](#-multi-agent-architecture)
+- [Inter-Agent Communication \& Shared Memory](#-inter-agent-communication--shared-memory)
+- [Reasoning Architecture](#-reasoning-architecture)
+- [Example Investigation Flow](#-example-investigation-flow)
 - [System Architecture](#-system-architecture)
-- [The 4-Phase Research Pipeline](#-the-4-phase-research-pipeline)
+- [AI Orchestration Layer](#-ai-orchestration-layer)
+- [Operational Metrics](#-operational-metrics)
+- [API Overview](#-api-overview)
 - [Technology Stack](#-technology-stack)
-- [Database Schema \& Data Model](#-database-schema--data-model)
-- [API Reference](#-api-reference)
-- [AI Model Orchestration](#-ai-model-orchestration)
-- [Token Budget Management](#-token-budget-management)
-- [Content Pipeline \& Caching](#-content-pipeline--caching)
-- [Security Architecture](#-security-architecture)
-- [Directory Structure](#-directory-structure)
-- [Environment Configuration](#-environment-configuration)
+- [Quickstart](#-quickstart)
 - [Deployment](#-deployment)
-- [Troubleshooting](#-troubleshooting)
-- [Contributing](#-contributing)
+- [Agent Reliability \& Fault Tolerance](#-agent-reliability--fault-tolerance)
 - [Roadmap](#-roadmap)
+- [Contributing](#-contributing)
 - [Founder \& Contact](#-founder--contact)
 - [License](#-license)
 
 ---
 
-## 🔭 Vision & Philosophy
+## 🔍 Why Traditional AI Fails
 
-**The Problem.** Founders waste months and thousands of dollars validating startup ideas through gut instinct, biased surveys, and shallow Google searches. By the time they discover fatal market flaws, they've already burned runway.
+Market validation is not a single-prompt task. It is a multi-dimensional research operation that requires specialized reasoning across different domains simultaneously.
 
-**The Solution.** Convix Idea Lab replaces the traditional 6-week market validation sprint with a fully autonomous AI research department that executes in minutes. It doesn't just _chat_ — it _investigates_. The system deploys a 4-phase research pipeline that crawls live competitor data, mines community sentiment from Reddit and Hacker News, sizes addressable markets with real evidence, and synthesizes everything into an investor-grade validation memo.
+### The Failure Modes of Conventional AI Systems
 
-**Design Principles:**
+| Approach | Failure Mode | Consequence |
+| :--- | :--- | :--- |
+| **Single LLM prompt** | Generates plausible-sounding but ungrounded opinions | No evidence, pure hallucination risk |
+| **RAG chatbot** | Retrieves fragments but cannot reason across domains | Answers questions but doesn't _investigate_ |
+| **Chain-of-thought** | Linear reasoning with no parallelism or specialization | Misses lateral insights, slow execution |
+| **Manual research** | Human analyst with Google + spreadsheets | 6+ weeks, expensive, biased, non-reproducible |
+
+### Why Multi-Agent Architecture Is Required
+
+Startup validation requires four fundamentally different types of intelligence operating in concert:
+
+1. **Competitive Intelligence** — Who exists in this market? How are they funded? What are their weaknesses?
+2. **Market Structure Analysis** — Where are the gaps? What is the pricing landscape? What is the TAM?
+3. **Qualitative Demand Mining** — What are real users complaining about? What do they wish existed?
+4. **Strategic Synthesis** — Given all evidence, is this a green-light opportunity? What is the recommended entry niche?
+
+No single AI call can do this. Convix solves it through **coordinated specialized agents**, each with distinct objectives, search strategies, and reasoning mandates, all sharing evidence through a structured memory layer.
+
+---
+
+## 🤖 Multi-Agent Architecture
+
+Convix operates as a coordinated multi-agent system. Each agent is a specialized reasoning unit with a defined role, unique search strategy, independent evidence collection capability, and structured output format. The **Orchestrator Agent** coordinates execution, manages shared memory, and sequences agent activation.
+
+### Agent Overview
+
+```mermaid
+graph TD
+    subgraph Orchestrator["🎯 Orchestrator Agent"]
+        direction TB
+        OA[Concept Extraction] --> OB[Strategic Question Generation]
+        OB --> OC[Agent Dispatch Sequencing]
+        OC --> OD[Shared Memory Management]
+    end
+
+    subgraph Agents["Specialized Investigation Agents"]
+        direction LR
+        A1["🏢 Competitor<br/>Intelligence Agent"]
+        A2["🔍 Market Gap<br/>Discovery Agent"]
+        A3["💬 Community Signal<br/>Mining Agent"]
+        A4["⚡ Strategic<br/>Synthesis Agent"]
+    end
+
+    subgraph Memory["📦 Shared Intelligence Memory"]
+        M1[Source Evidence Store]
+        M2[Phase Summaries]
+        M3[Content Cache]
+    end
+
+    Orchestrator --> A1
+    Orchestrator --> A2
+    Orchestrator --> A3
+    A1 --> Memory
+    A2 --> Memory
+    A3 --> Memory
+    Memory --> A4
+    A4 --> Verdict["📊 Final Verdict + Report"]
+```
+
+### Agent Specification Table
+
+| Agent | Role | Autonomy | Search Queries | Typical Sources | Input | Output |
+| :--- | :--- | :--- | :---: | :---: | :--- | :--- |
+| **Orchestrator** | Coordinates all agent execution, manages shared memory, sequences reasoning stages | Full — initiates entire investigation | 0 (delegates) | 0 | Raw user idea + conversation history | Extracted search concept, 6 strategic questions, agent dispatch signals |
+| **Competitor Intelligence** | Discovers direct, indirect, and adjacent competitors; maps their positioning | Autonomous search + scrape | 8 parallel | ~40 | Search concept from Orchestrator | Competitor landscape with funding data, feature sets, weaknesses |
+| **Market Gap Discovery** | Identifies pricing gaps, feature gaps, unmet needs, and structural market inefficiencies | Autonomous search + scrape | 8 parallel | ~40 | Search concept + Competitor findings (via shared memory) | Gap analysis with estimated revenue potential per gap |
+| **Community Signal Mining** | Extracts unfiltered user frustrations, demand signals, and wishlist items from forums | Autonomous targeted search | 8 parallel | ~30 | Search concept + gap data (via shared memory) | Quoted user frustrations, demand themes, complaint patterns |
+| **Strategic Synthesis** | Cross-references all agent findings to generate the final investor-grade verdict | Full — reads entire shared memory | 6 parallel | ~20 | All prior agent outputs + shared memory | Structured investment memo with GREEN/YELLOW/RED verdict |
+
+### Agent Lifecycle
+
+Each investigation agent follows a consistent execution lifecycle:
+
+```
+1. ACTIVATION       Orchestrator dispatches agent with search concept
+        │
+2. QUERY PLANNING   Agent generates 6–8 domain-specific search queries
+        │
+3. EVIDENCE         Execute queries in parallel batches of 3
+   COLLECTION       │── Tavily advanced search (5 results per query)
+        │           │── Content summarization via fast LLM
+        │           └── Source deduplication + cache check
+        │
+4. DEEP SCRAPE      Select top 3 highest-signal sources for full extraction
+        │           │── Cheerio HTML parsing (semantic element priority)
+        │           └── AI-powered content summarization
+        │
+5. PHASE SUMMARY    Synthesize all collected evidence into a structured brief
+        │           │── LLM-generated summary (max 200 words)
+        │           └── Key findings extraction
+        │
+6. MEMORY COMMIT    Write all findings to shared intelligence memory
+        │           │── Sources saved to research_sources table
+        │           │── Summaries saved to content_cache
+        │           └── Phase summary published via SSE
+        │
+7. HANDOFF          Signal completion to Orchestrator for next agent dispatch
+```
+
+### Agent Persona System
+
+Each agent operates under a distinct AI persona that shapes its reasoning behavior:
+
+**Brainstorm Persona** (pre-analysis conversational agent):
+> _"You are **Convix Intelligence** — a sharp, no-BS startup validation partner. You drive the conversation. Ask ONE question at a time to understand the idea deeply. Keep responses to 1-3 sentences. Be warm but direct — like a smart co-founder, not a chatbot."_
+
+**Analysis Persona** (activated for all investigation agents):
+> _"You are **Convix Intelligence** — a Senior Strategic Analyst at a top-tier VC firm conducting market validation. Open with a bold verdict immediately. Be BLUNT and DIRECT — no hedging. Use SPECIFIC numbers always. Reference companies BY NAME. Include ONE unexpected insight the founder hasn't considered."_
+
+The brainstorm persona automatically transitions to the analysis persona after 3+ conversational turns, enabling the system to gather sufficient context before deploying the full agent swarm.
+
+---
+
+## 🔗 Inter-Agent Communication & Shared Memory
+
+**This is not a single LLM call.** Convix implements a structured inter-agent communication system where each agent both produces and consumes intelligence through a shared memory layer.
+
+### Communication Architecture
+
+```mermaid
+graph TD
+    subgraph SharedMemory["📦 Shared Intelligence Memory (PostgreSQL)"]
+        SM1["research_sources<br/>(URL, title, domain, summary,<br/>token_count, source_type,<br/>search_query, phase)"]
+        SM2["content_cache<br/>(cache_key, summary,<br/>hit_count, TTL 7d)"]
+        SM3["phase_summaries<br/>(phase, findings,<br/>source_count, key_metrics)"]
+    end
+
+    A1["🏢 Competitor Agent"] -->|"writes 40+ sources<br/>with summaries"| SM1
+    A2["🔍 Market Agent"] -->|"writes 40+ sources<br/>enriched with gap data"| SM1
+    A3["💬 Community Agent"] -->|"writes 30+ sources<br/>with sentiment tags"| SM1
+
+    A1 -->|"caches scraped content"| SM2
+    A2 -->|"reuses cached content"| SM2
+    A3 -->|"reuses cached content"| SM2
+
+    A1 -->|"publishes phase findings"| SM3
+    A2 -->|"publishes phase findings"| SM3
+    A3 -->|"publishes phase findings"| SM3
+
+    SM1 -->|"reads ALL prior sources"| A4["⚡ Synthesis Agent"]
+    SM2 -->|"reads cached intelligence"| A4
+    SM3 -->|"reads ALL phase summaries"| A4
+
+    A4 -->|"generates final verdict"| Report["📊 Investment Memo"]
+```
+
+### Evidence Propagation Model
+
+Evidence flows through the system in three stages:
+
+**Stage 1 — Raw Collection.** Each agent independently collects evidence from the web. Sources are stored with full provenance: URL, title, domain, raw content, AI-generated summary, token count, source type (tavily/community/scrape), and the originating search query.
+
+**Stage 2 — Summarization & Caching.** Raw web content (avg. 5,000 characters) is compressed into AI-generated summaries (~500 characters) through the content pipeline. Summaries are cached with a 7-day TTL and composite key `(cache_type, cache_key)`. Subsequent agents hitting the same URL retrieve the cached summary at zero LLM cost. This yields a **90% token reduction** across the system.
+
+**Stage 3 — Cross-Agent Synthesis.** The Strategic Synthesis Agent reads the entire shared memory — all source summaries, all phase summaries, all cached intelligence — and cross-references findings across agents. It detects contradictions (e.g., Competitor Agent found low competition but Community Agent found high frustration → underserved niche signal), resolves conflicting evidence, and produces the final verdict.
+
+### Structured Intelligence Objects
+
+Each agent produces and consumes structured intelligence objects:
+
+```typescript
+// What each agent writes to shared memory
+interface AgentIntelligence {
+  phase: number;                          // 1-4
+  name: string;                           // "Competitor Analysis" | "Market Gap" | ...
+  sources: Array<{
+    url: string;                          // Evidence provenance
+    title: string;                        // Source title
+    domain: string;                       // Extracted domain
+    snippet: string;                      // Raw excerpt (200 chars)
+    summary: string;                      // AI-generated compressed summary
+    fromCache: boolean;                   // Whether this was a cache hit
+  }>;
+  phaseSummary: string;                   // LLM-generated phase-level findings
+}
+
+// What the Synthesis Agent reads
+interface SharedMemoryState {
+  phaseResults: AgentIntelligence[];      // All 4 agent outputs
+  totalSources: number;                   // Sum of all collected sources
+  searchConcept: string;                  // Extracted business concept
+  conversationHistory: string;            // Full brainstorm context
+}
+```
+
+### Contextual Reasoning Transfer
+
+Agents do not operate in isolation. Each agent's output enriches the reasoning context for downstream agents:
+
+| Producer Agent | Downstream Consumer | What Is Transferred |
+| :--- | :--- | :--- |
+| Orchestrator → All Agents | Competitor, Market, Community, Synthesis | Extracted search concept (3-6 word English term), 6 strategic research questions |
+| Competitor Agent → Market Agent | Market Gap Discovery | Competitor landscape establishes the baseline against which gaps are measured |
+| Market Agent → Community Agent | Community Signal Mining | Identified gaps inform which community complaints are actionable |
+| All Agents → Synthesis Agent | Strategic Synthesis | Full evidence corpus — all sources, summaries, and phase findings are cross-referenced |
+
+---
+
+## 🧠 Reasoning Architecture
+
+Convix implements a structured multi-stage reasoning system designed to maximize evidence quality, minimize hallucination, and produce traceable conclusions.
+
+### Reasoning Lifecycle
+
+```mermaid
+graph TD
+    subgraph Stage1["1. Concept Understanding"]
+        A["Raw idea text (any language)"] --> B["LLM concept extraction"]
+        B --> C["3-6 word English search term"]
+    end
+
+    subgraph Stage2["2. Strategic Question Generation"]
+        C --> D["LLM generates 6 critical<br/>validation questions"]
+        D --> E["Questions become implicit<br/>research objectives"]
+    end
+
+    subgraph Stage3["3. Distributed Evidence Collection"]
+        E --> F["4 agents × 6-8 queries each"]
+        F --> G["130+ raw sources discovered"]
+        G --> H["Content summarization<br/>(90% token reduction)"]
+    end
+
+    subgraph Stage4["4. Per-Agent Analysis"]
+        H --> I["Each agent synthesizes<br/>its domain findings"]
+        I --> J["4 structured phase summaries"]
+    end
+
+    subgraph Stage5["5. Cross-Agent Synthesis"]
+        J --> K["Synthesis Agent reads<br/>ALL phase summaries"]
+        K --> L["Contradiction detection<br/>across agent findings"]
+        L --> M["Evidence weighting<br/>and confidence scoring"]
+    end
+
+    subgraph Stage6["6. Verdict Generation"]
+        M --> N["Structured investment memo"]
+        N --> O["GREEN / YELLOW / RED<br/>with confidence score (0-100%)"]
+    end
+```
+
+### Reasoning Principles
 
 | Principle | Implementation |
 | :--- | :--- |
-| **Evidence over Opinion** | Every claim in the final report is traced back to a specific URL source with AI-generated summaries |
-| **Token Efficiency** | Content pipeline summarizes raw web pages into 90% smaller context windows before feeding to LLMs |
-| **Graceful Degradation** | `Promise.race` timeouts, cascading model fallbacks, and SSE heartbeats ensure the system never hangs |
-| **Zero Configuration AI** | Users describe their idea in natural language — no prompts to engineer, no parameters to tune |
-| **Bilingual Native** | Automatic Indonesian/English detection with language-locked responses throughout the entire pipeline |
+| **Evidence Grounding** | Every claim in the final report traces back to a specific URL source with an AI-generated summary. No unsourced assertions. |
+| **Hallucination Resistance** | Agents search the live web and extract real data. The Synthesis Agent is instructed to use SPECIFIC numbers, reference companies BY NAME, and cite dollar amounts — forcing grounded outputs. |
+| **Contradiction Detection** | The Synthesis Agent cross-references findings across all 4 agents. If Competitor Agent finds "few competitors" but Community Agent finds "high user frustration," the system identifies this as an underserved niche signal rather than a contradiction. |
+| **Confidence Scoring** | The final verdict includes a viability score (0-100%) derived from source quantity, evidence consistency, market size signals, and competitive density. |
+| **Traceability** | All 130+ sources are persisted in `research_sources` with full metadata (URL, domain, search query, phase, summary, token count). Users can audit every claim back to its origin. |
+| **Bilingual Reasoning** | Automatic Indonesian/English detection locks the entire reasoning chain to the user's language, including thinking questions, phase summaries, and the final report. |
+
+### Pre-Investigation Thinking Phase
+
+Before dispatching any research agents, the Orchestrator runs a **deliberate thinking phase** where it formulates strategic research questions:
+
+```
+Orchestrator receives: "AI accounting software for Indonesian SMEs"
+
+Thinking Phase Output (streamed to user in real-time):
+  1. "What are the existing cloud accounting solutions in Indonesia?"
+  2. "Who are the top 3 competitors and what is their funding?"
+  3. "What is the estimated TAM for SME accounting in Southeast Asia?"
+  4. "Are there regulatory barriers (e.g., tax compliance requirements)?"
+  5. "What technology infrastructure do Indonesian SMEs typically have?"
+  6. "Is the timing right — is this market growing or saturating?"
+```
+
+These questions serve two purposes:
+1. **User transparency** — the user sees _what_ the system is about to investigate and _why_
+2. **Research scoping** — the questions implicitly guide agent search strategies
+
+### Token Budget Intelligence
+
+The system implements a 30,000-token budget allocation system that prevents context window overflow during multi-agent reasoning:
+
+```
+Total Budget: 30,000 tokens per reasoning turn
+├── System Prompt (Agent Persona):    1,000 tokens (fixed)
+├── Conversation History:             8,000 tokens (first + last N messages)
+├── File Context (uploaded PDFs):     3,000 tokens (truncated)
+├── Agent Tool Results:               6,000 tokens (search + scrape summaries)
+└── Response Generation Reserve:     12,000 tokens (AI output space)
+```
+
+When the tool result budget is exhausted (`< 500 tokens remaining`), the Orchestrator dynamically disables tool access for the current agent, forcing it to reason from already-collected evidence. This prevents budget overruns while maximizing evidence utilization.
+
+---
+
+## 📋 Example Investigation Flow
+
+### Input
+
+> _"AI-powered accounting software for Indonesian SMEs"_
+
+### Execution Trace
+
+```
+═══════════════════════════════════════════════════════════════
+  ORCHESTRATOR AGENT — Concept Extraction
+═══════════════════════════════════════════════════════════════
+
+  Input:  "AI-powered accounting software for Indonesian SMEs"
+  Action: LLM concept extraction (Gemini 2.5 Flash, 100 tokens)
+  Output: "AI SME accounting software Indonesia"
+
+═══════════════════════════════════════════════════════════════
+  ORCHESTRATOR AGENT — Strategic Question Generation
+═══════════════════════════════════════════════════════════════
+
+  Generates 6 questions for research scoping:
+    → "Apa solusi akuntansi cloud yang sudah ada di Indonesia?"
+    → "Siapa 3 kompetitor teratas dan berapa pendanaan mereka?"
+    → "Berapa estimasi TAM untuk akuntansi UKM di Asia Tenggara?"
+    → "Apakah ada hambatan regulasi seperti kepatuhan pajak?"
+    → "Infrastruktur teknologi apa yang dimiliki UKM Indonesia?"
+    → "Apakah pasar ini sedang tumbuh atau sudah jenuh?"
+  (Questions auto-detected as Indonesian based on input language)
+
+═══════════════════════════════════════════════════════════════
+  COMPETITOR INTELLIGENCE AGENT — Phase 1
+═══════════════════════════════════════════════════════════════
+
+  Search queries executed (8 parallel, batches of 3):
+    → "AI SME accounting software Indonesia competitors startups"
+    → "AI SME accounting software Indonesia alternatives"
+    → "AI SME accounting software Indonesia market leaders"
+    → "AI SME accounting software Indonesia funding raised"
+    → "AI SME accounting software Indonesia reviews comparison"
+    → "best AI SME accounting tools platforms 2025 2026"
+    → "AI SME accounting software Indonesia industry landscape"
+    → "AI SME accounting software Indonesia similar apps"
+
+  Sources discovered: 43
+  Cache hits: 7 (from prior investigations)
+  Deep scrapes: 3 (jurnal.id, mekari.com, bukukas.co.id)
+
+  Phase Summary → Shared Memory:
+    "Found 6 major competitors: Jurnal.id (Series B, $10M),
+     Mekari (raised $50M+), BukuKas, Kledo, Accurate, Zahir.
+     Market is active with strong funding signals.
+     Key weakness: most lack AI-powered features."
+
+═══════════════════════════════════════════════════════════════
+  MARKET GAP DISCOVERY AGENT — Phase 2
+═══════════════════════════════════════════════════════════════
+
+  Reads: Competitor Agent findings from shared memory
+  Search queries: 8 (pricing, unmet needs, TAM, underserved segments)
+  Sources discovered: 38
+  Deep scrapes: 3
+
+  Phase Summary → Shared Memory:
+    "Indonesian SME accounting market estimated at $800M+ TAM.
+     Gap identified: AI-powered auto-categorization and
+     tax compliance automation are underserved.
+     Mobile-first UKM segment (warung/toko) largely ignored
+     by enterprise-focused players."
+
+═══════════════════════════════════════════════════════════════
+  COMMUNITY SIGNAL MINING AGENT — Phase 3
+═══════════════════════════════════════════════════════════════
+
+  Reads: Gap data from shared memory
+  Targeted queries: Reddit, HN, ProductHunt, IndieHackers
+  Sources discovered: 31
+  Deep scrapes: 3
+
+  Phase Summary → Shared Memory:
+    "Strong demand signals on r/indonesia and Kaskus:
+     'Jurnal is too expensive for my warung'
+     'I still do bookkeeping in Excel, need something simpler'
+     'Tax reporting is a nightmare, wish it was automated'
+     Community frustration concentrated in pricing and complexity."
+
+═══════════════════════════════════════════════════════════════
+  STRATEGIC SYNTHESIS AGENT — Phase 4
+═══════════════════════════════════════════════════════════════
+
+  Reads: ENTIRE shared memory (all 3 prior agents + all sources)
+  Additional queries: 6 (business model, GTM strategy, VC thesis)
+  Sources discovered: 22
+
+  Cross-reference analysis:
+    ✓ Competitor Agent: 6 funded competitors → market validated
+    ✓ Market Agent: mobile-first gap identified → niche available
+    ✓ Community Agent: price frustration → pricing wedge opportunity
+    ⚠ Contradiction: "active market" vs "underserved segment"
+      → Resolved: market is active at enterprise tier,
+         underserved at micro-SME tier
+
+═══════════════════════════════════════════════════════════════
+  FINAL VERDICT
+═══════════════════════════════════════════════════════════════
+
+  [VERDICT:YELLOW] — 68% viability score
+
+  134 sources analyzed across 4 agents.
+
+  "Crowded market at the enterprise tier, but a clear gap
+   exists in mobile-first AI accounting for micro-SMEs
+   (warung/toko). Recommended entry: freemium mobile app
+   with AI auto-categorization and automated SPT tax filing.
+   Estimated Year 1 revenue potential: $200K-$500K MRR
+   if capturing 2% of the 64M Indonesian MSME market."
+
+  Next Steps:
+    1. Build MVP targeting warung owners with WhatsApp integration
+    2. Partner with Indonesian tax consultants for SPT compliance
+    3. Post on r/indonesia and Kaskus for early user validation
+    4. Apply to Y Combinator W27 with Southeast Asia thesis
+    5. Contact Jurnal.id's churned SME customers for interviews
+```
+
+---
+
+## 🏗 System Architecture
+
+### Agent-Centric Architecture Overview
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                     USER INTERACTION LAYER                        │
+│  Natural language input → SSE real-time agent status stream      │
+│  Research Canvas (interactive SVG source graph)                   │
+└──────────────────────────┬───────────────────────────────────────┘
+                           │ SSE Stream / REST
+┌──────────────────────────┼───────────────────────────────────────┐
+│                  AGENT ORCHESTRATION LAYER                        │
+│                                                                   │
+│  ┌─────────────────────────────────────────────────────────┐     │
+│  │  Orchestrator Agent (server/services/analysis-pipeline)  │     │
+│  │  ├── Concept Extraction (LLM: Fast Model)               │     │
+│  │  ├── Strategic Question Generation (LLM: Fast Model)    │     │
+│  │  ├── Agent Dispatch Sequencer (4 phases)                │     │
+│  │  ├── Shared Memory Manager (Supabase writes)            │     │
+│  │  └── Report Compiler (LLM: Pro Model, streaming)        │     │
+│  └────────────────────────┬────────────────────────────────┘     │
+│                           │                                       │
+│  ┌────────────────────────┼────────────────────────────────┐     │
+│  │  Agent Capabilities                                      │     │
+│  │  ├── tavily_search → Web intelligence gathering         │     │
+│  │  ├── scrape_website → Deep content extraction           │     │
+│  │  ├── summarize → Content compression (90% reduction)    │     │
+│  │  └── phase_summary → Cross-source synthesis             │     │
+│  └────────────────────────┼────────────────────────────────┘     │
+│                           │                                       │
+│  ┌────────────────────────┼────────────────────────────────┐     │
+│  │  Context & Reasoning Engine                              │     │
+│  │  ├── context-builder → Token budget allocation (30K)    │     │
+│  │  ├── content-pipeline → Summarize + cache + deduplicate │     │
+│  │  └── openrouter → Multi-model gateway with fallbacks    │     │
+│  └─────────────────────────────────────────────────────────┘     │
+│                                                                   │
+└──────────────────────────┬───────────────────────────────────────┘
+                           │
+┌──────────────────────────┼───────────────────────────────────────┐
+│               SHARED INTELLIGENCE MEMORY                         │
+│  ├── research_sources (evidence store — 130+ per investigation) │
+│  ├── content_cache (summarized web data — 7-day TTL)            │
+│  ├── conversations + messages (reasoning history)                │
+│  ├── swot_analyses (structured SWOT output)                     │
+│  └── conversation_insights (verdict + metrics)                   │
+└──────────────────────────┬───────────────────────────────────────┘
+                           │
+┌──────────────────────────┼───────────────────────────────────────┐
+│               EXTERNAL INTELLIGENCE SERVICES                     │
+│  ├── OpenRouter (Claude Opus 4.6 / Gemini 3.1 Pro / Flash 2.5) │
+│  ├── Tavily (Advanced web search with answer extraction)        │
+│  └── Target Websites (Cheerio HTML extraction + parsing)        │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### Agent Orchestration Sequence
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant O as Orchestrator Agent
+    participant LLM as LLM Gateway (OpenRouter)
+    participant T as Tavily Search
+    participant W as Target Websites
+    participant M as Shared Memory (Supabase)
+
+    U->>O: "AI accounting software for Indonesian SMEs"
+
+    Note over O: ── Concept Extraction ──
+    O->>LLM: Extract 3-6 word search concept (Fast Model)
+    LLM-->>O: "AI SME accounting software Indonesia"
+
+    Note over O: ── Strategic Thinking ──
+    O->>LLM: Generate 6 critical validation questions
+    LLM-->>O: Questions array (JSON)
+    O-->>U: SSE: thinking_step × 6
+
+    Note over O: ── Agent 1: Competitor Intelligence ──
+    O-->>U: SSE: phase_start(1, "Competitor Analysis")
+    loop 8 queries in batches of 3
+        O->>T: searchWeb(query, 'advanced')
+        T-->>O: 5 results per query
+        O->>LLM: Summarize each source (Fast Model)
+        LLM-->>O: Compressed summaries (~150 words each)
+        O->>M: Write sources + summaries
+        O-->>U: SSE: source_found × N
+    end
+    O->>W: Deep scrape top 3 sources
+    W-->>O: Raw HTML → Cheerio extraction
+    O->>LLM: Generate phase summary
+    O->>M: Write phase summary
+    O-->>U: SSE: phase_complete(1)
+
+    Note over O: ── Agents 2-3: Same lifecycle ──
+    Note over O: Market Gap Agent reads Competitor findings
+    Note over O: Community Agent reads Gap findings
+
+    Note over O: ── Agent 4: Strategic Synthesis ──
+    O->>M: Read ALL phase summaries + ALL sources
+    M-->>O: Full shared memory state
+    O->>LLM: Generate final report (Pro Model, streaming)
+    LLM-->>O: Token stream
+    O-->>U: SSE: token × N (real-time report generation)
+    O->>M: Save final report + verdict
+    O-->>U: SSE: done
+```
+
+---
+
+## 🎛 AI Orchestration Layer
+
+### Multi-Model Routing with Automatic Failover
+
+The Orchestrator dispatches LLM calls through OpenRouter, which provides unified access to frontier models with automatic fallback chains:
+
+| Agent Role | Primary Model | Fallback Model | Temperature | Max Tokens | Rationale |
+| :--- | :--- | :--- | :---: | :---: | :--- |
+| **Investigation Agents** (concept extraction, summarization, phase summaries) | Gemini 2.5 Flash | Claude Haiku 4.5 | 0.5 | 4,096 | Speed-optimized for high-volume evidence processing |
+| **Strategic Synthesis** (final report generation) | Claude Opus 4.6 | Gemini 3.1 Pro Preview | 0.7 | 8,192 | Depth-optimized for cross-domain reasoning and report quality |
+| **Creative Ideation** (alternative perspectives) | Gemini 2.5 Pro | Claude Sonnet 4.6 | 0.8 | 4,096 | Balance of creativity and analytical rigor |
+
+### Adaptive Model Routing
+
+```typescript
+// If Claude Opus is rate-limited or unavailable,
+// OpenRouter automatically routes to Gemini 3.1 Pro
+{
+  models: ['anthropic/claude-opus-4.6', 'google/gemini-3.1-pro-preview'],
+  // Fallback is transparent — no code changes needed
+}
+```
+
+### Tool Definitions (Agent Capabilities)
+
+Each investigation agent has access to two tools:
+
+| Tool | Function Signature | Description |
+| :--- | :--- | :--- |
+| `tavily_search` | `searchWeb(query, search_type)` | Search the live web for market data, competitors, trends, and demand signals |
+| `scrape_website` | `scrapeUrl(url, focus?)` | Extract and summarize content from a specific website for deep analysis |
+
+Tools are dynamically enabled or disabled based on the remaining token budget. When the Orchestrator determines that the agent has consumed its tool allocation (`toolBudget < 500 tokens`), it disables tools and forces the agent to reason from already-collected evidence.
+
+---
+
+## 📊 Operational Metrics
+
+### Per-Investigation Performance
+
+| Metric | Typical Value | Description |
+| :--- | :--- | :--- |
+| **Total Sources Analyzed** | 130–150 | Across all 4 agents |
+| **Search Queries Executed** | 30 | 8+8+8+6 across agents |
+| **Deep Scrapes Performed** | 12 | Top 3 per agent |
+| **Token Reduction (Content Pipeline)** | ~90% | 5,000 chars → 500 chars per source |
+| **Cache Hit Rate** | 15–40% | Increases with repeated domain investigations |
+| **Agent Execution Time** | 3–5 minutes | Full 4-agent investigation |
+| **Final Report Length** | 2,000–4,000 tokens | Structured investment memo |
+| **LLM Calls per Investigation** | ~45 | Concept extraction + questions + summaries + phase summaries + final report |
+
+### System Reliability
+
+| Metric | Value | Mechanism |
+| :--- | :--- | :--- |
+| **Search Timeout Tolerance** | 25 seconds | `Promise.race` with empty-result fallback per query |
+| **Scrape Timeout Tolerance** | 10 seconds | `Promise.race` with graceful skip |
+| **LLM Timeout Tolerance** | 180 seconds | `AbortController` for long synthesis reports |
+| **Model Failover** | Automatic | OpenRouter `models[]` array with 2 models per tier |
+| **SSE Connection Stability** | Keep-alive heartbeat every 15s | Prevents NAT/proxy/mobile carrier drops |
+| **Content Cache TTL** | 7 days | Prevents redundant summarization of known sources |
+
+---
+
+## 📡 API Overview
+
+All endpoints require JWT authentication via Supabase. The primary endpoint is the SSE-streaming chat endpoint, which is the entry point for agent orchestration.
+
+### Primary: Agent Orchestration Endpoint
+
+**`POST /api/chat`** — Initiates agent reasoning and streams results via Server-Sent Events.
+
+```json
+{
+  "message": "AI accounting software for Indonesian SMEs",
+  "conversationId": "uuid | null",
+  "analysisMode": true,
+  "locale": "id",
+  "attachmentIds": []
+}
+```
+
+**SSE Events (real-time agent status):**
+
+| Event | Description |
+| :--- | :--- |
+| `thinking_step` | Orchestrator is generating strategic research questions |
+| `phase_start` | Investigation agent N has been dispatched |
+| `phase_progress` | Agent reports search/scrape/summarize progress |
+| `source_found` | Individual source discovered by an agent |
+| `phase_complete` | Agent N completed with summary |
+| `analysis_complete` | All 4 agents finished, synthesis beginning |
+| `token` | Streaming token from Synthesis Agent's final report |
+| `tool_start` / `tool_result` | Agent initiated/completed a tool call |
+| `done` | Full investigation complete |
+
+### Supporting Endpoints
+
+| Endpoint | Method | Purpose |
+| :--- | :--- | :--- |
+| `/api/conversations` | GET/POST/PUT/DELETE | Conversation management |
+| `/api/sources/:id` | GET | Retrieve all evidence sources for an investigation |
+| `/api/swot/:id` | GET/POST | SWOT analysis for an investigation |
+| `/api/insights/:id` | GET | Verdict and metrics for an investigation |
+| `/api/export` | POST | Export investigation report (markdown/JSON) |
+| `/api/upload` | POST | Upload documents (PDF extraction for agent context) |
+| `/api/analytics` | GET | User usage statistics |
+| `/api/transcribe` | POST | Audio transcription for voice input |
+
+---
+
+## 🛠 Technology Stack
+
+| Layer | Technology | Role in Agent System |
+| :--- | :--- | :--- |
+| **Agent Runtime** | Node.js ≥ 20, TypeScript 5.8 | Orchestrator execution environment |
+| **LLM Gateway** | OpenRouter SDK | Multi-model routing for agent reasoning (Claude, Gemini) |
+| **Web Intelligence** | Tavily 0.7.3 | Advanced search with answer extraction for evidence collection |
+| **Content Extraction** | Cheerio 1.2.0, Axios | HTML parsing for deep scrape agent capability |
+| **Shared Memory** | Supabase (PostgreSQL) | Evidence store, content cache, phase summaries, RLS |
+| **Agent Communication** | Server-Sent Events | Real-time agent status streaming to user |
+| **API Server** | Express 4.21.2 | Orchestration endpoint, middleware pipeline |
+| **Frontend** | React 19, Vite 6, Tailwind 4 | Research Canvas visualization, agent status UI |
+| **Animations** | Motion (Framer) 12.23 | Agent thinking/searching/synthesizing visual feedback |
+| **File Processing** | Multer 2.1, pdf-parse 2.4 | Document upload for agent context enrichment |
+| **Build** | esbuild 0.25, Vite 6.2 | Production compilation (frontend + backend) |
+
+### Database Schema (Shared Memory)
+
+The shared intelligence memory is backed by PostgreSQL with Row Level Security. Key tables:
+
+| Table | Purpose | Key Columns |
+| :--- | :--- | :--- |
+| `research_sources` | Evidence store (all agent-discovered sources) | url, title, domain, summary, token_count, source_type, search_query, phase |
+| `content_cache` | Deduplicated summarized web content (7-day TTL) | cache_type, cache_key, summary, hit_count, expires_at |
+| `conversations` | Investigation sessions | title, model, message_count, source_count, tags |
+| `messages` | Agent reasoning history | role, content, metadata (model, tools_used, isAnalysisReport) |
+| `swot_analyses` | Structured SWOT output per investigation | strengths, weaknesses, opportunities, threats, overall_score |
+| `conversation_insights` | Verdict and metrics | verdict (GREEN/YELLOW/RED), viability_score, key_metrics, difficulty |
+| `exports` | Generated reports | format (markdown/json), template, content |
+
+Full ER diagram and migration files available in `supabase/` directory (5 sequential migrations).
 
 ---
 
@@ -76,1150 +762,85 @@
 
 ### Prerequisites
 
-- **Node.js** ≥ 20.0.0
-- **npm** ≥ 9.0.0
-- **Supabase** project with database access
-- **OpenRouter** API key with credits
-- **Tavily** API key for web search
+- Node.js ≥ 20.0.0, npm ≥ 9.0.0
+- [Supabase](https://supabase.com/dashboard) project (free tier: 500MB DB, 50K auth users)
+- [OpenRouter](https://openrouter.ai/keys) API key (pay-per-token, no minimum)
+- [Tavily](https://tavily.com) API key (free tier: 1,000 searches/month)
 
-### Installation
+### Setup
 
 ```bash
-# 1. Clone the repository
+# Clone and install
 git clone https://github.com/ThiefRiefMarhas/convix-lab.git
 cd convix-lab
-
-# 2. Install dependencies
 npm install
 
-# 3. Configure environment
+# Configure environment
 cp .env.example .env
-# Edit .env with your API keys (see Environment Configuration section)
+# Edit .env with your API keys:
+#   VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
+#   OPENROUTER_API_KEY, TAVILY_API_KEY
 
-# 4. Run database migrations
-# Execute each SQL file in order in your Supabase SQL Editor:
-#   supabase/migration_001_core_schema.sql
-#   supabase/migration_002_vector_cache.sql
-#   supabase/migration_003_feature_expansion.sql
-#   supabase/migration_004_rate_limit_fix.sql
-#   supabase/migration_005_conversations_trigger.sql
+# Run database migrations (execute in order in Supabase SQL Editor)
+#   supabase/migration_001_core_schema.sql → migration_005_conversations_trigger.sql
 
-# 5. Start development server
+# Start development server (frontend HMR + backend API, single process)
 npm run dev
+# → http://localhost:3000
 ```
 
-The application will be available at `http://localhost:3000`. Both the Vite HMR frontend and Express API server run concurrently from a single process.
+### Scripts
 
-### Available Scripts
-
-| Script | Command | Description |
-| :--- | :--- | :--- |
-| **Development** | `npm run dev` | Start dev server with Vite HMR + Express API |
-| **Build** | `npm run build` | Compile frontend (Vite) + backend (esbuild) to `dist/` |
-| **Production** | `npm start` | Run compiled production server from `dist/server.cjs` |
-| **Type Check** | `npm run lint` | Run TypeScript compiler with `--noEmit` for type validation |
-| **Clean** | `npm run clean` | Remove `dist/` and compiled artifacts |
-
----
-
-## 🏗 System Architecture
-
-Convix is a monolithic full-stack TypeScript application with a clear separation between the Express API server and the React SPA frontend, unified by a single Node.js process.
-
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                        CLIENT (Browser)                          │
-│  ┌─────────────────────────────────────────────────────────┐     │
-│  │  React 19 SPA                                           │     │
-│  │  ├── Dashboard (Chat + Research Canvas + SWOT Panel)    │     │
-│  │  ├── Landing Pages (Home, About, Features, Pricing)     │     │
-│  │  ├── Auth (Supabase Auth UI + Protected Routes)         │     │
-│  │  └── State: useChat() + useConversations() hooks        │     │
-│  └────────────────────────┬────────────────────────────────┘     │
-│                           │ SSE Stream / REST                    │
-└───────────────────────────┼──────────────────────────────────────┘
-                            │
-┌───────────────────────────┼──────────────────────────────────────┐
-│                    EXPRESS API SERVER                             │
-│  ┌────────────────────────┼────────────────────────────────┐     │
-│  │              Middleware Chain                             │     │
-│  │  ├── express.json({ limit: '10mb' })                    │     │
-│  │  ├── requireAuth (JWT verification via Supabase)         │     │
-│  │  └── rateLimiter (per-user daily limits)                 │     │
-│  └────────────────────────┼────────────────────────────────┘     │
-│                           │                                      │
-│  ┌────────────────────────┼────────────────────────────────┐     │
-│  │              9 API Route Modules                         │     │
-│  │  ├── /api/chat          → SSE streaming + tool calls    │     │
-│  │  ├── /api/conversations → CRUD operations               │     │
-│  │  ├── /api/upload        → File upload + PDF extraction  │     │
-│  │  ├── /api/transcribe    → Audio transcription           │     │
-│  │  ├── /api/export        → Report export (MD/JSON)       │     │
-│  │  ├── /api/swot          → SWOT analysis CRUD            │     │
-│  │  ├── /api/sources       → Research source management    │     │
-│  │  ├── /api/analytics     → Usage analytics               │     │
-│  │  └── /api/insights      → Conversation insights         │     │
-│  └────────────────────────┼────────────────────────────────┘     │
-│                           │                                      │
-│  ┌────────────────────────┼────────────────────────────────┐     │
-│  │              Core Services Layer                         │     │
-│  │  ├── openrouter.ts      → Multi-model LLM gateway      │     │
-│  │  ├── analysis-pipeline  → 4-phase orchestrator          │     │
-│  │  ├── content-pipeline   → Summarize + cache + tokenize  │     │
-│  │  ├── context-builder    → Token budget allocator        │     │
-│  │  ├── tavily.ts          → Web search API client         │     │
-│  │  ├── scraper.ts         → Cheerio HTML extraction       │     │
-│  │  └── supabase-admin.ts  → Database + auth operations    │     │
-│  └────────────────────────┼────────────────────────────────┘     │
-│                           │                                      │
-└───────────────────────────┼──────────────────────────────────────┘
-                            │
-┌───────────────────────────┼──────────────────────────────────────┐
-│                    EXTERNAL SERVICES                             │
-│  ├── Supabase (PostgreSQL + Auth + Storage + RLS)               │
-│  ├── OpenRouter (Claude Opus 4.6 / Gemini 3.1 Pro / Flash 2.5) │
-│  └── Tavily (Advanced web search with answer extraction)        │
-└──────────────────────────────────────────────────────────────────┘
-```
-
-### Request Lifecycle (Chat with Analysis)
-
-```mermaid
-sequenceDiagram
-    participant U as User (Browser)
-    participant E as Express Server
-    participant S as Supabase
-    participant O as OpenRouter
-    participant T as Tavily
-    participant W as Target Websites
-
-    U->>E: POST /api/chat (SSE)
-    E->>S: Verify JWT + Check Rate Limits
-    S-->>E: User Profile + Usage Data
-    E->>S: Create Conversation (if new)
-    E->>S: Save User Message
-
-    Note over E: Analysis Mode Triggered
-
-    E->>O: Extract Search Concept (Fast Model)
-    O-->>E: "B2B construction equipment rental marketplace"
-
-    E->>O: Generate Thinking Questions (Fast Model)
-    O-->>E: 6 Strategic Questions (JSON)
-    E-->>U: SSE: thinking_step × 6
-
-    loop Phase 1–4
-        E-->>U: SSE: phase_start
-        loop Batch of 3 Queries
-            E->>T: searchWeb(query, 'advanced')
-            T-->>E: 5 Results per Query
-            E->>O: Summarize Content (Fast Model)
-            O-->>E: Compressed Summary (~150 words)
-            E->>S: Cache Summary + Save Sources
-            E-->>U: SSE: source_found × N
-        end
-        E->>W: scrapeUrl(top 3 URLs)
-        W-->>E: Raw HTML
-        E->>O: Phase Summary (Fast Model)
-        E-->>U: SSE: phase_complete
-    end
-
-    E->>O: Final Report (Pro Model, streaming)
-    O-->>E: Token stream
-    E-->>U: SSE: token × N
-    E->>S: Save Assistant Message
-    E-->>U: SSE: done
-```
-
----
-
-## 🔬 The 4-Phase Research Pipeline
-
-The analysis pipeline is the core differentiator of Convix. It replaces a human research team's multi-week workflow with an autonomous, parallelized investigation engine.
-
-### Phase Architecture
-
-```mermaid
-graph LR
-    subgraph Input
-        A[Startup Idea] --> B[Concept Extraction]
-    end
-
-    subgraph Thinking["🧠 Pre-Research Thinking"]
-        B --> C[Generate 6 Strategic Questions]
-        C --> D[Stream to UI as Thinking Steps]
-    end
-
-    subgraph P1["Phase 1: Competitive Landscape"]
-        D --> E1[8 Parallel Search Queries]
-        E1 --> F1[~40 Sources Discovered]
-        F1 --> G1[Top 3 Deep Scrape]
-        G1 --> H1[Phase Summary]
-    end
-
-    subgraph P2["Phase 2: Market Vulnerabilities"]
-        H1 --> E2[8 Parallel Search Queries]
-        E2 --> F2[~40 Sources Discovered]
-        F2 --> G2[Top 3 Deep Scrape]
-        G2 --> H2[Phase Summary]
-    end
-
-    subgraph P3["Phase 3: Community Signals"]
-        H2 --> E3[8 Targeted Forum Queries]
-        E3 --> F3[~30 Sources Discovered]
-        F3 --> G3[Top 3 Deep Scrape]
-        G3 --> H3[Phase Summary]
-    end
-
-    subgraph P4["Phase 4: Strategic Synthesis"]
-        H3 --> E4[6 Business Model Queries]
-        E4 --> F4[~20 Sources Discovered]
-        F4 --> G4[Top 3 Deep Scrape]
-        G4 --> H4[Phase Summary]
-    end
-
-    subgraph Output["📊 Final Report"]
-        H4 --> I[Cross-Reference All Phases]
-        I --> J[Generate Investment Memo]
-        J --> K["Verdict: GREEN / YELLOW / RED"]
-    end
-```
-
-### Phase Detail Specification
-
-| Phase | Name | Queries | Typical Sources | Search Strategy | Output |
-| :---: | :--- | :---: | :---: | :--- | :--- |
-| **1** | Competitive Landscape | 8 | ~40 | `{idea} competitors startups`, `{idea} alternatives`, `{idea} market leaders`, `{idea} funding raised` | Competitor table with funding, features, weaknesses |
-| **2** | Market Vulnerability | 8 | ~40 | `{idea} problems complaints`, `{idea} unmet needs`, `{idea} market size TAM`, `{idea} pricing comparison` | Gap analysis with revenue potential estimates |
-| **3** | Community Signals | 8 | ~30 | `site:reddit.com {idea}`, `site:news.ycombinator.com`, `site:producthunt.com`, `site:indiehackers.com` | Real user frustrations, demand signals, quotes |
-| **4** | Strategic Synthesis | 6 | ~20 | `{idea} business model revenue`, `{idea} go to market strategy`, `{idea} VC investment thesis` | TAM/SAM/SOM, timing assessment, recommended niche |
-
-### Final Report Structure
-
-The AI synthesizes all phase data into a structured investment memo:
-
-```
-[VERDICT:GREEN/YELLOW/RED] — Confidence Score (0-100%)
-
-📊 Executive Verdict
-   → One powerful paragraph with specific dollar amounts, competitor names
-
-🏢 Competitive Landscape
-   → Table: Name | Founded | Funding | Key Features | Weakness
-
-🔍 Market Gap Analysis
-   → Specific gaps with evidence, revenue potential per gap
-
-💬 Community Demand Signals
-   → Real quotes from Reddit/HN/ProductHunt, thematic analysis
-
-📈 Market Sizing
-   → TAM / SAM / SOM with methodology and growth rate
-
-⚡ Strategic Verdict
-   → Opportunity Score, Revenue Potential (Y1), Timing, Difficulty, Niche
-
-🎯 Next Steps (This Week)
-   → 3-5 hyper-specific actionable items
-```
-
----
-
-## 🛠 Technology Stack
-
-### Complete Dependency Matrix
-
-| Layer | Technology | Version | Purpose |
-| :--- | :--- | :---: | :--- |
-| **Runtime** | Node.js | ≥ 20 | Server-side JavaScript execution |
-| **Language** | TypeScript | 5.8 | Type-safe development across full stack |
-| **Frontend Framework** | React | 19.0.1 | Component-based UI with concurrent features |
-| **Build Tool** | Vite | 6.2.3 | Sub-second HMR, optimized production bundles |
-| **Backend Bundler** | esbuild | 0.25.0 | Compiles server TypeScript to CJS for production |
-| **Dev Runtime** | tsx | 4.21.0 | TypeScript execution without compilation step |
-| **CSS Framework** | Tailwind CSS | 4.1.14 | Utility-first styling with HSL custom properties |
-| **Animation** | Motion (Framer) | 12.23.24 | Hardware-accelerated layout animations |
-| **Icons** | Lucide React | 0.546.0 | Consistent, tree-shakeable SVG icon system |
-| **Smooth Scroll** | Lenis | 1.3.23 | 60fps inertia scrolling with `data-lenis-prevent` |
-| **API Server** | Express | 4.21.2 | Route handling, middleware pipeline, SSE streaming |
-| **Database** | Supabase (PostgreSQL) | 2.105.4 | Relational storage, Row Level Security, Auth, Storage |
-| **LLM Gateway** | OpenRouter SDK | — | Multi-model routing with automatic fallback chains |
-| **Web Search** | Tavily | 0.7.3 | Advanced search with answer extraction (5 results/query) |
-| **HTML Parsing** | Cheerio | 1.2.0 | Server-side DOM traversal for web scraping |
-| **HTTP Client** | Axios | 1.16.1 | HTTP requests for web scraping with timeout control |
-| **File Upload** | Multer | 2.1.1 | Multipart form handling for PDF/document uploads |
-| **PDF Parsing** | pdf-parse | 2.4.5 | Extract text content from uploaded PDF documents |
-| **Routing** | React Router | 7.15.1 | Client-side navigation with protected route guards |
-| **Utility** | clsx + tailwind-merge | — | Conditional class composition without conflicts |
-| **Confetti** | canvas-confetti | 1.9.4 | Celebration animations on analysis completion |
-| **WebSocket** | ws | 8.20.1 | Reserved for future real-time collaboration features |
-| **Env Config** | dotenv | 17.2.3 | Environment variable management |
-
-### Frontend Component Census
-
-| Category | Count | Key Components |
-| :--- | :---: | :--- |
-| Pages | 8 | Dashboard, Home, About, Features, Pricing, Contact, Privacy, Terms |
-| Chat Components | 8 | ChatPanel, ChatInput, MessageBubble, ResearchCanvas, SourceCard, ThinkingPhase, PhaseIndicator, ToolCallCard |
-| Auth Components | 2 | AuthModal, ProtectedRoute |
-| Landing Components | 4 | CinematicHero, DashboardPreview, IdeaValidator, InsightsHub |
-| Layout Components | 3 | LandingLayout, Navbar, Footer |
-| Custom Hooks | 2 | useChat, useConversations |
-| Context Providers | 3 | AuthContext, ThemeContext, LocaleContext |
-| **Total Frontend Files** | **50** | TypeScript + TSX across `src/` |
-
-### Backend Service Census
-
-| Category | Count | Key Modules |
-| :--- | :---: | :--- |
-| API Routes | 9 | chat, conversations, upload, transcribe, export, swot, sources, analytics, insights |
-| Core Services | 6 | openrouter, analysis-pipeline, content-pipeline, context-builder, tavily, scraper |
-| Middleware | 2 | auth, rate-limiter |
-| Prompt Definitions | 1 | system.ts (Brainstorm + Analysis personas) |
-| **Total Backend Files** | **20** | TypeScript across `server/` |
-
----
-
-## 🗃 Database Schema & Data Model
-
-The database is PostgreSQL hosted on Supabase, with Row Level Security (RLS) enforced on every table. Schema is managed through 5 sequential migration files.
-
-### Entity Relationship Diagram
-
-```mermaid
-erDiagram
-    USERS ||--o{ PROFILES : "1:1"
-    USERS ||--o{ USER_USAGE : "1:1"
-    USERS ||--o{ CONVERSATIONS : "1:N"
-    USERS ||--o{ FILE_UPLOADS : "1:N"
-    USERS ||--o{ EXPORTS : "1:N"
-    CONVERSATIONS ||--o{ MESSAGES : "1:N"
-    CONVERSATIONS ||--o{ RESEARCH_SOURCES : "1:N"
-    CONVERSATIONS ||--o{ SWOT_ANALYSES : "1:1"
-    CONVERSATIONS ||--o{ CONVERSATION_INSIGHTS : "1:1"
-
-    USERS {
-        uuid id PK
-        string email
-        jsonb raw_user_meta_data
-    }
-
-    PROFILES {
-        uuid id PK,FK
-        string display_name
-        string avatar_url
-        string plan_tier
-        int max_conversations
-        int max_messages_per_convo
-        int max_files_per_convo
-        int max_file_size_mb
-    }
-
-    USER_USAGE {
-        uuid user_id FK
-        int messages_today
-        int searches_today
-        int files_total
-        int conversations_total
-        date last_reset_date
-    }
-
-    CONVERSATIONS {
-        uuid id PK
-        uuid user_id FK
-        string title
-        string model
-        string status
-        int message_count
-        int source_count
-        text[] tags
-        timestamptz last_message_at
-    }
-
-    MESSAGES {
-        uuid id PK
-        uuid conversation_id FK
-        uuid user_id FK
-        string role
-        text content
-        jsonb metadata
-    }
-
-    RESEARCH_SOURCES {
-        uuid id PK
-        uuid conversation_id FK
-        uuid user_id FK
-        string url
-        string title
-        string domain
-        text snippet
-        text summary
-        int token_count
-        text full_content
-        float relevance_score
-        string source_type
-        string search_query
-        text annotation
-        boolean is_bookmarked
-    }
-
-    FILE_UPLOADS {
-        uuid id PK
-        uuid user_id FK
-        uuid conversation_id FK
-        string file_name
-        string file_type
-        bigint file_size_bytes
-        string storage_path
-        text extracted_text
-    }
-
-    CONTENT_CACHE {
-        uuid id PK
-        string cache_type
-        string cache_key
-        string title
-        text raw_content
-        text summary
-        int summary_tokens
-        string domain
-        string content_type
-        int word_count
-        int hit_count
-        timestamptz expires_at
-    }
-
-    SWOT_ANALYSES {
-        uuid id PK
-        uuid conversation_id FK
-        uuid user_id FK
-        jsonb strengths
-        jsonb weaknesses
-        jsonb opportunities
-        jsonb threats
-        float overall_score
-        text ai_summary
-    }
-
-    CONVERSATION_INSIGHTS {
-        uuid id PK
-        uuid conversation_id FK
-        uuid user_id FK
-        string verdict
-        int viability_score
-        jsonb key_metrics
-        text[] tags
-        string market_size
-        int competitor_count
-        string difficulty
-        text ai_summary
-    }
-
-    EXPORTS {
-        uuid id PK
-        uuid conversation_id FK
-        uuid user_id FK
-        string format
-        string template
-        string title
-        text content
-        jsonb metadata
-    }
-```
-
-### Migration History
-
-| Migration | File | Description |
-| :---: | :--- | :--- |
-| **001** | `migration_001_core_schema.sql` | Profiles, Conversations, Messages, Research Sources, File Uploads, User Usage, Storage bucket, auto-increment triggers |
-| **002** | `migration_002_vector_cache.sql` | Content cache table with TTL expiry, unique composite index on `(cache_type, cache_key)` |
-| **003** | `migration_003_feature_expansion.sql` | Exports, SWOT Analyses, Conversation Insights, source annotations, conversation tags |
-| **004** | `migration_004_rate_limit_fix.sql` | Rate limiting column adjustments and `analyses_today` counter |
-| **005** | `migration_005_conversations_trigger.sql` | Auto-update `updated_at` trigger on conversation modifications |
-
-### Row Level Security Model
-
-Every table enforces RLS with the pattern:
-
-```sql
--- SELECT: Users can only read their own data
-USING ((SELECT auth.uid()) = user_id)
-
--- INSERT: Users can only insert for themselves
-WITH CHECK ((SELECT auth.uid()) = user_id)
-
--- UPDATE/DELETE: Same ownership check
-USING ((SELECT auth.uid()) = user_id)
-```
-
-The `service_role` key (server-side only) bypasses RLS for administrative operations like usage tracking and cross-user analytics.
-
----
-
-## 📡 API Reference
-
-All endpoints require authentication via `Authorization: Bearer <supabase_jwt>` header unless noted otherwise.
-
-### Core Endpoints
-
-#### `POST /api/chat` — Streaming Analysis & Chat
-
-The primary endpoint. Returns a **Server-Sent Events** stream.
-
-**Request Body:**
-```json
-{
-  "conversationId": "uuid | null",
-  "message": "A marketplace for local Indonesian artisan furniture",
-  "model": "Convix Fast",
-  "webSearchEnabled": false,
-  "attachmentIds": [],
-  "analysisMode": false,
-  "locale": "en",
-  "indonesiaFocus": false
-}
-```
-
-**SSE Event Types:**
-
-| Event | Payload | Description |
-| :--- | :--- | :--- |
-| `conversation_created` | `{ conversationId }` | New conversation was created |
-| `thinking_step` | `{ question }` | AI is formulating strategic research questions |
-| `thinking_complete` | `{}` | Pre-research thinking phase finished |
-| `phase_start` | `{ phase, phaseName, totalPhases }` | Research phase N has begun |
-| `phase_progress` | `{ phase, status, sourcesFound, completedQueries }` | Phase progress update |
-| `source_found` | `{ phase, url, title, domain, snippet, fromCache }` | Individual source discovered |
-| `phase_complete` | `{ phase, phaseName, sourcesFound, summary }` | Phase N finished with summary |
-| `analysis_complete` | `{ totalSources, phases[] }` | All 4 phases completed |
-| `token` | `{ content }` | Streaming text token from LLM |
-| `tool_start` | `{ tool, query?, url? }` | AI initiated a tool call |
-| `tool_result` | `{ tool, sources?, url?, error? }` | Tool call returned results |
-| `title_generated` | `{ conversationId, title }` | Auto-generated conversation title |
-| `done` | `{ conversationId, toolTokensUsed? }` | Stream complete |
-| `error` | `{ message }` | Error occurred |
-
----
-
-#### `GET /api/conversations` — List Conversations
-
-Returns all conversations for the authenticated user, ordered by most recent.
-
-**Response:**
-```json
-[
-  {
-    "id": "uuid",
-    "title": "Indonesian Furniture Marketplace",
-    "model": "Convix Fast",
-    "status": "active",
-    "message_count": 7,
-    "source_count": 134,
-    "created_at": "2026-05-20T10:00:00Z",
-    "last_message_at": "2026-05-20T10:15:00Z"
-  }
-]
-```
-
----
-
-#### `POST /api/upload` — File Upload
-
-Accepts multipart form data. Supports PDF, TXT, and document files up to 10MB.
-
-**Response:**
-```json
-{
-  "id": "uuid",
-  "fileName": "pitch_deck.pdf",
-  "fileType": "application/pdf",
-  "extractedText": "Full extracted text content..."
-}
-```
-
----
-
-#### `GET /api/swot/:conversationId` — SWOT Analysis
-
-Returns the SWOT analysis for a conversation.
-
-**Response:**
-```json
-{
-  "strengths": [{ "text": "First mover in segment", "score": 8, "evidence": "..." }],
-  "weaknesses": [{ "text": "High logistics cost", "score": 6, "evidence": "..." }],
-  "opportunities": [{ "text": "Growing middle class", "score": 9, "evidence": "..." }],
-  "threats": [{ "text": "Established e-commerce players", "score": 5, "evidence": "..." }],
-  "overall_score": 75,
-  "ai_summary": "Overall execution summary."
-}
-```
-
----
-
-#### `GET /api/insights/:conversationId` — Conversation Insights
-
-Returns AI-generated insights and verdict for a conversation.
-
----
-
-#### `GET /api/sources/:conversationId` — Research Sources
-
-Returns all discovered research sources for a conversation.
-
----
-
-#### `POST /api/export` — Export Report
-
-Generates an exportable report from conversation data.
-
-| Format | Description |
+| Command | Description |
 | :--- | :--- |
-| `markdown` | Structured markdown document with headings, tables, and citations |
-| `json` | Machine-readable structured data object |
-
----
-
-#### `GET /api/analytics` — Usage Analytics
-
-Returns the authenticated user's usage statistics (messages, searches, conversations).
-
----
-
-## 🤖 AI Model Orchestration
-
-Convix uses **OpenRouter** as a unified gateway to access multiple frontier LLM providers with automatic fallback chains.
-
-### Model Tiers
-
-| Tier | Primary Model | Fallback Model | Temperature | Max Tokens | Use Case |
-| :--- | :--- | :--- | :---: | :---: | :--- |
-| **Convix Pro** | Claude Opus 4.6 | Gemini 3.1 Pro Preview | 0.7 | 8,192 | Final analysis reports, complex synthesis |
-| **Convix Fast** | Gemini 2.5 Flash | Claude Haiku 4.5 | 0.5 | 4,096 | Brainstorm chat, summarization, concept extraction |
-| **Convix Creative** | Gemini 2.5 Pro | Claude Sonnet 4.6 | 0.8 | 4,096 | Creative ideation, alternative perspectives |
-
-### Fallback Mechanism
-
-```typescript
-// OpenRouter's `models` array provides automatic failover
-{
-  models: ['anthropic/claude-opus-4.6', 'google/gemini-3.1-pro-preview'],
-  // If Claude Opus is unavailable or rate-limited,
-  // OpenRouter automatically routes to Gemini 3.1 Pro
-}
-```
-
-### Tool Definitions
-
-The LLM has access to two tools during brainstorm mode:
-
-| Tool | Function | Description |
-| :--- | :--- | :--- |
-| `tavily_search` | `searchWeb(query, type)` | Search the web for real-time market data, competitors, and trends |
-| `scrape_website` | `scrapeUrl(url)` | Extract and summarize content from a specific website URL |
-
-Tools are dynamically enabled/disabled based on remaining token budget (`canAddTools` check in context builder).
-
-### Dual Persona System
-
-The AI operates under two distinct personas:
-
-**Brainstorm Mode** — Friendly, concise co-founder:
-- 1-3 sentence responses
-- Asks ONE question at a time
-- Natural conversational tone
-- No bullet lists or formal structure
-- Auto-triggers analysis after 3+ user messages
-
-**Analysis Mode** — Senior VC Strategic Analyst:
-- Opens with bold verdict (GREEN/YELLOW/RED)
-- Bloomberg/TechCrunch editorial quality
-- Specific numbers, company names, dollar amounts
-- Investor-ready structured report format
-
----
-
-## 📐 Token Budget Management
-
-The context builder implements a strict token budget system to prevent context window overflow during multi-tool conversations.
-
-### Budget Allocation (per turn)
-
-```
-Total Budget: 30,000 tokens
-├── System Prompt:          1,000 tokens (fixed)
-├── Conversation History:   8,000 tokens (recent messages, first + last N)
-├── File Context:           3,000 tokens (attached PDFs, truncated)
-├── Tool Results:           6,000 tokens (search + scrape summaries)
-└── Response Reserve:      12,000 tokens (AI output space)
-```
-
-### History Trimming Strategy
-
-```
-Strategy: Keep FIRST message (original idea) + LAST N messages (recent context)
-
-[Message 1: Original Idea]  ← Always preserved
-[Message 2: ...]            ← Trimmed if over budget
-[Message 3: ...]            ← Trimmed if over budget
-...
-[Message N-2]               ← Kept (recent)
-[Message N-1]               ← Kept (recent)
-[Message N: Latest]         ← Always kept
-```
-
-### Dynamic Tool Gating
-
-```typescript
-// Tools are disabled when budget is exhausted
-const budget = getRemainingBudget({...});
-const stream = createStreamingCompletion(msgs, model, budget.canAddTools);
-// canAddTools = false when toolBudget < 500 tokens
-```
-
----
-
-## 🔄 Content Pipeline & Caching
-
-The content pipeline is the system's "efficiency engine" — it reduces LLM token consumption by 80-90% through intelligent summarization and caching.
-
-### Pipeline Flow
-
-```
-Raw Web Content (5,000 chars)
-    │
-    ├── Check Cache (content_cache table)
-    │     ├── HIT → Return cached summary (0 API calls) → Increment hit_count
-    │     └── MISS ↓
-    │
-    ├── Summarize via LLM (Convix Fast, max 400 tokens)
-    │     ├── Webpage → "Summarize for startup market research" (max 150 words)
-    │     └── Search Results → "Market intelligence brief" (max 200 words)
-    │
-    ├── Cache Result (7-day TTL, upsert on cache_type + cache_key)
-    │
-    └── Return Summary (~500 chars)
-         └── Token savings: ~90% (5,000 → 500 chars)
-```
-
-### Cache Statistics
-
-| Metric | Value |
-| :--- | :--- |
-| Cache TTL | 7 days |
-| Max raw content stored | 50,000 characters |
-| Hit count tracking | Per-entry, auto-incrementing |
-| Deduplication key | `(cache_type, cache_key)` composite unique |
-
----
-
-## 🔒 Security Architecture
-
-### Authentication Flow
-
-```
-Browser → Supabase Auth (Google/GitHub/Email) → JWT
-    │
-    └── Express Middleware: requireAuth
-          │
-          ├── Extract: Authorization: Bearer <jwt>
-          ├── Verify: supabaseAdmin.auth.getUser(token)
-          ├── Attach: req.user = { userId, email }
-          └── Next() or 401
-```
-
-### Rate Limiting
-
-| Limit | Scope | Enforcement |
-| :--- | :--- | :--- |
-| Messages per day | Per user | Middleware check against `user_usage.messages_today` |
-| Searches per day | Per user | Incremented per Tavily API call |
-| Analyses per day | Per user | Checked before pipeline execution |
-| Conversations total | Per user | Hard cap from `profiles.max_conversations` |
-| File size | Per upload | 10MB limit via Multer + Supabase Storage |
-| Request body | Global | 10MB JSON limit via Express |
-
-### Network Resilience
-
-| Mechanism | Implementation | Purpose |
-| :--- | :--- | :--- |
-| SSE Heartbeat | `: keep-alive\n\n` every 15 seconds | Prevent NAT/proxy/mobile carrier timeout drops |
-| TCP Keep-Alive | `req.socket.setKeepAlive(true, 1000)` | Prevent OS-level socket recycling |
-| Socket Timeout | `req.socket.setTimeout(0)` | Disable default Node.js socket timeout |
-| Search Timeout | `Promise.race` with 25-second fallback | Prevent hung search queries from blocking pipeline |
-| Scrape Timeout | `Promise.race` with 10-second fallback | Prevent slow websites from stalling analysis |
-| LLM Timeout | `AbortController` with 180-second signal | Prevent hung LLM requests during long reports |
-| Flush Headers | `res.flushHeaders()` + manual `flush()` | Ensure SSE bytes are sent immediately (no buffering) |
-| Content Encoding | `Content-Encoding: identity` | Disable compression that could buffer SSE chunks |
-
----
-
-## 📁 Directory Structure
-
-```
-convix-idea-lab/
-├── public/                          # Static assets served at root
-│   ├── manifest.json                # PWA manifest
-│   ├── robots.txt                   # Search engine crawling rules
-│   └── sitemap.xml                  # XML sitemap for SEO
-│
-├── src/                             # Frontend source (50 files)
-│   ├── components/
-│   │   ├── auth/
-│   │   │   ├── AuthModal.tsx        # Supabase Auth UI modal
-│   │   │   └── ProtectedRoute.tsx   # Route guard with redirect
-│   │   ├── chat/
-│   │   │   ├── ChatInput.tsx        # Message input with file attach
-│   │   │   ├── ChatPanel.tsx        # Message list + streaming view
-│   │   │   ├── MessageBubble.tsx    # Individual message renderer
-│   │   │   ├── PhaseIndicator.tsx   # Analysis phase progress bars
-│   │   │   ├── ResearchCanvas.tsx   # Interactive SVG source graph
-│   │   │   ├── SourceCard.tsx       # Research source display card
-│   │   │   ├── ThinkingPhase.tsx    # AI thinking animation
-│   │   │   └── ToolCallCard.tsx     # Tool execution indicator
-│   │   ├── landing/
-│   │   │   ├── CinematicHero.tsx    # Full-screen hero with animation
-│   │   │   ├── DashboardPreview.tsx # Interactive dashboard mockup
-│   │   │   ├── IdeaValidator.tsx    # Quick validation CTA widget
-│   │   │   └── InsightsHub.tsx      # Feature showcase cards
-│   │   ├── Footer.tsx               # Global footer with links
-│   │   ├── Gauge.tsx                # Animated viability score gauge
-│   │   ├── Navbar.tsx               # Responsive navigation bar
-│   │   └── VideoEmbed.tsx           # YouTube embed component
-│   │
-│   ├── context/
-│   │   ├── AuthContext.tsx           # Supabase session management
-│   │   ├── LocaleContext.tsx         # ID/EN language state
-│   │   └── ThemeContext.tsx          # Light/Dark theme toggle
-│   │
-│   ├── hooks/
-│   │   ├── useChat.ts               # SSE stream handler, tool state
-│   │   └── useConversations.ts      # Conversation CRUD operations
-│   │
-│   ├── i18n/
-│   │   └── ui.ts                    # Bilingual string definitions
-│   │
-│   ├── layouts/
-│   │   └── LandingLayout.tsx        # Navbar + Footer wrapper
-│   │
-│   ├── lib/
-│   │   ├── supabase.ts              # Supabase client initialization
-│   │   └── user-errors.ts           # Error formatting utilities
-│   │
-│   ├── pages/
-│   │   ├── About.tsx                # Company information
-│   │   ├── Contact.tsx              # Contact form + resources
-│   │   ├── Dashboard.tsx            # Main application (51KB)
-│   │   ├── Features.tsx             # Feature showcase
-│   │   ├── Home.tsx                 # Landing page
-│   │   ├── Pricing.tsx              # Subscription tiers
-│   │   ├── Privacy.tsx              # Privacy policy
-│   │   ├── SubscriptionSuccess.tsx  # Post-payment confirmation
-│   │   └── Terms.tsx                # Terms of service
-│   │
-│   ├── services/
-│   │   └── api.ts                   # Typed API client layer
-│   │
-│   ├── styles/
-│   │   └── fonts.css                # Custom font declarations
-│   │
-│   ├── App.tsx                      # Root component with providers
-│   ├── AppRoutes.tsx                # React Router configuration
-│   ├── index.css                    # Global styles + CSS variables
-│   ├── main.tsx                     # DOM mount + Lenis init
-│   └── vite-env.d.ts                # Vite type declarations
-│
-├── server/                          # Backend source (20 files)
-│   ├── middleware/
-│   │   ├── auth.ts                  # JWT verification middleware
-│   │   └── rate-limiter.ts          # Per-user rate limiting
-│   │
-│   ├── routes/
-│   │   ├── analytics.ts             # GET /api/analytics
-│   │   ├── chat.ts                  # POST /api/chat (SSE stream)
-│   │   ├── conversations.ts         # CRUD /api/conversations
-│   │   ├── export.ts                # POST /api/export
-│   │   ├── insights.ts              # GET /api/insights/:id
-│   │   ├── sources.ts               # GET /api/sources/:id
-│   │   ├── swot.ts                  # CRUD /api/swot/:id
-│   │   ├── transcribe.ts            # POST /api/transcribe
-│   │   └── upload.ts                # POST /api/upload
-│   │
-│   ├── services/
-│   │   ├── analysis-pipeline.ts     # 4-phase research orchestrator
-│   │   ├── content-pipeline.ts      # Summarize + cache + tokenize
-│   │   ├── context-builder.ts       # Token budget allocation
-│   │   ├── openrouter.ts            # Multi-model LLM gateway
-│   │   ├── scraper.ts               # Cheerio HTML extractor
-│   │   ├── supabase-admin.ts        # DB + auth admin operations
-│   │   └── tavily.ts                # Web search API client
-│   │
-│   └── prompts/
-│       └── system.ts                # Brainstorm + Analysis personas
-│
-├── supabase/                        # Database migrations
-│   ├── migration_001_core_schema.sql
-│   ├── migration_002_vector_cache.sql
-│   ├── migration_003_feature_expansion.sql
-│   ├── migration_004_rate_limit_fix.sql
-│   └── migration_005_conversations_trigger.sql
-│
-├── server.ts                        # Express server entry point
-├── Dockerfile                       # Multi-stage Alpine build
-├── package.json                     # Dependencies + scripts
-├── tsconfig.json                    # TypeScript configuration
-├── vite.config.ts                   # Vite build configuration
-└── README.md                        # ← You are here
-```
-
----
-
-## ⚙ Environment Configuration
-
-Create a `.env` file in the project root:
-
-```env
-# ┌────────────────────────────────────────────────────┐
-# │           SUPABASE CONFIGURATION                   │
-# └────────────────────────────────────────────────────┘
-# Project URL from Supabase Dashboard → Settings → API
-VITE_SUPABASE_URL=https://your-project.supabase.co
-# Anon (public) key — safe for client-side use
-VITE_SUPABASE_ANON_KEY=eyJ...your_anon_key
-# Service role key — server-side only, bypasses RLS
-SUPABASE_SERVICE_ROLE_KEY=eyJ...your_service_role_key
-
-# ┌────────────────────────────────────────────────────┐
-# │           AI MODEL CONFIGURATION                   │
-# └────────────────────────────────────────────────────┘
-# OpenRouter API key from https://openrouter.ai/keys
-OPENROUTER_API_KEY=sk-or-v1-your_key_here
-# Base URL (default: https://openrouter.ai/api/v1)
-OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
-
-# ┌────────────────────────────────────────────────────┐
-# │           WEB SEARCH CONFIGURATION                 │
-# └────────────────────────────────────────────────────┘
-# Tavily API key from https://tavily.com
-TAVILY_API_KEY=tvly-your_key_here
-
-# ┌────────────────────────────────────────────────────┐
-# │           SERVER CONFIGURATION                     │
-# └────────────────────────────────────────────────────┘
-# Express server port (default: 3000, production: 8080)
-PORT=3000
-# Node environment (development | production)
-NODE_ENV=development
-```
-
-### API Key Acquisition Guide
-
-| Service | URL | Free Tier | Required |
-| :--- | :--- | :--- | :---: |
-| **Supabase** | [supabase.com/dashboard](https://supabase.com/dashboard) | 500MB DB, 50K auth users | ✅ |
-| **OpenRouter** | [openrouter.ai/keys](https://openrouter.ai/keys) | Pay-per-token, no minimum | ✅ |
-| **Tavily** | [tavily.com](https://tavily.com) | 1,000 searches/month | ✅ |
+| `npm run dev` | Development server (Vite HMR + Express) |
+| `npm run build` | Production build (Vite frontend + esbuild backend) |
+| `npm start` | Run production server (`dist/server.cjs`) |
+| `npm run lint` | TypeScript type checking |
 
 ---
 
 ## 🚢 Deployment
 
-### Docker (Recommended)
+### Docker (Production)
 
-The application uses a multi-stage Alpine build for minimal image size:
-
-```dockerfile
-# Stage 1: Build (node:20-alpine)
-# - Install dependencies (npm ci)
-# - Build frontend (vite build)
-# - Bundle backend (esbuild → dist/server.cjs)
-
-# Stage 2: Production (node:20-alpine)
-# - Copy dist/, package*.json, node_modules
-# - Set NODE_ENV=production, PORT=8080
-# - CMD: node dist/server.cjs
-```
-
-**Build and run locally:**
+Multi-stage Alpine build for minimal image size:
 
 ```bash
-# Build the container
 docker build -t convix-lab .
-
-# Run with environment variables
 docker run -p 8080:8080 --env-file .env convix-lab
-
-# Verify at http://localhost:8080
 ```
 
 ### Google Cloud Run
 
 ```bash
-# 1. Build and push to Container Registry
 gcloud builds submit --tag gcr.io/YOUR_PROJECT_ID/convix-lab
-
-# 2. Deploy to Cloud Run
 gcloud run deploy convix-lab \
   --image gcr.io/YOUR_PROJECT_ID/convix-lab \
-  --platform managed \
-  --port 8080 \
-  --memory 512Mi \
-  --cpu 1 \
-  --min-instances 0 \
-  --max-instances 10 \
-  --set-env-vars "NODE_ENV=production"
-
-# 3. Set secrets (run once)
-gcloud run services update convix-lab \
-  --set-env-vars "VITE_SUPABASE_URL=https://..." \
-  --set-env-vars "VITE_SUPABASE_ANON_KEY=eyJ..." \
-  --set-env-vars "SUPABASE_SERVICE_ROLE_KEY=eyJ..." \
-  --set-env-vars "OPENROUTER_API_KEY=sk-or-..." \
-  --set-env-vars "TAVILY_API_KEY=tvly-..."
+  --platform managed --port 8080 \
+  --memory 512Mi --cpu 1 \
+  --min-instances 0 --max-instances 10
 ```
 
-### Production Environment Variables
-
-In production, the server injects Supabase credentials into `index.html` at serve time via string replacement:
-
-```typescript
-// server.ts — Production static serving
-const injected = html
-  .replace('__VITE_SUPABASE_URL__', process.env.VITE_SUPABASE_URL || '')
-  .replace('__VITE_SUPABASE_ANON_KEY__', process.env.VITE_SUPABASE_ANON_KEY || '');
-```
-
-This allows environment-specific configuration without rebuilding the frontend.
+Production environment variables are injected into `index.html` at serve time via runtime string replacement, enabling environment-specific configuration without rebuilding.
 
 ---
 
-## 🔧 Troubleshooting
+## 🛡 Agent Reliability & Fault Tolerance
 
-### Common Issues
+The agent system is designed for resilient autonomous execution. Each reliability mechanism maps directly to an agent failure mode:
 
-<details>
-<summary><strong>❌ "OpenRouter API key not configured"</strong></summary>
-
-**Cause:** Missing or invalid `OPENROUTER_API_KEY` in `.env`.
-
-**Fix:**
-1. Verify your key at [openrouter.ai/keys](https://openrouter.ai/keys)
-2. Ensure `.env` has `OPENROUTER_API_KEY=sk-or-v1-...` (no quotes)
-3. Restart the dev server after editing `.env`
-</details>
-
-<details>
-<summary><strong>❌ "Model X is not a valid model"</strong></summary>
-
-**Cause:** The primary model is unavailable on OpenRouter.
-
-**Fix:** The system has automatic fallback chains. If both models in a tier fail, check [openrouter.ai/models](https://openrouter.ai/models) for current availability and update `MODEL_MAP` in `server/services/openrouter.ts`.
-</details>
-
-<details>
-<summary><strong>❌ "Insufficient credits on OpenRouter"</strong></summary>
-
-**Cause:** Your OpenRouter account has no credits remaining.
-
-**Fix:** Add credits at [openrouter.ai/credits](https://openrouter.ai/credits). A full 4-phase analysis typically costs $0.10-0.50 depending on model tier.
-</details>
-
-<details>
-<summary><strong>❌ SSE stream drops / connection resets</strong></summary>
-
-**Cause:** Proxy, VPN, or mobile carrier drops idle connections.
-
-**Fix:** The server sends heartbeat comments every 15 seconds. If still dropping:
-1. Check if a reverse proxy (Nginx, Cloudflare) has a shorter idle timeout
-2. For Nginx: set `proxy_read_timeout 300s;`
-3. For Cloudflare: Ensure WebSocket support is enabled
-</details>
-
-<details>
-<summary><strong>❌ "Daily analysis limit reached"</strong></summary>
-
-**Cause:** User exceeded their plan's daily analysis quota.
-
-**Fix:** The `user_usage.analyses_today` counter resets at midnight UTC. Counter is reset by checking `last_reset_date` against current date.
-</details>
-
-<details>
-<summary><strong>❌ Database migration errors</strong></summary>
-
-**Cause:** Migrations run out of order or duplicate execution.
-
-**Fix:**
-1. Run migrations in strict numerical order (001 → 005)
-2. Each migration uses `IF NOT EXISTS` / `IF NOT EXISTS` guards for idempotency
-3. If a column already exists, `ADD COLUMN IF NOT EXISTS` will silently skip
-</details>
-
-<details>
-<summary><strong>❌ Vite HMR not working in development</strong></summary>
-
-**Cause:** Port conflict or Vite middleware mode issue.
-
-**Fix:**
-1. Ensure no other process is using port 3000
-2. Clear Vite cache: `rm -rf node_modules/.vite`
-3. Restart with `npm run dev`
-</details>
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome. Please follow these guidelines:
-
-### Development Workflow
-
-```bash
-# 1. Fork and clone the repository
-git clone https://github.com/YOUR_USERNAME/convix-lab.git
-cd convix-lab
-
-# 2. Create a feature branch
-git checkout -b feature/your-feature-name
-
-# 3. Install dependencies
-npm install
-
-# 4. Start development server
-npm run dev
-
-# 5. Make changes and verify
-npm run lint       # Type check
-npm run build      # Verify production build compiles
-
-# 6. Commit with conventional commits
-git commit -m "feat: add export to PDF format"
-git commit -m "fix: resolve SSE timeout on slow connections"
-git commit -m "docs: update API reference for SWOT endpoint"
-
-# 7. Push and create PR
-git push origin feature/your-feature-name
-```
-
-### Commit Convention
-
-| Prefix | Usage |
-| :--- | :--- |
-| `feat:` | New feature or capability |
-| `fix:` | Bug fix |
-| `docs:` | Documentation changes |
-| `style:` | Code formatting (no logic change) |
-| `refactor:` | Code restructuring (no feature/fix) |
-| `perf:` | Performance improvement |
-| `test:` | Adding or updating tests |
-| `chore:` | Maintenance tasks |
-
-### Architecture Guidelines
-
-- **Backend services** should be stateless and composable
-- **Frontend components** should use TypeScript interfaces for all props
-- **API routes** should validate input and return typed responses
-- **Database changes** require a new numbered migration file
-- **LLM prompts** are centralized in `server/prompts/system.ts`
+| Failure Mode | Mechanism | Implementation |
+| :--- | :--- | :--- |
+| Search query hangs | Timeout-bounded execution | `Promise.race` with 25-second window per query; returns empty results on timeout |
+| Target website unresponsive | Graceful scrape degradation | `Promise.race` with 10-second window; agent continues with existing evidence |
+| LLM provider unavailable | Automatic model failover | OpenRouter `models[]` array routes to fallback model transparently |
+| LLM generation hangs | Abort-controlled execution | `AbortController` with 180-second signal terminates and surfaces error |
+| SSE connection drops | Persistent heartbeat | `: keep-alive\n\n` comment every 15 seconds prevents proxy/carrier drops |
+| TCP socket recycled | OS-level keep-alive | `req.socket.setKeepAlive(true, 1000)` + `setTimeout(0)` prevents recycling |
+| Context window overflow | Dynamic tool gating | Tools disabled when budget < 500 tokens; agent reasons from existing evidence |
+| Duplicate content processing | Content cache deduplication | `(cache_type, cache_key)` composite unique key with 7-day TTL |
+| Rate limit exceeded | Per-user usage tracking | Daily counters for messages, searches, analyses with automatic midnight reset |
 
 ---
 
@@ -1227,44 +848,53 @@ git push origin feature/your-feature-name
 
 | Priority | Feature | Status |
 | :---: | :--- | :--- |
-| 🔴 | Export to PDF with branded template | Planned |
-| 🔴 | Comparative analysis (compare 2+ ideas side-by-side) | Planned |
-| 🟡 | Integration with Stripe for subscription payments | Planned |
-| 🟡 | Real-time collaboration via WebSocket | Foundation Ready |
-| 🟢 | Vector embeddings for semantic source search | Schema Ready |
-| 🟢 | Scheduled weekly market monitoring alerts | Planned |
-| 🟢 | API rate limiting dashboard for admin users | Planned |
+| 🔴 | **Parallel Agent Execution** — Run Competitor + Market + Community agents simultaneously | Planned |
+| 🔴 | **Comparative Analysis** — Deploy agent swarm on 2+ ideas side-by-side | Planned |
+| 🟡 | **Agent Memory Persistence** — Long-term cross-investigation knowledge accumulation | Schema Ready |
+| 🟡 | **Vector Embeddings** — Semantic source search across investigation history | Schema Ready |
+| 🟢 | **Scheduled Monitoring Agents** — Weekly market surveillance with change detection | Planned |
+| 🟢 | **Export to PDF** — Branded investment memo template generation | Planned |
+| 🟢 | **Real-time Multi-User Collaboration** — WebSocket foundation for shared investigations | Foundation Ready |
+
+---
+
+## 🤝 Contributing
+
+```bash
+# Fork → Branch → Develop → Type Check → PR
+git checkout -b feature/your-agent-improvement
+npm run dev          # Development server
+npm run lint         # Type validation
+npm run build        # Verify production compilation
+git commit -m "feat: add parallel agent execution for Phase 1-3"
+```
+
+### Architecture Guidelines
+
+- **Agents** are defined in `server/services/analysis-pipeline.ts` — the core orchestration module
+- **Agent personas** are defined in `server/prompts/system.ts` — reasoning instructions for each mode
+- **Shared memory** operations go through `server/services/supabase-admin.ts`
+- **Content intelligence** (summarization, caching, deduplication) is in `server/services/content-pipeline.ts`
+- **Token budget management** is in `server/services/context-builder.ts`
+- **Database changes** require a new numbered migration in `supabase/`
 
 ---
 
 ## 👨‍💻 Founder & Contact
 
-<table>
-  <tr>
-    <td>
-      <strong>Arief Fajar</strong><br>
-      <em>Founder & Builder — Convix Software</em><br>
-      📍 Margahayu, Indonesia
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <a href="https://instagram.com/arief.fajr">Instagram</a> •
-      <a href="https://www.linkedin.com/in/arief-fajar-a76855390">LinkedIn</a> •
-      <a href="mailto:arieffajarmarhas@gmail.com">Email</a> •
-      <a href="https://github.com/ThiefRiefMarhas">GitHub</a>
-    </td>
-  </tr>
-</table>
+**Arief Fajar** — Founder & Builder, Convix Software
+📍 Margahayu, Indonesia
+
+[Instagram](https://instagram.com/arief.fajr) · [LinkedIn](https://www.linkedin.com/in/arief-fajar-a76855390) · [Email](mailto:arieffajarmarhas@gmail.com) · [GitHub](https://github.com/ThiefRiefMarhas)
 
 ---
 
 ## 📄 License
 
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
 <p align="center">
-  <sub>Built with absolute strategy, zero hype. — Convix Software, 2026</sub>
+  <sub>Autonomous multi-agent market intelligence. Built with structured reasoning, zero hype. — Convix Software, 2026</sub>
 </p>
